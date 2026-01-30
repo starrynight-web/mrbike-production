@@ -56,6 +56,7 @@ export function ProfileClient() {
 
     // Redirect if not logged in
     if (!user) {
+    router.push("/login");
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />

@@ -10,7 +10,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
-    const title = slug.charAt(0).toUpperCase() + slug.slice(1);
+    const title = slug.split(/[-_ ]+/).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('-');
 
     return {
         title: `${title} Bikes in Bangladesh${SEO_DEFAULTS.titleSuffix}`,

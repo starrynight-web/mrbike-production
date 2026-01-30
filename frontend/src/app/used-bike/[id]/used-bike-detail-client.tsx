@@ -57,12 +57,16 @@ export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
     }
 
     const handleShare = async () => {
-        if (navigator.share) {
-            await navigator.share({
-                title: bike.bikeName,
-                text: `Check out this ${bike.bikeName} for sale on MrBikeBD`,
-                url: window.location.href,
-            });
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: bike.bikeName,
+                    text: `Check out this ${bike.bikeName} for sale on MrBikeBD`,
+                    url: window.location.href,
+                });
+            }
+        } catch (error) {
+            console.error('Share failed:', error);
         }
     };
 
@@ -208,7 +212,7 @@ export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
                             <div className="text-sm">
                                 <h4 className="font-bold text-yellow-800 dark:text-yellow-500 mb-1">Safety Tips</h4>
                                 <ul className="list-disc pl-4 space-y-1 text-yellow-700 dark:text-yellow-600">
-                                    <li>Meet in a safe details, public place.</li>
+                                    <li>Meet in a safe, public place.</li>
                                     <li>Check the bike documents properly before buying.</li>
                                     <li>Don't make any payments without checking the bike first.</li>
                                 </ul>
@@ -254,7 +258,7 @@ export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
                                     </div>
                                     <div>
                                         <p className="font-bold">{bike.sellerName}</p>
-                                        <p className="text-xs text-muted-foreground">Member since Jan 2026</p>
+                                        <p className="text-xs text-muted-foreground">Verified Seller</p>
                                     </div>
                                 </div>
 

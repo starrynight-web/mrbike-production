@@ -144,7 +144,7 @@ export function UsedBikeFilters() {
             <div className="space-y-4">
                 <Label>Price Range</Label>
                 <Slider
-                    defaultValue={[minPrice, maxPrice]}
+                    value={[minPrice, maxPrice]}
                     max={1000000}
                     step={5000}
                     minStepsBetweenThumbs={1}

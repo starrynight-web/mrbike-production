@@ -176,7 +176,7 @@ export function ComparisonTable({ bikes, onRemove }: ComparisonTableProps) {
                     {bikes.map(bike => renderCell(bike, bike.specs.maxTorque, winners.torque === bike.id))}
                 </div>
                 <div className="contents">
-                    <div className="p-4 font-medium text-muted-foreground bg-muted/5 flex items-center">Before Top Speed</div>
+                    <div className="p-4 font-medium text-muted-foreground bg-muted/5 flex items-center">Top Speed</div>
                     {bikes.map(bike => renderCell(bike, `${bike.specs.topSpeed} kmph`, winners.topSpeed === bike.id))}
                 </div>
                 <div className="contents">

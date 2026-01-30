@@ -6,6 +6,11 @@ Based on: PRD, Design Doc, Technical Stack Documentation
 📋 Phase 1: MVP (Core Platform)
 🔧 1. Project Setup & Infrastructure
  Initialize Next.js 14 project with App Router
+ Testing strategy (unit, integration, E2E with chosen frameworks and test runners)
+ CI/CD pipeline (automated test + deployment workflow e.g., GitHub Actions with branch protection and deployment jobs)
+ Backup & disaster recovery (database backup schedule, retention, restore playbook and DR runbook)
+ API documentation (OpenAPI/Swagger generation and hosting for the DRF backend)
+ Environment & secrets management (.env conventions, secrets store e.g., Vault/Secrets Manager, and per-environment configs)
  Configure TypeScript
  Setup Tailwind CSS + Shadcn UI component library
  Configure Vercel deployment
@@ -24,7 +29,13 @@ Based on: PRD, Design Doc, Technical Stack Documentation
  Implement session management with Redis
  Create user model in PostgreSQL
  Implement JWT token handling
- Setup rate limiting for auth endpoints
+ API protection & rate limiting
+ Input validation/sanitization (prevent SQL/NoSQL/command injection)
+ CSRF protection for state-changing routes
+ XSS prevention including Content Security Policy and sanitization for user content
+ Secrets management/rotation for API keys and JWT secrets
+ Admin 2FA for the admin panel
+ Standard security headers (HSTS, X-Frame-Options, X-Content-Type-Options)
 🏠 3. Homepage
  Design hero section with search bar
  Implement category quick-select pills (Sports, Commuter, Naked, Scooter, Electric)
@@ -148,6 +159,17 @@ Used Bike Detail
  Add brand-specific SEO
 🔍 15. SEO Implementation
  Setup dynamic meta tags for all pages
+ Add WCAG conformance goals (e.g., WCAG 2.1 AA)
+ Keyboard navigation checks
+ ARIA roles and semantic HTML audit
+ Color contrast and focus indicator tests
+ Alt text policy for images
+ Automated accessibility testing in CI
+ Expand GDPR items by adding User data export (data portability) endpoints
+ Right-to-deletion implementation
+ Documented data retention policies
+ Cookie consent banner handling
+ Up-to-date privacy policy with data processing details
  Implement OpenGraph tags
  Add Schema.org markup (Product, Review, Article, FAQ)
  Configure clean URL structure

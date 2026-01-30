@@ -30,7 +30,8 @@ function LoginContent() {
     const handleMockLogin = async () => {
         setIsLoading(true);
         // Simulate API delay
-        setTimeout(() => {
+        const mockLoginTimeoutRef = useRef<number | null>(null);
+mockLoginTimeoutRef.current = setTimeout(() => {
             login({
                 id: "user-123",
                 email: "demo@mrbikebd.com",

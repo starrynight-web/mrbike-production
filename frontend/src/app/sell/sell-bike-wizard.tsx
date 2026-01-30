@@ -59,6 +59,11 @@ export function SellBikeWizard() {
     const [isLoggedIn, setIsLoggedIn] = useState(false); // Mock Auth State
     const [isLoading, setIsLoading] = useState(false);
     const [images, setImages] = useState<string[]>([]); // Preview URLs
+useEffect(() => {
+    return () => {
+        images.forEach(url => URL.revokeObjectURL(url));
+    };
+}, [images]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<FormData>({
