@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,11 +59,19 @@ export function SellBikeWizard() {
     const [isLoggedIn, setIsLoggedIn] = useState(false); // Mock Auth State
     const [isLoading, setIsLoading] = useState(false);
     const [images, setImages] = useState<string[]>([]); // Preview URLs
-    
+    const imagesRef = useRef<string[]>([]);
+
+    // Update ref whenever images change
+    useEffect(() => {
+        imagesRef.current = images;
+    }, [images]);
+
     // Cleanup URLs on component unmount
     useEffect(() => {
         return () => {
-            images.forEach(url => URL.revokeObjectURL(url));
+            imagesRef.current.forEach(url => {
+                URL.revokeObjectURL(url);
+            });
         };
     }, []);
     const [isSubmitting, setIsSubmitting] = useState(false);
