@@ -46,7 +46,7 @@ export default function AboutPage() {
                         <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
                             <Zap className="h-6 w-6 text-primary" />
                         </div>
-                        <h3 className=\"text-xl font-bold\">Instant Comparison</h3>
+                        <h3 className="text-xl font-bold">Instant Comparison</h3>
                         <p className="text-muted-foreground">
                             Browse through 300+ official models and compare specs, prices, and reviews instantly with our advanced compare tool.
                         </p>
