@@ -262,7 +262,7 @@ export default function UsedBikesModeration() {
                                                             <DropdownMenuItem><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
                                                             <DropdownMenuItem><Users className="mr-2 h-4 w-4" /> Contact Seller</DropdownMenuItem>
                                                             <DropdownMenuSeparator />
-                                                            <DropdownMenuItem className=\"text-destructive\" onClick={() => handleDeleteListing(ad.id)}>Delete Listing</DropdownMenuItem>
+                                                            <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteListing(ad.id)}>Delete Listing</DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </div>

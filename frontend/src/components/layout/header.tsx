@@ -28,6 +28,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { useAuthStore, useWishlistStore, useUIStore } from "@/store";
 import { SearchDialog } from "@/components/layout/search-dialog";
@@ -198,7 +199,7 @@ export function Header() {
                                         <Link href="/sell-bike">Sell Bike</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive" onClick={() => logout()}>
+                                    <DropdownMenuItem className="text-destructive" onClick={() => signOut()}>
                                         Sign Out
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>

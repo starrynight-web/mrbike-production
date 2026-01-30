@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { signIn } from "next-auth/react";
 import { useAuthStore } from "@/store";
 import { toast } from "sonner";
 
@@ -45,6 +46,11 @@ function LoginContent() {
             router.push(callbackUrl);
             router.refresh(); // Ensure header state updates
         }, 1000);
+    };
+
+    const handleGoogleLogin = () => {
+        setIsLoading(true);
+        signIn("google", { callbackUrl });
     };
 
     return (
@@ -93,7 +99,7 @@ function LoginContent() {
                     </div>
                 </div>
 
-                <Button variant="outline" className="w-full" onClick={() => handleMockLogin("user")} disabled={isLoading}>
+                <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isLoading}>
                     <Chrome className="mr-2 h-4 w-4" />
                     Google
                 </Button>

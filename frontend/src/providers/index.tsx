@@ -2,6 +2,8 @@
 
 import { ReactNode } from "react";
 import { QueryProvider } from "./query-provider";
+import { AuthProvider } from "./auth-provider";
+import { AuthSync } from "./auth-sync";
 import { Toaster } from "@/components/ui/sonner";
 
 interface ProvidersProps {
@@ -15,15 +17,18 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
     return (
         <QueryProvider>
-            {children}
-            <Toaster
-                position="top-center"
-                richColors
-                closeButton
-                toastOptions={{
-                    duration: 4000,
-                }}
-            />
+            <AuthProvider>
+                <AuthSync />
+                {children}
+                <Toaster
+                    position="top-center"
+                    richColors
+                    closeButton
+                    toastOptions={{
+                        duration: 4000,
+                    }}
+                />
+            </AuthProvider>
         </QueryProvider>
     );
 }

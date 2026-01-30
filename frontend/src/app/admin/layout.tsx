@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store";
 import { Separator } from "@/components/ui/separator";
+import { signOut } from "next-auth/react";
 
 const adminNav = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -34,11 +35,12 @@ const adminNav = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
-    const { user, isAuthenticated, logout } = useAuthStore();
+    const { user, isAuthenticated, isLoading, logout } = useAuthStore();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     // Protection logic (Mock)
     useEffect(() => {
+        if (isLoading) return;
         // Redirect to login if not authenticated
         if (!isAuthenticated) {
             router.push("/login");
@@ -50,7 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
     }, [user, isAuthenticated, router]);
 
-    if (!isAuthenticated || !user || user.role !== "admin") {
+    if (isLoading || !isAuthenticated || !user || user.role !== "admin") {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -115,7 +117,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <Button
                         variant="ghost"
                         className={cn("w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/5", !isSidebarOpen && "px-0 justify-center")}
-                        onClick={() => logout()}
+                        onClick={() => signOut()}
                     >
                         <LogOut className="h-5 w-5 shrink-0" />
                         {isSidebarOpen && <span className="ml-3 font-medium">Logout</span>}

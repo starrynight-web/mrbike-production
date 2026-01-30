@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Bike, ShieldCheck, Zap, Heart, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
