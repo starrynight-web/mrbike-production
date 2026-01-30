@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,11 +59,11 @@ export function SellBikeWizard() {
     const [isLoggedIn, setIsLoggedIn] = useState(false); // Mock Auth State
     const [isLoading, setIsLoading] = useState(false);
     const [images, setImages] = useState<string[]>([]); // Preview URLs
-useEffect(() => {
-    return () => {
-        images.forEach(url => URL.revokeObjectURL(url));
-    };
-}, [images]);
+    useEffect(() => {
+        return () => {
+            images.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, [images]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<FormData>({
@@ -150,7 +150,7 @@ useEffect(() => {
                 <Bike className="h-10 w-10 text-primary" />
             </div>
             <div>
-                <h2 className="text-2xl font-bold mb-2">Login to Sell Your Bike</h2>
+                <h2 className="text-2xl font-bold mb-2">Login to Sell Your Bike on MrBikeBD</h2>
                 <p className="text-muted-foreground max-w-md mx-auto">
                     You need to be logged in to post an ad. This helps us verify sellers and keep the marketplace safe.
                 </p>
@@ -407,7 +407,7 @@ useEffect(() => {
     return (
         <div className="max-w-3xl mx-auto py-8">
             <div className="mb-8 text-center space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Sell Your Bike</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Sell Your Bike on MrBikeBD</h1>
                 <p className="text-muted-foreground">Post your ad in 3 simple steps</p>
             </div>
 

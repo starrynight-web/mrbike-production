@@ -15,6 +15,9 @@ import {
     Newspaper,
     LayoutGrid,
     Store,
+    Bell,
+    Settings,
+    Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -23,6 +26,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAuthStore, useWishlistStore, useUIStore } from "@/store";
@@ -38,7 +42,7 @@ const navLinks = [
 
 export function Header() {
     const pathname = usePathname();
-    const { user, isAuthenticated } = useAuthStore();
+    const { user, isAuthenticated, logout } = useAuthStore();
     const { bikeIds } = useWishlistStore();
     const { isMobileMenuOpen, setMobileMenuOpen, isSearchOpen, setSearchOpen } =
         useUIStore();
@@ -103,6 +107,53 @@ export function Header() {
                             </Button>
                         </Link>
 
+                        {/* Notifications */}
+                        {isAuthenticated && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="relative">
+                                        <Bell className="h-5 w-5" />
+                                        <span className="absolute top-2 right-2 flex h-2 w-2 items-center justify-center rounded-full bg-primary ring-2 ring-background">
+                                        </span>
+                                        <span className="sr-only">Notifications</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-80">
+                                    <div className="flex items-center justify-between p-4 border-b">
+                                        <span className="font-bold">Notifications</span>
+                                        <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-primary">Mark all as read</Button>
+                                    </div>
+                                    <div className="max-h-80 overflow-y-auto">
+                                        <div className="p-4 flex gap-3 hover:bg-accent cursor-pointer transition-colors border-b">
+                                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                                <Bike className="h-4 w-4 text-primary" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-sm font-medium leading-none text-primary">Listing Approved!</p>
+                                                <p className="text-xs text-muted-foreground line-clamp-2">Your ad for Yamaha R15 V3 has been approved and is now live.</p>
+                                                <p className="text-[10px] text-muted-foreground mt-1">2 hours ago</p>
+                                            </div>
+                                        </div>
+                                        <div className="p-4 flex gap-3 hover:bg-accent cursor-pointer transition-colors border-b">
+                                            <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                                                <Newspaper className="h-4 w-4 text-muted-foreground" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-sm font-medium leading-none">New News Article</p>
+                                                <p className="text-xs text-muted-foreground line-clamp-2">The 2026 Honda CBR model launch in Bangladesh.</p>
+                                                <p className="text-[10px] text-muted-foreground mt-1">Yesterday</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-2 text-center border-t">
+                                        <Button variant="ghost" size="sm" className="w-full text-xs" asChild>
+                                            <Link href="/profile?tab=notifications">View All Notifications</Link>
+                                        </Button>
+                                    </div>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+
                         {/* User Menu */}
                         {isAuthenticated && user ? (
                             <DropdownMenu>
@@ -124,6 +175,16 @@ export function Header() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-48">
+                                    {user.role === "admin" && (
+                                        <>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin" className="font-bold text-primary flex items-center gap-2">
+                                                    <Shield className="h-4 w-4" /> Admin Panel
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                        </>
+                                    )}
                                     <DropdownMenuItem asChild>
                                         <Link href="/profile">My Profile</Link>
                                     </DropdownMenuItem>
@@ -136,7 +197,8 @@ export function Header() {
                                     <DropdownMenuItem asChild>
                                         <Link href="/sell-bike">Sell Bike</Link>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem className="text-destructive">
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem className="text-destructive" onClick={() => logout()}>
                                         Sign Out
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>

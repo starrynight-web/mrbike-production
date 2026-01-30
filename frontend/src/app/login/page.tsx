@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Bike, Loader2, Chrome } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,17 +26,17 @@ function LoginContent() {
     const callbackUrl = searchParams.get("callbackUrl") || "/";
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuthStore();
+    const mockLoginTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const handleMockLogin = async () => {
+    const handleMockLogin = (role: "user" | "admin" = "user") => {
         setIsLoading(true);
         // Simulate API delay
-        const mockLoginTimeoutRef = useRef<number | null>(null);
-mockLoginTimeoutRef.current = setTimeout(() => {
+        mockLoginTimeoutRef.current = setTimeout(() => {
             login({
-                id: "user-123",
-                email: "demo@mrbikebd.com",
-                name: "Demo User",
-                role: "user",
+                id: role === "admin" ? "admin-1" : "user-123",
+                email: role === "admin" ? "admin@mrbikebd.com" : "demo@mrbikebd.com",
+                name: role === "admin" ? "Admin User" : "Demo User",
+                role: role,
                 phoneVerified: true,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -68,9 +68,14 @@ mockLoginTimeoutRef.current = setTimeout(() => {
                     <Input id="password" type="password" placeholder="••••••••" disabled />
                 </div>
 
-                <Button className="w-full" onClick={handleMockLogin} disabled={isLoading}>
+                <Button className="w-full" onClick={() => handleMockLogin("user")} disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Sign In (Mock)
+                    Sign In (User Mock)
+                </Button>
+
+                <Button variant="secondary" className="w-full" onClick={() => handleMockLogin("admin")} disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Sign In (Admin Mock)
                 </Button>
 
                 <div className="relative">
@@ -84,7 +89,7 @@ mockLoginTimeoutRef.current = setTimeout(() => {
                     </div>
                 </div>
 
-                <Button variant="outline" className="w-full" onClick={handleMockLogin} disabled={isLoading}>
+                <Button variant="outline" className="w-full" onClick={() => handleMockLogin("user")} disabled={isLoading}>
                     <Chrome className="mr-2 h-4 w-4" />
                     Google
                 </Button>

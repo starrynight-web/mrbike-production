@@ -56,7 +56,7 @@ export function ProfileClient() {
 
     // Redirect if not logged in
     if (!user) {
-    router.push("/login");
+        router.push("/login");
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -115,7 +115,7 @@ export function ProfileClient() {
                         <LogOut className="mr-2 h-4 w-4" /> Logout
                     </Button>
                     <Button asChild>
-                        <Link href="/sell">
+                        <Link href="/sell-bike">
                             <Bike className="mr-2 h-4 w-4" /> Post Ad
                         </Link>
                     </Button>
@@ -130,6 +130,7 @@ export function ProfileClient() {
                     <TabsTrigger value="overview" className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
                     <TabsTrigger value="listings" className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">My Listings</TabsTrigger>
                     <TabsTrigger value="wishlist" className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">Wishlist ({bikeIds.size})</TabsTrigger>
+                    <TabsTrigger value="notifications" className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">Notifications</TabsTrigger>
                     <TabsTrigger value="reviews" className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">My Reviews</TabsTrigger>
                     <TabsTrigger value="subscription" className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">Subscription</TabsTrigger>
                     <TabsTrigger value="settings" className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">Settings</TabsTrigger>
@@ -244,7 +245,7 @@ export function ProfileClient() {
                             <h3 className="text-lg font-medium">Manage your ads</h3>
                             <p className="text-sm text-muted-foreground">You have 1 active and 1 expired listing</p>
                         </div>
-                        <Button size="sm" asChild><Link href="/sell">Post New Ad</Link></Button>
+                        <Button size="sm" asChild><Link href="/sell-bike">Post New Ad</Link></Button>
                     </div>
 
                     <div className="grid gap-4">
@@ -331,6 +332,49 @@ export function ProfileClient() {
                             ))}
                         </div>
                     )}
+                </TabsContent>
+
+                {/* NOTIFICATIONS TAB */}
+                <TabsContent value="notifications" className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-medium">Recent Notifications</h3>
+                        <Button variant="ghost" size="sm" className="text-xs text-primary">Mark all as read</Button>
+                    </div>
+                    <div className="space-y-4">
+                        <Card className="border-l-4 border-l-primary">
+                            <CardContent className="p-4 flex gap-4 items-start">
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                                </div>
+                                <div className="flex-1 space-y-1">
+                                    <div className="flex justify-between items-start">
+                                        <p className="font-semibold">Listing Approved!</p>
+                                        <span className="text-xs text-muted-foreground">2h ago</span>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">Your advertisement for &quot;Yamaha R15 V3&quot; has been approved by our moderation team and is now live on the marketplace.</p>
+                                    <div className="flex gap-2 mt-2">
+                                        <Button size="sm" variant="outline" className="h-8">View Ad</Button>
+                                        <Button size="sm" variant="ghost" className="h-8">Dismiss</Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardContent className="p-4 flex gap-4 items-start text-muted-foreground opacity-70">
+                                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                                    <Star className="h-5 w-5" />
+                                </div>
+                                <div className="flex-1 space-y-1">
+                                    <div className="flex justify-between items-start">
+                                        <p className="font-semibold text-foreground">New Review on your listing</p>
+                                        <span className="text-xs">1d ago</span>
+                                    </div>
+                                    <p className="text-sm">Someone left a 5-star review on your &quot;Honda CB150R&quot; listing.</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </TabsContent>
 
                 {/* REVIEWS TAB */}
