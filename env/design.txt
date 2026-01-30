@@ -1,0 +1,689 @@
+📘 MrBikeBD — FULL UI/UX DESIGN DOCUMENT
+
+Version 1.0
+
+
+---
+
+1. GLOBAL EXPERIENCE PRINCIPLES
+
+1.1 Design Philosophy
+
+MrBikeBD is:
+
+* Information-first
+* Emotion-guided
+* Trust-driven
+* SEO-native
+* Mobile-primary
+
+User psychology:
+
+Bangladesh users:
+
+→ Compare heavily
+→ Trust brands more than specs
+→ Sensitive to resale value
+→ Low patience for slow pages
+→ Prefer WhatsApp contact
+
+Therefore:
+
+✔ Clean layout
+✔ Big photos
+✔ Price visible early
+✔ Similar bikes always shown
+✔ Used bikes always nearby
+✔ WhatsApp CTA prominent
+
+
+---
+
+1.2 Global Layout
+
+Header (Sticky)
+
+Desktop:
+
+Logo | Bikes | Used Bikes | News | Compare | Dealers | Login
+
+Mobile:
+
+Hamburger
+Logo
+Search icon
+
+Hamburger expands:
+
+* Bikes
+* Used Bikes
+* News
+* Compare
+* Profile
+* Wishlist
+
+
+---
+
+Footer
+
+Sections:
+
+Company
+* About
+* Contact
+* Advertise
+
+Legal
+* Terms
+* Privacy
+
+Resources
+* News
+* Reviews
+* Compare
+
+Social icons
+
+
+---
+
+2. HOME PAGE
+
+Purpose:
+
+Entry point + SEO + Discovery.
+
+
+---
+
+Above the fold:
+
+Hero:
+
+Search bar: "Search bikes or brands"
+
+Quick category pills:
+
+Sports
+Commuter
+Naked
+Scooter
+Electric
+
+Featured slider:
+
+Top trending bikes.
+
+
+---
+
+Sections:
+
+Popular Bikes
+
+Grid:
+
+Image
+Name
+Price
+Mileage
+
+Click → Bike Detail.
+
+
+---
+
+Emotional Picks
+
+Cards:
+
+“Best mileage under ৳2L”
+“Highest resale sports bike”
+“Trending naked bikes”
+
+Driven by rule engine.
+
+
+---
+
+Used Bikes Near You
+
+Location auto-detected.
+
+3–6 cards.
+
+CTA: View All Used.
+
+
+---
+
+News
+
+Latest 3 articles.
+
+
+---
+
+Brands Grid
+
+Logo tiles.
+
+
+---
+
+SEO:
+
+Homepage schema + FAQ.
+
+
+---
+
+3. BIKE CATALOGUE PAGE
+
+URL: /bikes
+
+Purpose: Exploration.
+
+
+---
+
+Filters:
+
+Brand
+Price
+Category
+Engine CC
+
+Sorting:
+
+Price
+Popularity
+Mileage
+
+
+---
+
+Bike Card:
+
+Image
+Name
+Price
+Mileage
+Compare checkbox
+
+
+---
+
+Infinite scroll.
+
+Mobile:
+
+Filter drawer.
+
+
+---
+
+4. BIKE DETAIL PAGE (MOST IMPORTANT)
+
+URL: /bike/{slug}
+
+Example: /bike/cfmoto-300sr
+
+
+---
+
+Layout:
+
+Hero:
+
+Gallery (Cloudinary)
+
+Bike Name
+Price range
+EMI calculator
+Wishlist button
+
+
+---
+
+Tabs:
+
+Overview
+Variants
+Specs
+Reviews
+
+
+---
+
+Overview
+
+Short description.
+
+Highlight:
+
+Mileage
+Top speed
+Engine
+Resale score
+
+
+---
+
+Emotional Recommendation Sections:
+
+Similar Bikes
+
+Same category.
+
+3–4 bikes.
+
+
+---
+
+Used Bikes
+
+Price ±10%.
+
+High resale prioritized.
+
+3–4 listings.
+
+
+---
+
+Variants
+
+Table.
+
+
+---
+
+Full Specifications
+
+Grouped:
+
+Engine
+Dimensions
+Electrical
+
+
+---
+
+Reviews
+
+Stars only.
+
+Submit popup.
+
+One per user.
+
+
+---
+
+SEO:
+
+Schema Product + Review + FAQ.
+
+
+---
+
+5. BIKE COMPARE
+
+Select 2–3 bikes.
+
+Table comparison.
+
+Highlight:
+
+Price
+Mileage
+Resale
+
+Sticky compare bar.
+
+
+---
+
+6. USED BIKE MARKETPLACE
+
+URL: /used
+
+
+---
+
+Filters:
+
+Brand
+Price
+Year
+Location
+
+Cards:
+
+Bike image
+Year
+KM
+Price
+Location
+
+
+---
+
+Badge:
+
+Verified
+Featured
+
+
+---
+
+7. USED BIKE DETAIL
+
+Hero image.
+
+Seller info:
+
+Masked WhatsApp.
+
+Details:
+
+Condition
+Accident history
+
+CTA:
+
+WhatsApp button.
+
+
+---
+
+Similar used bikes shown.
+
+
+---
+
+8. POST AD FLOW
+
+Protected route.
+
+Steps:
+
+1. Google login
+
+
+2. Phone OTP
+
+
+3. Form
+
+
+4. Upload images
+
+
+5. Preview
+
+
+6. Submit
+
+
+
+
+---
+
+Form:
+
+Brand
+Model
+Year
+KM
+Condition
+Price
+Location
+
+Upload:
+
+Max 5 images.
+
+JS compression → Cloudinary.
+
+Admin moderation before publish.
+
+
+---
+
+Listing expires in 15 days.
+
+Reminder email.
+
+
+---
+
+9. AUTH SYSTEM
+
+Google OAuth only.
+
+Phone OTP required for posting.
+
+No passwords.
+
+
+---
+
+10. PROFILE CENTER
+
+Tabs:
+
+Profile
+Wishlist
+My Listings
+Reviews
+Subscription
+
+
+---
+
+Wishlist:
+
+Saved bikes.
+
+
+---
+
+My Listings:
+
+Active
+Expired
+
+Renew CTA.
+
+
+---
+
+11. NEWS SYSTEM
+
+SEO CMS.
+
+Article page:
+
+Title
+Hero image
+Body
+Author
+Date
+
+Comments require login.
+
+
+---
+
+12. CHAT SYSTEM (USED BIKE)
+
+Simple inbox.
+
+WhatsApp preferred.
+
+
+---
+
+13. ADMIN PANEL
+
+Roles:
+
+Admin
+Moderator
+Editor
+
+
+---
+
+Features:
+
+Approve used ads
+Approve images
+Add bikes
+Publish news
+Delete abuse
+
+Dashboard:
+
+Stats:
+
+Users
+Listings
+Traffic
+
+
+---
+
+Bike Manager:
+
+Add bikes from 300 → 305.
+
+Upload specs JSON.
+
+
+---
+
+14. DEALER PAGE (PHASE 2)
+
+Verified badge.
+
+Inventory.
+
+Subscription.
+
+
+---
+
+15. MONETIZATION UX
+
+Free:
+
+15 days listing.
+
+Premium:
+
+Featured
+Extended duration
+
+Dealer:
+
+Priority.
+
+
+---
+
+Payment via SSLCommerz.
+
+
+---
+
+16. SEO UX
+
+Every page:
+
+Meta tags
+OG tags
+Schema
+
+Internal links:
+
+Bike → Used → News.
+
+SSR Next.js.
+
+
+---
+
+17. PERFORMANCE UX
+
+Skeleton loaders.
+
+Image lazy load.
+
+Redis cache.
+
+CDN.
+
+
+---
+
+18. TRUST UX
+
+Verified badge
+Resale indicators
+Admin moderation
+Report buttons
+
+
+---
+
+19. MOBILE EXPERIENCE
+
+Bottom nav:
+
+Home
+Search
+Post
+Used
+Profile
+
+Thumb reachable.
+
+
+---
+
+20. EDGE CASES
+
+No bikes → Empty state.
+
+Expired ad → Renew CTA.
+
+Deleted bike → Redirect.
+
+
+---
+
+21. ADS UX
+
+Max:
+
+1 banner home
+1 inline article
+
+Never inside bike specs.
+
+
+---
+
+FINAL NOTE
+
+MrBikeBD UX is built around:
+
+Discovery → Emotion → Trust → Action.
+
+Not ecommerce.
+
+Guided buying.

@@ -1,0 +1,417 @@
+🏗 MrBikeBD — Full Technical Stack (Page-Driven)
+
+
+---
+
+1️ Frontend Layer (Web + SEO)
+
+Framework:
+✅ Next.js (React + SSR + ISR)
+
+Hosting:
+✅ Vercel (Free → Pro later)
+
+Purpose:
+
+SSR pages for SEO (/bike/[slug], /news/[slug])
+
+Incremental Static Regeneration for bike & news pages
+
+Edge caching for fast load
+
+Image optimization for Cloudinary WebP
+
+Route-based code splitting
+
+
+Pages:
+
+/ Home
+
+/bikes Bike Catalogue
+
+/bike/[slug] Bike Detail (dynamic, emotional recommendation)
+
+/compare Bike Compare
+
+/brands Bike Brands
+
+/news News
+
+/news/[slug] News Article
+
+/sell-bike Post Ad
+
+/used-bikes Used Bike Browse
+
+/used-bike/[id] Used Bike Detail
+
+/profile Profile Center (tabs: wishlist, my listings, subscription, reviews)
+
+/admin Admin panel (protected routes)
+
+/about, /terms, /privacy, /404, /sitemap.xml
+
+
+Frontend Libraries:
+
+Tailwind CSS / Shadcn UI (design)
+
+React Query / TanStack Query (API caching)
+
+Zustand (lightweight state)
+
+NextAuth (Google OAuth)
+
+Framer Motion (animations)
+
+Next SEO / generateMetadata (dynamic SEO)
+
+React Hook Form (forms)
+
+
+SEO Features:
+
+Dynamic meta tags & OG tags
+
+Schema.org for Product, Review, Article
+
+Sitemap auto-generation
+
+Lazy-loaded WebP images
+
+Core Web Vitals optimized
+
+
+
+---
+
+2️ Mobile App
+
+Framework:
+✅ React Native
+
+Shared Logic:
+
+Hooks & domain modules can be reused from Next.js
+
+API calls to same backend
+
+
+Pages/Views:
+
+Bike Catalogue / Detail
+
+Used Marketplace
+
+Wishlist
+
+My Listings / Profile
+
+Post Bike
+
+Push notifications (Firebase Cloud Messaging)
+
+
+
+---
+
+3️ Backend
+
+Framework:
+✅ Django + Django REST Framework (Python)
+
+Hosting:
+ DigitalOcean $6 Droplet → Ubuntu + Gunicorn + Nginx
+
+Responsibilities:
+
+Business logic
+
+Auth (Google OAuth)
+
+Used bike listings management
+
+Reviews & wishlist handling
+
+Admin APIs (approve bike data, images, news)
+
+Emotional recommendation engine (rule-based Python logic)
+
+Subscription & payment APIs
+
+
+Realtime / Notifications:
+
+Django Channels (WebSocket) → optional for notifications
+
+Firebase → OTP & push notifications
+
+
+
+---
+
+4️ Databases
+
+Transactional / Relational:
+✅ Supabase PostgreSQL
+Stores:
+
+Users
+
+Used bike listings
+
+Reviews & wishlist
+
+Subscriptions
+
+Payments
+
+Admin logs
+
+
+Catalog / Flexible Schema:
+ MongoDB Atlas
+Stores:
+
+Bikes, brands, variants, specs
+
+Similar bike mappings
+
+Recommendation cache
+
+
+
+---
+
+5️ Media & Storage
+
+Cloud Storage:
+✅ Cloudinary (WebP)
+
+Usage:
+
+Official bike images (300 bikes × 5 images each)
+
+User uploaded images (compressed via JS before upload)
+
+Auto-delete expired images (15 days without subscription)
+
+
+
+---
+
+6️ Cache & Performance
+
+✅ Redis
+
+Bike pages cache
+
+Similar/used bike recommendation cache
+
+Used bike homepage cache
+
+Rate limiting per user/IP
+
+Session caching
+
+
+
+---
+
+7️ Authentication
+
+Primary: Google OAuth 2.0 (NextAuth)
+
+Secondary: Phone OTP (Firebase)
+
+Required only before posting used bike
+
+Ensures buyer can reach seller
+
+
+
+---
+
+8️ Notifications
+
+Email: Brevo (Sendinblue)
+
+Listing expiration
+
+Subscription reminder
+
+
+Push: Firebase
+
+App notifications
+
+
+
+---
+
+9️ Payments
+
+Bangladesh: SSLCommerz
+
+Premium listings
+
+Dealer badges
+
+
+
+---
+
+10️ Emotional Recommendation Engine
+
+Rule-Based Python Logic:
+
+Input: category, budget, Bangladesh demand, mileage priority, resale value
+
+Output:
+
+Similar bikes (same category)
+
+Emotional alternatives (used bikes & higher-segment suggestions)
+
+
+Cached in Redis
+
+Later ML upgrade possible
+
+
+
+---
+
+11️ Admin Panel
+
+Stack: Django Admin + Custom React UI
+
+Capabilities:
+
+Approve / moderate used bike listings
+
+Add / edit official bike data
+
+Approve / moderate user-uploaded images
+
+Publish news
+
+Manage users & reports
+
+Subscription management
+
+
+
+---
+
+12️ Background Jobs
+
+✅ Celery + Redis
+
+Jobs:
+
+Listing expiry
+
+Email reminders
+
+Cloudinary cleanup
+
+Sitemap regeneration
+
+
+
+---
+
+13️ Observability
+
+✅ Sentry → frontend + backend errors
+✅ Django logging → API errors
+✅ Metrics → optional Prometheus later
+
+
+---
+
+14️ API Protection
+
+JWT / OAuth tokens
+
+Rate limiting (Redis)
+
+Optional throttling on heavy endpoints (used bikes, search)
+
+
+
+---
+
+15️ Deployment / Infrastructure
+
+Frontend: Vercel (Next.js)
+Backend: DigitalOcean $6 Droplet
+DNS & CDN: Cloudflare (free) → SSL, caching, DDoS protection
+Load balancing / scaling path:
+
+Larger droplet / multiple droplets
+
+Redis cluster
+
+Supabase read replicas
+
+
+
+---
+
+16️ Scalability Estimate
+
+Users: 5k–10k monthly now → easily supported
+
+Listings: 75–100 new bikes/year → no stress
+
+Cache: Redis ensures fast page load for catalog & recommendations
+
+PostgreSQL: 100% safe at this scale, no crash risk
+
+
+
+---
+
+17  Monetization & Ads
+
+Ads can be added after traffic growth (~10k MAU)
+
+Types:
+
+Banner on bike page
+
+Native ad in news
+
+Featured seller / dealership ads
+
+
+Phase 1: no ads → build trust
+
+Phase 2: minimal, non-intrusive ads → user-friendly
+
+
+
+---
+
+18️ Summary Philosophy
+
+Mongo → encyclopedia / catalog
+
+Postgres → business data & user content
+
+Redis → speed & cache
+
+Cloudinary → media storage & compression
+
+Next.js → SSR + SEO + dynamic rendering
+
+Django → backend logic & admin
+
+Vercel → hosting / global CDN
+
+
+
+---
