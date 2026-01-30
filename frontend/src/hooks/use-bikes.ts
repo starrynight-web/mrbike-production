@@ -150,8 +150,8 @@ export function useSubmitReview() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ bikeId, rating }: { bikeId: string; rating: number }) => {
-            const response = await reviewService.create(bikeId, rating);
+        mutationFn: async ({ bikeId, rating, comment }: { bikeId: string; rating: number; comment: string }) => {
+            const response = await reviewService.create(bikeId, rating, comment);
             if (!response.success) {
                 throw new Error(response.error?.message || "Failed to submit review");
             }

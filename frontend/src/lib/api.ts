@@ -320,8 +320,8 @@ export const reviewService = {
     getBikeReviews: (bikeId: string) =>
         api.get<Review[]>(API_ENDPOINTS.BIKE_REVIEWS(bikeId)),
 
-    create: (bikeId: string, rating: number) =>
-        api.post<Review>(API_ENDPOINTS.REVIEW_CREATE, { bikeId, rating }),
+    create: (bikeId: string, rating: number, comment: string) =>
+        api.post<Review>(API_ENDPOINTS.REVIEW_CREATE, { bikeId, rating, comment }),
 
     delete: (id: string) =>
         api.delete(API_ENDPOINTS.REVIEW_DELETE(id)),

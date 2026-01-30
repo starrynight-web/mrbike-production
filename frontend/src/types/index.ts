@@ -9,6 +9,7 @@ export interface User {
     name: string;
     image?: string;
     phone?: string;
+    location?: string;
     phoneVerified: boolean;
     role: UserRole;
     createdAt: Date;
@@ -132,6 +133,8 @@ export interface Review {
     userName: string;
     userImage?: string;
     rating: number; // 1-5 stars
+    comment: string;
+    isVerifiedOwner?: boolean;
     createdAt: Date;
     updatedAt: Date;
 }

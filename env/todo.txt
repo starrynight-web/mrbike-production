@@ -1,0 +1,296 @@
+ MrBikeBD — Master Implementation To-Do List
+Project: Bangladesh's #1 Motorcycle Ecosystem
+Created: 2026-01-30
+Based on: PRD, Design Doc, Technical Stack Documentation
+
+📋 Phase 1: MVP (Core Platform)
+🔧 1. Project Setup & Infrastructure
+ Initialize Next.js 14 project with App Router
+ Configure TypeScript
+ Setup Tailwind CSS + Shadcn UI component library
+ Configure Vercel deployment
+ Setup Cloudflare DNS & CDN
+ Initialize Django project with DRF
+ Setup DigitalOcean $6 Droplet (Ubuntu + Gunicorn + Nginx)
+ Configure Supabase PostgreSQL database
+ Setup MongoDB Atlas for catalog data
+ Configure Cloudinary for media storage
+ Setup Redis for caching
+ Configure Sentry for error tracking
+🔐 2. Authentication System
+ Implement Google OAuth 2.0 with NextAuth
+ Setup Firebase for phone OTP verification
+ Create protected routes middleware
+ Implement session management with Redis
+ Create user model in PostgreSQL
+ Implement JWT token handling
+ Setup rate limiting for auth endpoints
+🏠 3. Homepage
+ Design hero section with search bar
+ Implement category quick-select pills (Sports, Commuter, Naked, Scooter, Electric)
+ Build featured bikes slider
+ Create "Popular Bikes" grid section
+ Implement "Emotional Picks" cards section
+ Build "Used Bikes Near You" section with geo-detection
+ Create latest news section (3 articles)
+ Implement brands logo grid
+ Add homepage schema + FAQ for SEO
+ Optimize for Core Web Vitals
+🛵 4. Bike Database & Catalogue
+ Create MongoDB schema for bikes, brands, variants, specs
+ Import 300+ bikes from existing JSON data
+ Build bike catalogue page (/bikes)
+ Implement filters (Brand, Price, Category, Engine CC)
+ Add sorting (Price, Popularity, Mileage)
+ Create bike card component
+ Implement infinite scroll pagination
+ Build mobile filter drawer
+ Add compare checkbox functionality
+📄 5. Bike Detail Page (CRITICAL)
+ Create dynamic route (/bike/[slug])
+ Build hero section with Cloudinary image gallery
+ Display bike name, price range, EMI calculator
+ Implement wishlist button functionality
+ Create tabbed interface (Overview, Variants, Specs, Reviews)
+ Build overview section with highlights (Mileage, Top speed, Engine, Resale score)
+ Implement variants comparison table
+ Create full specifications section (grouped: Engine, Dimensions, Electrical)
+ Build reviews section (stars only, one per user)
+ Implement Schema.org for Product, Review, FAQ
+ Setup ISR for performance
+🤖 6. Emotional Recommendation Engine
+ Create Python rule-based recommendation logic
+ Implement "Similar Bikes" algorithm
+ Same category matching
+ Price range (±10-15%)
+ CC range matching
+ Bangladesh popularity factor
+ Resale value consideration
+ Brand demand weighting
+ Implement "Used Bikes Near Budget" algorithm
+ Price ±10% matching
+ Higher segment preference
+ Premium brand prioritization
+ Verified seller priority
+ Setup Redis caching for recommendations
+ Create API endpoints for recommendations
+⚖️ 7. Bike Compare Feature
+ Create compare page (/compare)
+ Implement bike selection (2-3 bikes)
+ Build comparison table layout
+ Highlight key differences (Price, Mileage, Resale)
+ Create sticky compare bar component
+ Add mobile-responsive compare UI
+🔄 8. Used Bike Marketplace
+Browse Used Bikes
+ Create used bikes listing page (/used-bikes)
+ Implement filters (Brand, Price, Year, Location)
+ Build used bike card component
+ Add badge system (Verified, Featured)
+ Implement infinite scroll
+Used Bike Detail
+ Create detail page (/used-bike/[id])
+ Display hero image gallery
+ Show seller info with masked WhatsApp
+ Display bike details (Condition, Accident history)
+ Implement WhatsApp CTA button
+ Show similar used bikes section
+📝 9. Post Ad Flow (Sell Bike)
+ Create sell bike page (/sell-bike)
+ Implement step-by-step flow:
+ Step 1: Google login check
+ Step 2: Phone OTP verification
+ Step 3: Bike details form
+ Step 4: Image upload (max 5, JS compression → Cloudinary)
+ Step 5: Preview
+ Step 6: Submit for moderation
+ Build form with React Hook Form
+ Implement client-side image compression
+ Create listing expiration logic (15 days)
+ Setup admin moderation workflow
+⭐ 10. Reviews System
+ Create review model in PostgreSQL
+ Build star rating component (UI only, no text reviews)
+ Implement one review per user per bike
+ Create review submission popup
+ Add admin moderation for reviews
+ Allow users to delete own reviews
+❤️ 11. Wishlist Feature
+ Create wishlist model in PostgreSQL
+ Implement add/remove wishlist API
+ Build wishlist heart button component
+ Create wishlist page in Profile Center
+ Sync wishlist across devices
+👤 12. Profile Center
+ Create profile page (/profile)
+ Implement tabbed interface:
+ Profile info tab
+ Wishlist tab
+ My Listings tab (Active, Expired, with Renew CTA)
+ Reviews tab
+ Subscription status tab
+ Build profile edit functionality
+ Implement listing management
+📰 13. News System
+ Create news model in MongoDB
+ Build news listing page (/news)
+ Create news article page (/news/[slug])
+ Implement rich content editor for admin
+ Add meta title & description fields
+ Implement Schema.org Article markup
+ Create comments system (login required)
+ Setup ISR for news pages
+🏢 14. Brand Pages
+ Create brands listing page (/brands)
+ Build brand logo grid
+ Create individual brand pages
+ Show all bikes from brand
+ Add brand-specific SEO
+🔍 15. SEO Implementation
+ Setup dynamic meta tags for all pages
+ Implement OpenGraph tags
+ Add Schema.org markup (Product, Review, Article, FAQ)
+ Configure clean URL structure
+ Generate sitemap.xml automatically
+ Setup robots.txt
+ Implement internal linking strategy (Bike → Used → News)
+ Optimize Core Web Vitals
+ Configure lazy-loaded WebP images
+🛡️ 16. Admin Panel
+ Setup Django Admin base
+ Create custom React admin UI
+ Implement role-based access (Admin, Moderator, Editor)
+ Build features:
+ Approve/moderate used bike listings
+ Approve/moderate user-uploaded images
+ Add/edit official bike data
+ Publish news articles
+ Manage users & reports
+ View dashboard stats (Users, Listings, Traffic)
+ Create bike manager (add bikes, upload specs JSON)
+📱 17. Global Layout & Navigation
+Header (Sticky)
+ Desktop: Logo, Bikes, Used Bikes, News, Compare, Dealers, Login
+ Mobile: Hamburger menu, Logo, Search icon
+ Mobile drawer: Bikes, Used Bikes, News, Compare, Profile, Wishlist
+Footer
+ Company section (About, Contact, Advertise)
+ Legal section (Terms, Privacy)
+ Resources section (News, Reviews, Compare)
+ Social icons
+Mobile Bottom Nav
+ Home, Search, Post, Used, Profile tabs
+ Thumb-reachable design
+📧 18. Notifications System
+ Setup Brevo (Sendinblue) for email
+ Implement listing expiration emails
+ Create subscription reminder emails
+ Setup Firebase Cloud Messaging
+ Implement app push notifications
+⏰ 19. Background Jobs (Celery + Redis)
+ Configure Celery with Redis broker
+ Implement jobs:
+ Listing expiry checker
+ Email reminder sender
+ Cloudinary cleanup (expired images)
+ Sitemap regeneration
+🔒 20. API Protection & Security
+ Implement JWT/OAuth token validation
+ Setup rate limiting with Redis
+ Add throttling on heavy endpoints (used bikes, search)
+ Configure CORS properly
+ Implement GDPR-compliant data handling
+🎨 21. Static Pages
+ Create About page (/about)
+ Create Terms page (/terms)
+ Create Privacy page (/privacy)
+ Create custom 404 page
+ Style all pages consistently
+🧪 22. Edge Cases & Error Handling
+ No bikes → Empty state design
+ Expired ad → Renew CTA
+ Deleted bike → Redirect to catalogue
+ Loading states → Skeleton loaders
+ Error boundaries for React
+📋 Phase 2: Monetization & Mobile
+💳 23. Payment System
+ Integrate SSLCommerz for Bangladesh payments
+ Implement premium listing purchase flow
+ Create dealer badge subscription
+ Build subscription management UI
+📱 24. React Native Mobile App
+ Initialize React Native project
+ Share hooks & domain modules from Next.js
+ Implement screens:
+ Bike Catalogue / Detail
+ Used Marketplace
+ Wishlist
+ My Listings / Profile
+ Post Bike
+ Setup push notifications (Firebase Cloud Messaging)
+ Connect to same backend APIs
+🏪 25. Dealer System
+ Create dealer profile pages
+ Implement verified badge system
+ Build dealer inventory management
+ Create dealer subscription tiers
+💰 26. Monetization UX
+ Free tier: 15-day listing
+ Premium tier: Featured badge, extended duration, homepage placement
+ Dealer tier: Priority display, verified badge
+ Build upgrade flow UI
+📋 Phase 3: Advanced Features
+🌐 27. Bengali Language Support
+ Implement i18n framework
+ Translate all UI strings
+ Create Bengali content workflow
+ Add language switcher
+🤖 28. Advanced Recommendations (ML)
+ Collect user behavior data
+ Train ML recommendation model
+ Replace rule-based engine with ML
+ A/B test recommendation quality
+📊 29. Analytics & Dashboards
+ Setup analytics tracking
+ Build dealer analytics dashboard
+ Implement success metrics tracking:
+ Monthly active users
+ Used bike listings
+ Organic search traffic
+ Conversion to paid listings
+ User retention
+📺 30. Ads System (After 10k MAU)
+ Implement ad slots:
+ 1 banner on home page
+ 1 inline ad in articles
+ Never place ads inside bike specs
+ Build ad management for admin
+💬 31. Chat System (Used Bikes)
+ Implement simple inbox
+ WhatsApp as preferred contact
+ Optional: Django Channels for WebSocket
+📈 32. Observability & Scaling
+ Configure Sentry (frontend + backend)
+ Setup Django logging for API errors
+ Optional: Prometheus metrics
+ Plan scaling path:
+ Larger droplet / multiple droplets
+ Redis cluster
+ Supabase read replicas
+✅ Summary Stats
+Category	Items
+Phase 1 (MVP)	~150 tasks
+Phase 2 (Monetization + Mobile)	~40 tasks
+Phase 3 (Advanced)	~30 tasks
+Total Estimated	~220+ tasks
+🎯 Priority Order
+Infrastructure Setup (Foundation)
+Authentication (Gate all features)
+Bike Database + Detail Page (Core value)
+Recommendation Engine (Key differentiator)
+Used Marketplace (Revenue path)
+SEO Implementation (Growth engine)
+Admin Panel (Content management)
+Profile & Wishlist (User engagement)
+News System (SEO + content)
+Payments & Monetization (Revenue)

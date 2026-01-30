@@ -22,11 +22,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatPrice, calculateEMI } from "@/lib/utils";
-import { useBike, useSimilarBikes, useUsedBikesNearBudget, useBikeReviews } from "@/hooks/use-bikes";
-import { useWishlistStore, useCompareStore } from "@/store";
+import { useBike, useSimilarBikes, useUsedBikesNearBudget, useBikeReviews, useSubmitReview } from "@/hooks/use-bikes";
+import { useWishlistStore, useCompareStore, useAuthStore } from "@/store";
 import { EMI_CONFIG } from "@/config/constants";
 import { BikeCard } from "@/components/bikes";
-import type { Bike } from "@/types";
+import type { Bike, Review } from "@/types";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
 
 interface BikeDetailClientProps {
     slug: string;
@@ -34,7 +47,7 @@ interface BikeDetailClientProps {
 
 export function BikeDetailClient({ slug }: BikeDetailClientProps) {
     const [activeImageIndex, setActiveImageIndex] = useState(0);
-    const [emiMonths, setEmiMonths] = useState(EMI_CONFIG.defaultTenureMonths);
+    const [emiMonths, setEmiMonths] = useState<number>(EMI_CONFIG.defaultTenureMonths);
 
     // Fetch bike data
     const { data: bike, isLoading, error } = useBike(slug);
@@ -505,55 +518,203 @@ function ReviewsSection({
     rating,
 }: {
     bikeId: string;
-    reviews: any[];
+    reviews: Review[];
     rating: { average: number; count: number };
 }) {
+    const { user, isAuthenticated } = useAuthStore();
+    const { mutate: submitReview, isPending } = useSubmitReview();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    const handleSubmit = async (data: { rating: number; comment: string }) => {
+        if (!isAuthenticated) {
+            toast.error("Please login to write a review");
+            return;
+        }
+
+        submitReview(
+            { bikeId, rating: data.rating, comment: data.comment },
+            {
+                onSuccess: () => {
+                    toast.success("Review submitted successfully!");
+                    setIsDialogOpen(false);
+                },
+                onError: (error) => {
+                    toast.error(error.message || "Failed to submit review");
+                }
+            }
+        );
+    };
+
     return (
-        <div>
-            <div className="flex items-center gap-8 mb-8">
-                <div className="text-center">
-                    <p className="text-5xl font-bold">{rating.average.toFixed(1)}</p>
-                    <div className="flex justify-center my-2">
+        <div className="space-y-8">
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+                <div className="w-full md:w-1/3 text-center p-6 bg-muted/30 rounded-2xl">
+                    <p className="text-6xl font-bold text-foreground">{rating.average.toFixed(1)}</p>
+                    <div className="flex justify-center gap-1 my-3">
                         {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                                 key={star}
                                 className={cn(
-                                    "h-5 w-5",
+                                    "h-6 w-6",
                                     star <= Math.round(rating.average)
                                         ? "fill-yellow-400 text-yellow-400"
-                                        : "text-gray-300"
+                                        : "text-muted-foreground/30"
                                 )}
                             />
                         ))}
                     </div>
-                    <p className="text-muted-foreground">{rating.count} reviews</p>
+                    <p className="text-muted-foreground font-medium">{rating.count} Verified Reviews</p>
                 </div>
-                <Separator orientation="vertical" className="h-20" />
-                <div className="flex-1">
-                    {/* Rating distribution - placeholder */}
-                    {[5, 4, 3, 2, 1].map((star) => (
-                        <div key={star} className="flex items-center gap-2 mb-1">
-                            <span className="w-3 text-sm">{star}</span>
-                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                            <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                                <div
-                                    className="h-full bg-yellow-400 rounded-full"
-                                    style={{ width: `${star === 5 ? 60 : star === 4 ? 25 : 15}%` }}
-                                />
+
+                <div className="flex-1 w-full space-y-2">
+                    {[5, 4, 3, 2, 1].map((star) => {
+                        const count = reviews.filter(r => Math.round(r.rating) === star).length;
+                        const percentage = reviews.length ? (count / reviews.length) * 100 : 0;
+                        return (
+                            <div key={star} className="flex items-center gap-3">
+                                <span className="w-4 text-sm font-medium">{star}</span>
+                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                <div className="flex-1 h-2.5 rounded-full bg-muted overflow-hidden">
+                                    <div
+                                        className="h-full bg-yellow-400 rounded-full"
+                                        style={{ width: `${percentage}%` }}
+                                    />
+                                </div>
+                                <span className="w-8 text-xs text-muted-foreground text-right">{percentage.toFixed(0)}%</span>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
-            <Button>Write a Review</Button>
+            <div className="flex justify-between items-center pt-4 border-t">
+                <h3 className="text-lg font-bold">User Reviews ({reviews.length})</h3>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button>Write a Review</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Write a Review</DialogTitle>
+                            <DialogDescription>
+                                Share your experience with this bike. Your review helps others make better decisions.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <ReviewForm onSubmit={handleSubmit} isSubmitting={isPending} />
+                    </DialogContent>
+                </Dialog>
+            </div>
 
-            {reviews.length === 0 && (
-                <p className="text-muted-foreground mt-8">
-                    No reviews yet. Be the first to review this bike!
-                </p>
-            )}
+            <div className="space-y-6">
+                {reviews.length > 0 ? (
+                    reviews.map((review) => (
+                        <div key={review.id} className="flex gap-4 p-4 rounded-xl hover:bg-muted/30 transition-colors border">
+                            <Avatar>
+                                <AvatarImage src={review.userImage} />
+                                <AvatarFallback>{review.userName.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 space-y-2">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="font-semibold">{review.userName}</p>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            <span>{new Date(review.createdAt).toLocaleDateString()}</span>
+                                            {review.isVerifiedOwner && (
+                                                <Badge variant="secondary" className="text-[10px] px-1 h-5 gap-0.5">
+                                                    <Check className="h-3 w-3" /> Owner
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <Star
+                                                key={star}
+                                                className={cn(
+                                                    "h-3.5 w-3.5",
+                                                    star <= review.rating
+                                                        ? "fill-yellow-400 text-yellow-400"
+                                                        : "text-muted-foreground/30"
+                                                )}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    {review.comment}
+                                </p>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="text-center py-12 bg-muted/20 rounded-xl border-dashed border-2">
+                        <p className="text-muted-foreground">No reviews yet. Be the first to share your thoughts!</p>
+                    </div>
+                )}
+            </div>
         </div>
+    );
+}
+
+function ReviewForm({ onSubmit, isSubmitting }: { onSubmit: (data: any) => void; isSubmitting: boolean }) {
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState("");
+    const [hoverRating, setHoverRating] = useState(0);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (rating === 0) {
+            toast.error("Please select a rating");
+            return;
+        }
+        if (comment.length < 10) {
+            toast.error("Review must be at least 10 characters");
+            return;
+        }
+        onSubmit({ rating, comment });
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            <div className="space-y-2 flex flex-col items-center">
+                <Label>Rating</Label>
+                <div className="flex gap-1" onMouseLeave={() => setHoverRating(0)}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                            key={star}
+                            type="button"
+                            onClick={() => setRating(star)}
+                            onMouseEnter={() => setHoverRating(star)}
+                            className="focus:outline-none transition-transform hover:scale-110"
+                        >
+                            <Star
+                                className={cn(
+                                    "h-8 w-8 transition-colors",
+                                    star <= (hoverRating || rating)
+                                        ? "fill-yellow-400 text-yellow-400"
+                                        : "text-muted-foreground/20"
+                                )}
+                            />
+                        </button>
+                    ))}
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="comment">Your Review</Label>
+                <Textarea
+                    id="comment"
+                    placeholder="Tell us about your experience..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={4}
+                />
+            </div>
+            <DialogFooter>
+                <Button type="submit" disabled={isSubmitting} className="w-full">
+                    {isSubmitting ? "Submitting..." : "Submit Review"}
+                </Button>
+            </DialogFooter>
+        </form>
     );
 }
 

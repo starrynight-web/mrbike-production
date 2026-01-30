@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAuthStore, useWishlistStore, useUIStore } from "@/store";
-import { SearchDialog } from "./search-dialog";
+import { SearchDialog } from "@/components/layout/search-dialog";
 
 const navLinks = [
     { href: "/bikes", label: "Bikes", icon: Bike },
@@ -143,7 +143,7 @@ export function Header() {
                             </DropdownMenu>
                         ) : (
                             <Button asChild size="sm" className="hidden sm:flex">
-                                <Link href="/api/auth/signin">Sign In</Link>
+                                <Link href="/login">Sign In</Link>
                             </Button>
                         )}
 
@@ -216,7 +216,7 @@ export function Header() {
 
                                     {!isAuthenticated && (
                                         <Button asChild className="mx-4">
-                                            <Link href="/api/auth/signin">Sign In with Google</Link>
+                                            <Link href="/login">Sign In with Google</Link>
                                         </Button>
                                     )}
                                 </nav>
