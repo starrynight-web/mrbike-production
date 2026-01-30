@@ -134,10 +134,10 @@ export default function AdminDashboard() {
                                         <span className="text-xs text-muted-foreground mr-2 flex items-center gap-1">
                                             <Clock className="h-3 w-3" /> {item.date}
                                         </span>
-                                        <Button size=\"sm\" variant=\"ghost\" className=\"h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50\" onClick={() => handleReject(item.id)}>
-                                            <AlertCircle className=\"h-4 w-4\" />
+                                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleReject(item.id)}>
+                                            <AlertCircle className="h-4 w-4" />
                                         </Button>
-                                        <Button size=\"sm\" className=\"h-8 bg-green-600 hover:bg-green-700\" onClick={() => handleApprove(item.id)}>
+                                        <Button size="sm" className="h-8 bg-green-600 hover:bg-green-700" onClick={() => handleApprove(item.id)}>
                                             <CheckCircle2 className="h-4 w-4 mr-1.5" /> Approve
                                         </Button>
                                     </div>
