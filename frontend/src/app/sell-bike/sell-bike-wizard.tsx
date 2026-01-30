@@ -59,11 +59,13 @@ export function SellBikeWizard() {
     const [isLoggedIn, setIsLoggedIn] = useState(false); // Mock Auth State
     const [isLoading, setIsLoading] = useState(false);
     const [images, setImages] = useState<string[]>([]); // Preview URLs
+    
+    // Cleanup URLs on component unmount
     useEffect(() => {
         return () => {
             images.forEach(url => URL.revokeObjectURL(url));
         };
-    }, [images]);
+    }, []);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<FormData>({
@@ -116,19 +118,26 @@ export function SellBikeWizard() {
         const files = e.target.files;
         if (!files) return;
 
-        // In a real app, we would compress and upload to cloud here
-        // For partial demo, just creating local object URLs
-        const newImages = Array.from(files).map(file => URL.createObjectURL(file));
-
-        if (images.length + newImages.length > 5) {
+        // Check available slots first
+        const availableSlots = 5 - images.length;
+        if (availableSlots <= 0) {
             toast.error("Maximum 5 images allowed");
             return;
+        }
+
+        // Only convert up to available slots to URLs
+        const filesToConvert = Array.from(files).slice(0, availableSlots);
+        const newImages = filesToConvert.map(file => URL.createObjectURL(file));
+
+        if (files.length > availableSlots) {
+            toast.warning(`Only ${availableSlots} image(s) can be added. ${files.length - availableSlots} file(s) were not added.`);
         }
 
         setImages([...images, ...newImages]);
     };
 
     const removeImage = (index: number) => {
+        URL.revokeObjectURL(images[index]);
         setImages(images.filter((_, i) => i !== index));
     };
 

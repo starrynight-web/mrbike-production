@@ -274,6 +274,20 @@ export function Header() {
                                         )}
                                     </Link>
 
+                                    {user?.role === "admin" && (
+                                        <>
+                                            <hr className="my-2" />
+                                            <Link
+                                                href="/admin"
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent font-bold text-primary"
+                                            >
+                                                <Shield className="h-5 w-5" />
+                                                Admin Panel
+                                            </Link>
+                                        </>
+                                    )}
+
                                     <hr className="my-2" />
 
                                     {!isAuthenticated && (

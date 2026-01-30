@@ -68,15 +68,19 @@ function LoginContent() {
                     <Input id="password" type="password" placeholder="••••••••" disabled />
                 </div>
 
-                <Button className="w-full" onClick={() => handleMockLogin("user")} disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Sign In (User Mock)
-                </Button>
+                {process.env.NODE_ENV === "development" && (
+                    <>
+                        <Button className="w-full" onClick={() => handleMockLogin("user")} disabled={isLoading}>
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Sign In (User Mock)
+                        </Button>
 
-                <Button variant="secondary" className="w-full" onClick={() => handleMockLogin("admin")} disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Sign In (Admin Mock)
-                </Button>
+                        <Button variant="secondary" className="w-full" onClick={() => handleMockLogin("admin")} disabled={isLoading}>
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Sign In (Admin Mock)
+                        </Button>
+                    </>
+                )}
 
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">

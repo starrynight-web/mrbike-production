@@ -1,5 +1,6 @@
 import { Bike, ShieldCheck, Zap, Heart, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { SEO_DEFAULTS } from "@/config/constants";
 import { Metadata } from "next";
 
@@ -45,7 +46,7 @@ export default function AboutPage() {
                         <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
                             <Zap className="h-6 w-6 text-primary" />
                         </div>
-                        <h3 className="text-xl font-bold">Instant Comparision</h3>
+                        <h3 className=\"text-xl font-bold\">Instant Comparison</h3>
                         <p className="text-muted-foreground">
                             Browse through 300+ official models and compare specs, prices, and reviews instantly with our advanced compare tool.
                         </p>
@@ -107,16 +108,18 @@ export default function AboutPage() {
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-4">
-                    <Button size="lg" className="h-12 px-8">
-                        <MessageSquare className="mr-2 h-5 w-5" /> Contact Support
+                    <Button size="lg" className="h-12 px-8" asChild>
+                        <Link href="/support/contact">
+                            <MessageSquare className="mr-2 h-5 w-5" /> Contact Support
+                        </Link>
                     </Button>
-                    <Button size="lg" variant="outline" className="h-12 px-8">
-                        View FAQs
+                    <Button size="lg" variant="outline" className="h-12 px-8" asChild>
+                        <Link href="/faqs">
+                            View FAQs
+                        </Link>
                     </Button>
                 </div>
             </div>
         </div>
     );
 }
-
-import { Badge } from "@/components/ui/badge";

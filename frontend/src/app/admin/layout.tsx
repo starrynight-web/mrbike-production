@@ -39,8 +39,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     // Protection logic (Mock)
     useEffect(() => {
-        // Only allow admins
-        if (isAuthenticated && user && user.role !== "admin") {
+        // Redirect to login if not authenticated
+        if (!isAuthenticated) {
+            router.push("/login");
+            return;
+        }
+        // Redirect to home if authenticated but not admin
+        if (user && user.role !== "admin") {
             router.push("/");
         }
     }, [user, isAuthenticated, router]);

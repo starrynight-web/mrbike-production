@@ -117,6 +117,13 @@ export default function UsedBikesModeration() {
         toast.error(`Ad ${id} has been rejected`);
     };
 
+    const handleDeleteListing = (id: string) => {
+        if (confirm("Are you sure you want to permanently delete this listing?")) {
+            setAds(ads.filter(ad => ad.id !== id));
+            toast.success(`Listing ${id} has been deleted`);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -255,7 +262,7 @@ export default function UsedBikesModeration() {
                                                             <DropdownMenuItem><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
                                                             <DropdownMenuItem><Users className="mr-2 h-4 w-4" /> Contact Seller</DropdownMenuItem>
                                                             <DropdownMenuSeparator />
-                                                            <DropdownMenuItem className="text-destructive">Delete Listing</DropdownMenuItem>
+                                                            <DropdownMenuItem className=\"text-destructive\" onClick={() => handleDeleteListing(ad.id)}>Delete Listing</DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </div>

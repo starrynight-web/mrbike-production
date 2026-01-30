@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 import {
     Users,
     Bike,
@@ -54,6 +56,16 @@ const pendingApprovals = [
 ];
 
 export default function AdminDashboard() {
+    const handleApprove = (itemId: string) => {
+        console.log("Approving item:", itemId);
+        // TODO: Call API to approve the listing
+    };
+
+    const handleReject = (itemId: string) => {
+        console.log("Rejecting item:", itemId);
+        // TODO: Call API to reject the listing
+    };
+
     return (
         <div className="space-y-8">
             <div>
@@ -122,10 +134,10 @@ export default function AdminDashboard() {
                                         <span className="text-xs text-muted-foreground mr-2 flex items-center gap-1">
                                             <Clock className="h-3 w-3" /> {item.date}
                                         </span>
-                                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50">
-                                            <AlertCircle className="h-4 w-4" />
+                                        <Button size=\"sm\" variant=\"ghost\" className=\"h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50\" onClick={() => handleReject(item.id)}>
+                                            <AlertCircle className=\"h-4 w-4\" />
                                         </Button>
-                                        <Button size="sm" className="h-8 bg-green-600 hover:bg-green-700">
+                                        <Button size=\"sm\" className=\"h-8 bg-green-600 hover:bg-green-700\" onClick={() => handleApprove(item.id)}>
                                             <CheckCircle2 className="h-4 w-4 mr-1.5" /> Approve
                                         </Button>
                                     </div>
@@ -176,7 +188,3 @@ export default function AdminDashboard() {
         </div>
     );
 }
-
-// Utility for conditional classes (copy of cn manually if needed but usually standard utils is there)
-import { cn } from "@/lib/utils";
-import Link from "next/link";
