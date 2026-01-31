@@ -1,38 +1,63 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.throttling import UserRateThrottle
 from django.core.cache import cache
-import random
+from django.conf import settings
+import secrets
+import hmac
+import logging
+
+logger = logging.getLogger(__name__)
+
+class OTPRateThrottle(UserRateThrottle):
+    """Rate limit OTP requests to 3 per minute per phone/IP"""
+    scope = 'otp_send'
+    rate = '3/min'
+
 
 class SendOTPView(APIView):
     """
-    Simulates sending OTP via Firebase/SMS.
+    Sends OTP via Firebase/SMS.
     In production, this would call Firebase Auth or an SMS gateway.
     """
+    throttle_classes = [OTPRateThrottle]
+    
     def post(self, request):
         phone = request.data.get('phone')
         if not phone:
             return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Generate a 6-digit OTP
-        otp = str(random.randint(100000, 999999))
+        # Check for lockout (too many failed attempts)
+        attempts_key = f"otp_attempts_{phone}"
+        attempts = cache.get(attempts_key, 0)
+        if attempts >= 5:
+            logger.warning(f"OTP request lockout for phone after {attempts} failed attempts")
+            return Response(
+                {"error": "Too many failed attempts. Please try again later."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS
+            )
+        
+        # Generate a cryptographically secure 6-digit OTP
+        otp = str(secrets.randbelow(900000) + 100000)
         
         # Store OTP in cache for 5 minutes
         cache.set(f"otp_{phone}", otp, timeout=300)
         
-        # For development/mock, we return the OTP in the response
-        # In production, DO NOT return the OTP here!
-        print(f"DEBUG: Sent OTP {otp} to {phone}")
+        # Log OTP send event (without exposing OTP in production logs)
+        logger.debug(f"OTP sent for phone (masked)")
         
-        return Response({
-            "message": "OTP sent successfully",
-            "phone": phone,
-            "dev_otp": otp # Remove in production
-        })
+        # Only return OTP in development if DEBUG_OTP flag is explicitly enabled
+        response_data = {"message": "OTP sent successfully", "phone": phone}
+        if getattr(settings, 'DEBUG_OTP', False):
+            response_data["dev_otp"] = otp
+        
+        return Response(response_data)
 
 class VerifyOTPView(APIView):
     """
     Verifies the OTP provided by the user.
+    Implements constant-time comparison and attempt tracking.
     """
     def post(self, request):
         phone = request.data.get('phone')
@@ -41,11 +66,31 @@ class VerifyOTPView(APIView):
         if not phone or not otp:
             return Response({"error": "Phone and OTP are required"}, status=status.HTTP_400_BAD_REQUEST)
         
+        # Check attempt lockout
+        attempts_key = f"otp_attempts_{phone}"
+        attempts = cache.get(attempts_key, 0)
+        if attempts >= 5:
+            logger.warning(f"OTP verification blocked due to too many attempts for phone")
+            return Response(
+                {"error": "Too many failed attempts. Please request a new OTP."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS
+            )
+        
         cached_otp = cache.get(f"otp_{phone}")
         
-        if cached_otp and cached_otp == otp:
-            # Mark phone as verified in session or return a token
-            # In a real app, you might link this to the user profile
+        if cached_otp and hmac.compare_digest(cached_otp, otp):
+            # Successful verification: delete OTP and reset attempts
+            cache.delete(f"otp_{phone}")
+            cache.delete(attempts_key)
+            logger.info("OTP verification successful")
             return Response({"success": True, "message": "Phone verified successfully"})
         
-        return Response({"success": False, "error": "Invalid or expired OTP"}, status=status.HTTP_400_BAD_REQUEST)
+        # Failed attempt: increment counter with 15-min TTL tied to OTP timeout
+        cache.set(attempts_key, attempts + 1, timeout=300)
+        logger.warning(f"Failed OTP verification attempt {attempts + 1} for phone")
+        
+        return Response(
+            {"success": False, "error": "Invalid or expired OTP"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+

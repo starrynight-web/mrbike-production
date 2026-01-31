@@ -23,7 +23,7 @@
 - [ ] Setup Redis for caching
 - [x] Configure Sentry for error tracking
 - [x] Verified `useAuthStore` and Login page connectivity
-- [x] Created [SearchDialog](file:///e:/mr/frontend/src/components/layout/search-dialog.tsx#19-52) component
+- [x] Created SearchDialog component (`src/components/layout/search-dialog.tsx`)
 
 ---
 

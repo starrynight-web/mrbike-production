@@ -8,6 +8,29 @@ import django.db.models.deletion
 import django.utils.timezone
 
 
+def create_custom_manager():
+    """Helper to create CustomUserManager inline for migration"""
+    from django.contrib.auth.models import BaseUserManager
+    
+    class CustomUserManager(BaseUserManager):
+        """Custom manager for User model with email-based authentication"""
+        def create_user(self, email, password=None, **extra_fields):
+            if not email:
+                raise ValueError('Email is required')
+            email = self.normalize_email(email)
+            user = self.model(email=email, **extra_fields)
+            user.set_password(password)
+            user.save(using=self._db)
+            return user
+        
+        def create_superuser(self, email, password=None, **extra_fields):
+            extra_fields.setdefault('is_staff', True)
+            extra_fields.setdefault('is_superuser', True)
+            return self.create_user(email, password, **extra_fields)
+    
+    return CustomUserManager()
+
+
 class Migration(migrations.Migration):
 
     initial = True
@@ -46,11 +69,11 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
             managers=[
-                ('objects', django.contrib.auth.models.UserManager()),
             ],
         ),
         migrations.CreateModel(
             name='UserProfile',
+
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('points', models.IntegerField(default=0)),

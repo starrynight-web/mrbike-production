@@ -10,3 +10,5 @@ whitenoise
 gunicorn
 sentry-sdk
 drf-yasg
+dj-database-url
+
