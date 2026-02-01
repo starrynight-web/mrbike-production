@@ -6,29 +6,9 @@ import django.contrib.auth.validators
 from django.db import migrations, models
 import django.db.models.deletion
 import django.utils.timezone
+import apps.users.models
 
 
-def create_custom_manager():
-    """Helper to create CustomUserManager inline for migration"""
-    from django.contrib.auth.models import BaseUserManager
-    
-    class CustomUserManager(BaseUserManager):
-        """Custom manager for User model with email-based authentication"""
-        def create_user(self, email, password=None, **extra_fields):
-            if not email:
-                raise ValueError('Email is required')
-            email = self.normalize_email(email)
-            user = self.model(email=email, **extra_fields)
-            user.set_password(password)
-            user.save(using=self._db)
-            return user
-        
-        def create_superuser(self, email, password=None, **extra_fields):
-            extra_fields.setdefault('is_staff', True)
-            extra_fields.setdefault('is_superuser', True)
-            return self.create_user(email, password, **extra_fields)
-    
-    return CustomUserManager()
 
 
 class Migration(migrations.Migration):
@@ -69,7 +49,7 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
             managers=[
-                ('objects', create_custom_manager()),
+                ('objects', apps.users.models.CustomUserManager()),
             ],
         ),
         migrations.CreateModel(

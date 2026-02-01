@@ -1,14 +1,57 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.throttling import UserRateThrottle
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.cache import cache
 from django.conf import settings
+from django.contrib.auth import get_user_model
 import secrets
 import hmac
 import logging
 
+# Assuming a serializers.py exists in the same app
+from .serializers import GoogleAuthSerializer
+
+User = get_user_model()
+
 logger = logging.getLogger(__name__)
+
+from .serializers import GoogleAuthSerializer, UserSerializer
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class GoogleAuthView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = GoogleAuthSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        email = serializer.validated_data['email']
+        name = serializer.validated_data.get('name', '')
+        
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'username': email.split('@')[0],
+                'first_name': name.split(' ')[0] if name else '',
+                'last_name': ' '.join(name.split(' ')[1:]) if name and len(name.split(' ')) > 1 else '',
+            }
+        )
+        
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': UserSerializer(user).data
+        })
 
 class OTPRateThrottle(UserRateThrottle):
     """Rate limit OTP requests to 3 per minute per phone/IP"""

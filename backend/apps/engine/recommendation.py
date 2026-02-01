@@ -20,7 +20,7 @@ class RecommendationEngine:
             # Skip if both IDs are missing or equal (only compare when both present and non-None)
             b_id = b.get('id')
             bike_id = bike.get('id')
-            if b_id is not None and bike_id is not None and b_id == bike_id:
+            if (b_id is None and bike_id is None) or (b_id is not None and bike_id is not None and b_id == bike_id):
                 continue
                 
             score = 0

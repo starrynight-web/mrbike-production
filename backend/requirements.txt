@@ -6,9 +6,12 @@ pymongo
 python-dotenv
 requests
 cloudinary
+redis
 whitenoise
 gunicorn
 sentry-sdk
 drf-yasg
 dj-database-url
+django-filter
+djangorestframework-simplejwt
 

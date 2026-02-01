@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'apps.marketplace',
     'apps.editorial',
     'apps.engine',
+    'apps.recommendations',
 ]
 
 MIDDLEWARE = [
@@ -125,12 +126,29 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
 }
+
+# MongoDB Settings
+MONGODB_URI = os.getenv("MONGODB_URI", "mongodb+srv://admin:admin@cluster0.mongodb.net/mrbikebd")
+MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "mrbikebd")
+
+# Redis Settings
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/1")
+
+# Cloudinary Settings
+import cloudinary
+cloudinary.config(
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key = os.getenv("CLOUDINARY_API_KEY"),
+    api_secret = os.getenv("CLOUDINARY_API_SECRET"),
+    secure = True
+)
 
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = DEBUG

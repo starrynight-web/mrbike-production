@@ -12,16 +12,19 @@ export const authOptions: AuthOptions = {
     callbacks: {
         async session({ session, token }) {
             if (session.user) {
-                // Attach user role and id to session
-                // In a real app, fetch this from your database
                 (session.user as any).id = token.sub;
-                (session.user as any).role = (session.user as any).email === process.env.ADMIN_EMAIL ? "admin" : "user";
+                session.accessToken = token.accessToken as string;
+                session.refreshToken = token.refreshToken as string;
+                (session.user as any).role = token.role || "user";
             }
             return session;
         },
-        async jwt({ token, user }) {
-            if (user) {
-                token.role = (user as any).role;
+        async jwt({ token, user, account }) {
+            if (account && user) {
+                // Here we would typically call our backend to exchange the Google token for a JWT
+                // For now, we'll placeholder it or use the account.id_token
+                token.accessToken = account.id_token;
+                token.role = (user as any).role || "user";
             }
             return token;
         },

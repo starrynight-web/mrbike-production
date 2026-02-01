@@ -318,11 +318,9 @@ function VariantComparison({
                 </td>
                 {variantKeys.map((key) => (
                   <td key={key} className="p-4 text-gray-600">
-                    {row.render
+                    {typeof row.render === 'function'
                       ? row.render(variants[key])
-                      : row.key
-                        ? (variants[key][row.key] as any)
-                        : null}
+                      : String(variants[key][row.key as keyof VariantData] || "")}
                   </td>
                 ))}
               </tr>
@@ -424,11 +422,11 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
   const { isBikeSelected, addBike, removeBike } = useCompareStore();
 
   // Get variant data
-  const variants = mockBike?.variants || {};
+  const variants = bike?.details?.variants || mockBike?.variants || {};
   const variantKeys = Object.keys(variants);
   const currentVariant =
     variants[selectedVariantKey] || variants[variantKeys[0]];
-  const defaultImage = bikesData.images.default;
+  const defaultImage = bike?.primary_image || bikesData.images.default;
 
   // Similar bikes from mock data
   const mockSimilarBikes = useMemo(() => {
@@ -617,7 +615,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
 
               {/* Category Badge */}
               <Badge className="absolute top-3 left-3 capitalize">
-                {mockBike?.categories?.[0] || "sport"}
+                {bike?.category || mockBike?.categories?.[0] || "sport"}
               </Badge>
 
               {/* Image Counter */}
@@ -1045,7 +1043,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                         <span className="font-semibold capitalize">
                           {key.replace(/([A-Z])/g, " $1").trim()}:{" "}
                         </span>
-                        <span className="text-muted-foreground">{value}</span>
+                        <span className="text-muted-foreground">{(value as string)}</span>
                       </p>
                     </div>
                   ))}
@@ -1068,7 +1066,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                         <span className="font-semibold capitalize">
                           {key.replace(/([A-Z])/g, " $1").trim()}:{" "}
                         </span>
-                        <span className="text-muted-foreground">{value}</span>
+                        <span className="text-muted-foreground">{(value as string)}</span>
                       </p>
                     </div>
                   ))}
