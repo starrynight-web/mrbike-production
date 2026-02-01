@@ -23,7 +23,7 @@ export const API_ENDPOINTS = {
     // Auth
     AUTH_GOOGLE: "/api/auth/google",
     AUTH_OTP_SEND: "/api/auth/otp/send",
-    AUTH_OTP_VERIFY: "/api/auth/otp/verify",
+    AUTH_OTP_VERIFY: "/api/auth/verify-phone",
     AUTH_SESSION: "/api/auth/session",
     AUTH_LOGOUT: "/api/auth/logout",
 

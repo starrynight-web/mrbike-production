@@ -5,6 +5,7 @@ import django
 from pathlib import Path
 from pymongo import MongoClient
 from django.utils.text import slugify
+import logging
 
 # Setup Django
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,21 +17,23 @@ from django.conf import settings
 from apps.bikes.models import BikeModel, Brand
 from django.utils import timezone
 
+logger = logging.getLogger(__name__)
+
 def migrate_bikes():
-    print("🚀 Starting Bike Data Migration...")
+    print("[START] Starting Bike Data Migration...")
     
     # Path to bikes.json
     json_path = BASE_DIR.parent / "frontend" / "src" / "app" / "mock" / "bikes.json"
     
     if not json_path.exists():
-        print(f"❌ Error: {json_path} not found!")
+        print(f"[ERROR] Error: {json_path} not found!")
         return
 
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     bikes_list = data.get('bikes', [])
-    print(f"📦 Found {len(bikes_list)} bikes in JSON.")
+    print(f"[INFO] Found {len(bikes_list)} bikes in JSON.")
 
     # MongoDB Setup
     mongo_collection = None
@@ -40,9 +43,9 @@ def migrate_bikes():
         mongo_collection = mongo_db['bike_details']
         # Trigger connection check
         mongo_client.server_info()
-        print("✅ Connected to MongoDB.")
+        print("[OK] Connected to MongoDB.")
     except Exception as e:
-        print(f"⚠️ MongoDB Connection Error (Skipping MongoDB): {e}")
+        print(f"[WARN] MongoDB Connection Error (Skipping MongoDB): {e}")
 
     migrated_count = 0
     for bike_data in bikes_list:
@@ -61,11 +64,11 @@ def migrate_bikes():
             # Extract basic CC from specsSummary if possible
             specs_summary = bike_data.get('specsSummary', '')
             engine_cc = 0
-            if 'cc' in specs_summary.lower():
+            if specs_summary and 'cc' in specs_summary.lower():
                 try:
                     engine_cc = int(''.join(filter(str.isdigit, specs_summary.split('cc')[0])))
-                except:
-                    pass
+                except (ValueError, TypeError) as e:
+                    logger.debug(f"Failed to parse engine_cc from specs_summary='{specs_summary}': {e}")
 
             # Update or create core bike in PostgreSQL
             bike, created = BikeModel.objects.update_or_create(
@@ -77,7 +80,7 @@ def migrate_bikes():
                     'engine_capacity': engine_cc,
                     'price': price,
                     'is_available': bike_data.get('price') is not None,
-                    'popularity_score': int(bike_data.get('rating', 0) * 20),
+                    'popularity_score': int((float(bike_data.get('rating') or 0) * 20)),
                 }
             )
 
@@ -104,12 +107,12 @@ def migrate_bikes():
 
             migrated_count += 1
             status = "Created" if created else "Updated"
-            print(f"✅ [{status}] {bike.name}")
+            print(f"[OK] [{status}] {bike.name}")
 
         except Exception as e:
-            print(f"⚠️ Error migrating {bike_data.get('name')}: {e}")
+            print(f"[WARN] Error migrating {bike_data.get('name')}: {e}")
 
-    print(f"\n✨ Migration Finished! Migrated {migrated_count} bikes.")
+    print(f"\n[DONE] Migration Finished! Migrated {migrated_count} bikes.")
 
 if __name__ == "__main__":
     migrate_bikes()

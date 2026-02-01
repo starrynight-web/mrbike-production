@@ -421,8 +421,8 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
   const { isInWishlist, toggleWishlist } = useWishlistStore();
   const { isBikeSelected, addBike, removeBike } = useCompareStore();
 
-  // Get variant data
-  const variants = bike?.details?.variants || mockBike?.variants || {};
+  // Get variant data (variants live at top-level in API)
+  const variants = bike?.variants || mockBike?.variants || {};
   const variantKeys = Object.keys(variants);
   const currentVariant =
     variants[selectedVariantKey] || variants[variantKeys[0]];

@@ -58,11 +58,13 @@ const popularBrands = [
 
 export default async function HomePage() {
   let featuredBikes = [];
+  let fetchError = false;
   try {
     const response = await api.getBikes({ limit: 4 });
     featuredBikes = response.data.results || [];
   } catch (error) {
     console.error("Failed to fetch featured bikes:", error);
+    fetchError = true;
   }
 
   return (
@@ -141,47 +143,53 @@ export default async function HomePage() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {featuredBikes.map((bike: any) => (
-              <Link key={bike.id} href={`/bike/${bike.slug || bike.id}`}>
-                <Card className="group h-full overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                  <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
-                    <img
-                      src={bike.primary_image || "/bikes/default.webp"}
-                      alt={bike.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                    <Badge className="absolute top-3 left-3 z-20">
-                      {bike.category}
-                    </Badge>
-                  </div>
-                  <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground mb-1">
-                      {bike.brand?.name || bike.brand}
-                    </p>
-                    <h3 className="font-semibold line-clamp-1 mb-2 group-hover:text-primary transition-colors">
-                      {bike.name}
-                    </h3>
-                    <p className="text-lg font-bold text-primary mb-3">
-                      {formatPrice(bike.price)}
-                    </p>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Fuel className="h-4 w-4" />
-                        {bike.mileage || "N/A"}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        {bike.popularity_score ? (bike.popularity_score / 20).toFixed(1) : "4.5"}
-                      </div>
+          {fetchError && featuredBikes.length === 0 ? (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <p>Unable to load featured bikes right now. Showing popular picks later.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              {featuredBikes.map((bike: any) => (
+                <Link key={bike.id} href={`/bike/${bike.slug || bike.id}`}>
+                  <Card className="group h-full overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                    <div className="aspect-[4/3] relative overflow-hidden bg-muted">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
+                      <img
+                        src={bike.primary_image || "/bikes/default.webp"}
+                        alt={bike.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                      <Badge className="absolute top-3 left-3 z-20">
+                        {bike.category}
+                      </Badge>
                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                    <CardContent className="p-4">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {bike.brand?.name || bike.brand}
+                      </p>
+                      <h3 className="font-semibold line-clamp-1 mb-2 group-hover:text-primary transition-colors">
+                        {bike.name}
+                      </h3>
+                      <p className="text-lg font-bold text-primary mb-3">
+                        {formatPrice(bike.price)}
+                      </p>
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Fuel className="h-4 w-4" />
+                          {bike.mileage || "N/A"}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          {bike.popularity_score ? (bike.popularity_score / 20).toFixed(1) : "4.5"}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
 
           <div className="mt-6 text-center sm:hidden">
             <Button variant="outline" asChild>

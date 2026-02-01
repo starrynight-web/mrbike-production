@@ -209,7 +209,7 @@ export function UsedBikeFilters() {
                     <AccordionTrigger>Brand</AccordionTrigger>
                     <AccordionContent>
                         <div className="space-y-2 pt-1 max-h-[300px] overflow-y-auto pr-2">
-                            {brands?.map((brand) => (
+                            {brands?.map((brand: any) => (
                                 <div key={brand.id} className="flex items-center space-x-2">
                                     <Checkbox
                                         id={`brand-${brand.id}`}

@@ -38,13 +38,15 @@ export function useBikes(filters?: BikeFilters) {
         queryKey: queryKeys.bikes.list(filters),
         queryFn: async () => {
             const response = await api.getBikes(filters);
+            const results = response.data.results || response.data || [];
+            const totalItems = response.data.count || (Array.isArray(results) ? results.length : 0);
             return {
-                bikes: response.data.results,
+                bikes: results,
                 meta: {
-                    totalItems: response.data.count,
-                    totalPages: Math.ceil(response.data.count / (filters?.limit || 12)),
-                    currentPage: filters?.page || 1
-                }
+                    totalItems,
+                    totalPages: Math.ceil(totalItems / (filters?.limit || 12)),
+                    currentPage: filters?.page || 1,
+                },
             };
         },
         staleTime: 5 * 60 * 1000, // 5 minutes

@@ -14,16 +14,17 @@ export const authOptions: AuthOptions = {
             if (session.user) {
                 (session.user as any).id = token.sub;
                 session.accessToken = token.accessToken as string;
-                session.refreshToken = token.refreshToken as string;
+                // refreshToken may not always be present; copy if available
+                session.refreshToken = token.refreshToken as string | undefined;
                 (session.user as any).role = token.role || "user";
             }
             return session;
         },
         async jwt({ token, user, account }) {
             if (account && user) {
-                // Here we would typically call our backend to exchange the Google token for a JWT
-                // For now, we'll placeholder it or use the account.id_token
-                token.accessToken = account.id_token;
+                // Use OAuth access token for backend API calls and persist refresh token if provided
+                token.accessToken = account.access_token;
+                token.refreshToken = account?.refresh_token;
                 token.role = (user as any).role || "user";
             }
             return token;

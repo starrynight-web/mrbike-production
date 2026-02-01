@@ -11,12 +11,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterModelManagers(
-            name='user',
-            managers=[
-                ('objects', django.contrib.auth.models.UserManager()),
-            ],
-        ),
+        # Keep the custom manager from 0001_initial (CustomUserManager)
+        # AlterModelManagers removed to preserve the CustomUserManager()
         migrations.AddField(
             model_name='user',
             name='role',

@@ -135,7 +135,8 @@ REST_FRAMEWORK = {
 }
 
 # MongoDB Settings
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb+srv://admin:admin@cluster0.mongodb.net/mrbikebd")
+# Avoid hardcoded credentials in repo. Default to local unauthenticated MongoDB instance.
+MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/mrbikebd")
 MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "mrbikebd")
 
 # Redis Settings

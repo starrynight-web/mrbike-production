@@ -110,7 +110,7 @@ export function BikeCataloguePage() {
                                 transition={{ duration: 0.3 }}
                             >
                                 <AnimatePresence mode="popLayout">
-                                    {bikes.map((bike, index) => (
+                                    {bikes.map((bike: any, index: number) => (
                                         <BikeCard
                                             key={bike.id}
                                             bike={bike}
@@ -135,8 +135,8 @@ export function BikeCataloguePage() {
                                                     key={page}
                                                     href={`/bikes?page=${page}`}
                                                     className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium transition-colors ${isActive
-                                                            ? "bg-primary text-primary-foreground"
-                                                            : "hover:bg-muted"
+                                                        ? "bg-primary text-primary-foreground"
+                                                        : "hover:bg-muted"
                                                         }`}
                                                 >
                                                     {page}

@@ -11,20 +11,34 @@ import secrets
 import hmac
 import logging
 
-# Assuming a serializers.py exists in the same app
-from .serializers import GoogleAuthSerializer
-
-User = get_user_model()
-
-logger = logging.getLogger(__name__)
+# Google token verification
+import google.oauth2.id_token
+import google.auth.transport.requests
 
 from .serializers import GoogleAuthSerializer, UserSerializer
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
+
+
+def generate_unique_username(email: str, UserModel, max_attempts: int = 10) -> str:
+    """Generate a deterministic, unique username based on the email local part.
+    Appends a short deterministic suffix if collision occurs.
+    """
+    base = email.split('@')[0][:30]
+    username = base
+    suffix_chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+    attempt = 0
+    while UserModel.objects.filter(username=username).exists() and attempt < max_attempts:
+        # deterministic suffix from email+attempt
+        seed = f"{email}-{attempt}"
+        suffix = ''.join(secrets.choice(suffix_chars) for _ in range(4))
+        username = f"{base}-{suffix}"
+        attempt += 1
+    if UserModel.objects.filter(username=username).exists():
+        # fallback: append timestamp
+        username = f"{base}-{secrets.token_hex(3)}"
+    return username
 
 class GoogleAuthView(generics.GenericAPIView):
     permission_classes = [AllowAny]
@@ -33,24 +47,48 @@ class GoogleAuthView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
-        email = serializer.validated_data['email']
-        name = serializer.validated_data.get('name', '')
-        
-        user, created = User.objects.get_or_create(
-            email=email,
-            defaults={
-                'username': email.split('@')[0],
-                'first_name': name.split(' ')[0] if name else '',
-                'last_name': ' '.join(name.split(' ')[1:]) if name and len(name.split(' ')) > 1 else '',
-            }
-        )
-        
+
+        id_token = serializer.validated_data.get('id_token')
+
+        # Verify the token with Google's token endpoint
+        try:
+            request_adapter = google.auth.transport.requests.Request()
+            idinfo = google.oauth2.id_token.verify_oauth2_token(
+                id_token,
+                request_adapter,
+                getattr(settings, 'GOOGLE_CLIENT_ID', None)
+            )
+        except ValueError as e:
+            logger.warning(f"Invalid Google ID token: {e}")
+            return Response({'detail': 'Invalid Google token'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        email = idinfo.get('email')
+        name = idinfo.get('name', '')
+
+        # Lookup by email only (avoid username collisions)
+        user = User.objects.filter(email=email).first()
+        created = False
+        if not user:
+            # Compute first and last name once
+            parts = name.split(' ', 1) if name else ['','']
+            first_name = parts[0] if parts else ''
+            last_name = parts[1] if len(parts) > 1 else ''
+
+            username = generate_unique_username(email, User)
+            user = User.objects.create(
+                email=email,
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+            )
+            created = True
+
         refresh = RefreshToken.for_user(user)
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'user': UserSerializer(user).data
+            'user': UserSerializer(user).data,
+            'created': created,
         })
 
 class OTPRateThrottle(UserRateThrottle):
