@@ -55,4 +55,5 @@ class Review(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Review: {self.bike.name} by {self.author}"
+        author_str = self.author.username if self.author else "Unknown author"
+        return f"Review: {self.bike.name} by {author_str}"

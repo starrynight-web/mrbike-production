@@ -20,5 +20,5 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
 class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsedBikeListing
-        exclude = ['views_count', 'is_verified', 'created_at']
+        exclude = ['seller', 'views_count', 'is_verified', 'created_at']
 

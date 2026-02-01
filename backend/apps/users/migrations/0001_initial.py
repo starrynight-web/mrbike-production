@@ -69,6 +69,7 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
             managers=[
+                ('objects', create_custom_manager()),
             ],
         ),
         migrations.CreateModel(

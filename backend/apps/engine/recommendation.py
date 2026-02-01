@@ -17,7 +17,10 @@ class RecommendationEngine:
         target_cc = bike.get('cc', 0)
         
         for b in all_bikes:
-            if b.get('id') == bike.get('id'):
+            # Skip if both IDs are missing or equal (only compare when both present and non-None)
+            b_id = b.get('id')
+            bike_id = bike.get('id')
+            if b_id is not None and bike_id is not None and b_id == bike_id:
                 continue
                 
             score = 0

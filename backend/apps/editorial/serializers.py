@@ -15,8 +15,9 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ReviewSerializer(serializers.ModelSerializer):
-    bike_name = serializers.ReadOnlyField(source='bike_model.name')
+    bike_name = serializers.ReadOnlyField(source='bike.name')
+    author_name = serializers.ReadOnlyField(source='author.username')
     
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = ['id', 'bike', 'bike_name', 'author', 'author_name', 'title', 'content', 'rating', 'pros', 'cons', 'is_published', 'created_at']

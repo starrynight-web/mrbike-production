@@ -32,7 +32,7 @@ class SendOTPView(APIView):
         attempts_key = f"otp_attempts_{phone}"
         attempts = cache.get(attempts_key, 0)
         if attempts >= 5:
-            logger.warning(f"OTP request lockout for phone after {attempts} failed attempts")
+            logger.warning("OTP request lockout for phone after failed attempts")
             return Response(
                 {"error": "Too many failed attempts. Please try again later."},
                 status=status.HTTP_429_TOO_MANY_REQUESTS
@@ -45,7 +45,7 @@ class SendOTPView(APIView):
         cache.set(f"otp_{phone}", otp, timeout=300)
         
         # Log OTP send event (without exposing OTP in production logs)
-        logger.debug(f"OTP sent for phone (masked)")
+        logger.debug("OTP sent for phone (masked)")
         
         # Only return OTP in development if DEBUG_OTP flag is explicitly enabled
         response_data = {"message": "OTP sent successfully", "phone": phone}
@@ -70,7 +70,7 @@ class VerifyOTPView(APIView):
         attempts_key = f"otp_attempts_{phone}"
         attempts = cache.get(attempts_key, 0)
         if attempts >= 5:
-            logger.warning(f"OTP verification blocked due to too many attempts for phone")
+            logger.warning("OTP verification blocked due to too many attempts for phone")
             return Response(
                 {"error": "Too many failed attempts. Please request a new OTP."},
                 status=status.HTTP_429_TOO_MANY_REQUESTS
@@ -85,7 +85,7 @@ class VerifyOTPView(APIView):
             logger.info("OTP verification successful")
             return Response({"success": True, "message": "Phone verified successfully"})
         
-        # Failed attempt: increment counter with 15-min TTL tied to OTP timeout
+        # Failed attempt: increment counter with 5-min TTL tied to OTP timeout
         cache.set(attempts_key, attempts + 1, timeout=300)
         logger.warning(f"Failed OTP verification attempt {attempts + 1} for phone")
         

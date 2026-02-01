@@ -7,7 +7,7 @@ class ArticleViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = ArticleSerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ['title', 'content', 'tags']
+    search_fields = ['title', 'content']
 
 class ReviewViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Review.objects.all().order_by('-created_at')

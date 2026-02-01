@@ -8,6 +8,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'corsheaders',
+    'django_filters',
+    'apps.users',
+    'apps.bikes',
+    'apps.marketplace',
+    'apps.editorial',
+    'apps.engine',
 ]
 DATABASES = {
     'default': {
@@ -17,3 +25,4 @@ DATABASES = {
 }
 ROOT_URLCONF = 'core.urls'
 WSGI_APPLICATION = 'core.wsgi.application'
+AUTH_USER_MODEL = 'users.User'
