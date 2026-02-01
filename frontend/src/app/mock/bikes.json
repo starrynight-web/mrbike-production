@@ -1,0 +1,610 @@
+{
+  "images": {
+    "default": "https://images.unsplash.com/photo-1558981806-ec527fa84c39?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+  },
+  "bikes": [
+    {
+      "id": "honda-cb150r",
+      "name": "Honda CB150R",
+      "brand": "Honda",
+      "price": 450000,
+      "rating": 4.5,
+      "image": "default",
+      "categories": ["trending", "popular", "compare", "similar", "featured"],
+      "specsSummary": "149cc • 16.4 HP • 13.7 Nm",
+      "variants": {
+        "std": {
+          "fullName": "Honda CB150R",
+          "label": "Honda CB150R",
+          "price": 450000,
+          "images": ["default"],
+          "quickSpecs": {
+            "engineCapacity": "149.16 cc",
+            "transmission": "6 Speed",
+            "maxPower": "16.4 HP",
+            "maxTorque": "13.7 Nm",
+            "fuelTank": "12 L",
+            "kerbWeight": "136 kg",
+            "mileageCompany": "40 kmpl",
+            "mileageUser": "35-38 kmpl",
+            "topspeedCompany": "130 km/h",
+            "topspeedUser": "125-128 km/h"
+          },
+          "fuelEfficiency": "35-40 kmpl",
+          "frontTire": "110/70-17 Tubeless",
+          "rearTire": "150/60-17 Tubeless",
+          "brakingSystem": "Dual Channel Disc Brakes",
+          "headlightType": "Halogen",
+          "abs": false,
+          "ledHeadlight": false,
+          "usbPort": false,
+          "pros": {
+            "power": "149cc engine delivers 16.4 HP with smooth acceleration",
+            "styling": "Neo-sports cafe design with classic styling",
+            "mileage": "40 kmpl mileage for daily commuting",
+            "abs": "Higher variants offer dual-channel ABS for safety"
+          },
+          "cons": {
+            "pricing": "Higher cost compared to competitors in same segment",
+            "fuelTank": "12-liter capacity requires frequent refueling on long trips",
+            "features": "Base model misses out on ABS and LED lighting"
+          }
+        },
+        "deluxe": {
+          "fullName": "Honda CB150R Deluxe",
+          "label": "Honda CB150R Deluxe",
+          "price": 480000,
+          "images": ["default"],
+          "quickSpecs": {
+            "engineCapacity": "149.16 cc",
+            "transmission": "6 Speed",
+            "maxPower": "16.4 HP",
+            "maxTorque": "13.7 Nm",
+            "fuelTank": "12 L",
+            "kerbWeight": "136 kg",
+            "mileageCompany": "42 kmpl",
+            "mileageUser": "36-40 kmpl",
+            "topspeedCompany": "132 km/h",
+            "topspeedUser": "127-130 km/h"
+          },
+          "fuelEfficiency": "36-42 kmpl",
+          "frontTire": "110/70-17 Tubeless",
+          "rearTire": "150/60-17 Tubeless",
+          "brakingSystem": "Dual Channel Disc Brakes",
+          "headlightType": "LED",
+          "abs": false,
+          "ledHeadlight": true,
+          "usbPort": true,
+          "pros": {
+            "power": "149cc engine delivers 16.4 HP with smooth acceleration",
+            "styling": "Neo-sports cafe design with attractive LED lighting",
+            "mileage": "42 kmpl mileage for daily commuting",
+            "abs": "Higher variants offer dual-channel ABS for safety"
+          },
+          "cons": {
+            "pricing": "Premium pricing compared to competitors",
+            "fuelTank": "12-liter capacity requires frequent refueling on long trips",
+            "features": "Still lacks ABS safety feature"
+          }
+        },
+        "abs": {
+          "fullName": "Honda CB150R with ABS",
+          "label": "Honda CB150R with ABS",
+          "price": 520000,
+          "images": ["default"],
+          "quickSpecs": {
+            "engineCapacity": "149.16 cc",
+            "transmission": "6 Speed",
+            "maxPower": "16.4 HP",
+            "maxTorque": "13.7 Nm",
+            "fuelTank": "12 L",
+            "kerbWeight": "136 kg",
+            "mileageCompany": "42 kmpl",
+            "mileageUser": "36-40 kmpl",
+            "topspeedCompany": "132 km/h",
+            "topspeedUser": "127-130 km/h"
+          },
+          "fuelEfficiency": "36-42 kmpl",
+          "frontTire": "110/70-17 Tubeless",
+          "rearTire": "150/60-17 Tubeless",
+          "brakingSystem": "Dual Channel ABS",
+          "headlightType": "LED",
+          "abs": true,
+          "ledHeadlight": true,
+          "usbPort": true,
+          "pros": {
+            "power": "149cc engine delivers 16.4 HP with smooth acceleration",
+            "styling": "Neo-sports cafe design with attractive LED lighting",
+            "mileage": "42 kmpl mileage for daily commuting",
+            "abs": "Dual-channel ABS provides excellent safety"
+          },
+          "cons": {
+            "pricing": "Premium pricing compared to competitors",
+            "fuelTank": "12-liter capacity requires frequent refueling on long trips",
+            "features": "All essential features included"
+          }
+        },
+        "special": {
+          "fullName": "Honda CB150R Special Edition",
+          "label": "Honda CB150R Special Edition",
+          "price": 550000,
+          "images": ["default"],
+          "quickSpecs": {
+            "engineCapacity": "149.16 cc",
+            "transmission": "6 Speed",
+            "maxPower": "16.4 HP",
+            "maxTorque": "13.7 Nm",
+            "fuelTank": "12 L",
+            "kerbWeight": "136 kg",
+            "mileageCompany": "43 kmpl",
+            "mileageUser": "37-41 kmpl",
+            "topspeedCompany": "135 km/h",
+            "topspeedUser": "130-133 km/h"
+          },
+          "fuelEfficiency": "37-43 kmpl",
+          "frontTire": "120/70-17 Tubeless",
+          "rearTire": "160/60-17 Tubeless",
+          "brakingSystem": "Dual Channel ABS",
+          "headlightType": "LED (Projector)",
+          "abs": true,
+          "ledHeadlight": true,
+          "usbPort": true,
+          "pros": {
+            "power": "149cc engine delivers 16.4 HP with smooth acceleration",
+            "styling": "Special edition with premium LED projector lighting",
+            "mileage": "43 kmpl mileage for daily commuting",
+            "abs": "Dual-channel ABS provides excellent safety"
+          },
+          "cons": {
+            "pricing": "Premium pricing for special edition features",
+            "fuelTank": "12-liter capacity requires frequent refueling on long trips",
+            "features": "All premium features included"
+          }
+        },
+        "racing": {
+          "fullName": "Honda CB150R Racing Edition",
+          "label": "Honda CB150R Racing Edition",
+          "price": 600000,
+          "images": ["default"],
+          "quickSpecs": {
+            "engineCapacity": "149.16 cc",
+            "transmission": "6 Speed",
+            "maxPower": "16.4 HP",
+            "maxTorque": "13.7 Nm",
+            "fuelTank": "12 L",
+            "kerbWeight": "136 kg",
+            "mileageCompany": "43 kmpl",
+            "mileageUser": "37-41 kmpl",
+            "topspeedCompany": "135 km/h",
+            "topspeedUser": "130-133 km/h"
+          },
+          "fuelEfficiency": "37-43 kmpl",
+          "frontTire": "120/70-17 Tubeless",
+          "rearTire": "160/60-17 Tubeless",
+          "brakingSystem": "Dual Channel ABS",
+          "headlightType": "LED (Projector)",
+          "abs": true,
+          "ledHeadlight": true,
+          "usbPort": true,
+          "pros": {
+            "power": "149cc engine delivers 16.4 HP with smooth acceleration",
+            "styling": "Racing edition with aggressive styling and LED projector lighting",
+            "mileage": "43 kmpl mileage for daily commuting",
+            "abs": "Dual-channel ABS provides excellent safety"
+          },
+          "cons": {
+            "pricing": "Premium pricing for racing edition",
+            "fuelTank": "12-liter capacity requires frequent refueling on long trips",
+            "features": "All premium features included"
+          }
+        },
+        "limited": {
+          "fullName": "Honda CB150R Limited Edition",
+          "label": "Honda CB150R Limited Edition",
+          "price": 650000,
+          "images": ["default"],
+          "quickSpecs": {
+            "engineCapacity": "149.16 cc",
+            "transmission": "6 Speed",
+            "maxPower": "16.4 HP",
+            "maxTorque": "13.7 Nm",
+            "fuelTank": "12 L",
+            "kerbWeight": "136 kg",
+            "mileageCompany": "44 kmpl",
+            "mileageUser": "38-42 kmpl",
+            "topspeedCompany": "135 km/h",
+            "topspeedUser": "130-133 km/h"
+          },
+          "fuelEfficiency": "38-44 kmpl",
+          "frontTire": "120/70-17 Tubeless",
+          "rearTire": "160/60-17 Tubeless",
+          "brakingSystem": "Dual Channel ABS",
+          "headlightType": "LED (Projector)",
+          "abs": true,
+          "ledHeadlight": true,
+          "usbPort": true,
+          "pros": {
+            "power": "149cc engine delivers 16.4 HP with smooth acceleration",
+            "styling": "Limited edition with exclusive styling and LED projector lighting",
+            "mileage": "44 kmpl mileage for daily commuting",
+            "abs": "Dual-channel ABS provides excellent safety"
+          },
+          "cons": {
+            "pricing": "Premium pricing for limited edition exclusivity",
+            "fuelTank": "12-liter capacity requires frequent refueling on long trips",
+            "features": "All premium features included"
+          }
+        }
+      },
+      "similar": [
+        "yamaha-r15-v4",
+        "suzuki-gixxer-sf",
+        "bajaj-pulsar-ns200",
+        "tvs-apache-rtr-200",
+        "kawasaki-ninja-300"
+      ],
+      "used": [
+        {
+          "name": "Honda CB150R (2022)",
+          "price": 380000,
+          "condition": "Used • 12,000 km • Excellent",
+          "image": "default"
+        },
+        {
+          "name": "Yamaha R15 V3 (2021)",
+          "price": 420000,
+          "condition": "Used • 8,500 km • Good",
+          "image": "default"
+        },
+        {
+          "name": "Suzuki Gixxer SF (2020)",
+          "price": 170000,
+          "condition": "Used • 15,000 km • Good",
+          "image": "default"
+        },
+        {
+          "name": "Bajaj Pulsar NS200 (2021)",
+          "price": 185000,
+          "condition": "Used • 10,500 km • Excellent",
+          "image": "default"
+        }
+      ]
+    },
+    {
+      "id": "yamaha-r15-v4",
+      "name": "Yamaha R15 V4",
+      "brand": "Yamaha",
+      "price": 525000,
+      "rating": 4.7,
+      "image": "default",
+      "categories": ["trending", "popular", "compare", "similar"],
+      "specsSummary": "155cc • 18.4 HP • 14.2 Nm"
+    },
+    {
+      "id": "suzuki-gixxer-sf",
+      "name": "Suzuki Gixxer SF",
+      "brand": "Suzuki",
+      "price": 215000,
+      "rating": 4.3,
+      "image": "default",
+      "categories": ["trending", "compare", "similar"],
+      "specsSummary": "155cc • 13.4 HP • 13.8 Nm"
+    },
+    {
+      "id": "kawasaki-ninja-300",
+      "name": "Kawasaki Ninja 300",
+      "brand": "Kawasaki",
+      "price": 680000,
+      "rating": 4.6,
+      "image": "default",
+      "categories": ["trending", "compare", "similar"],
+      "specsSummary": "296cc • 39 HP • 26.1 Nm"
+    },
+    {
+      "id": "bajaj-pulsar-ns200",
+      "name": "Bajaj Pulsar NS200",
+      "brand": "Bajaj",
+      "price": 230000,
+      "rating": 4.4,
+      "image": "default",
+      "categories": ["trending", "compare", "similar"],
+      "specsSummary": "199.5cc • 24.5 HP • 18.5 Nm"
+    },
+    {
+      "id": "tvs-apache-rtr-200",
+      "name": "TVS Apache RTR 200",
+      "brand": "TVS",
+      "price": 210000,
+      "rating": 4.2,
+      "image": "default",
+      "categories": ["trending", "compare", "similar"],
+      "specsSummary": "197.75cc • 20.5 HP • 16.8 Nm"
+    },
+    {
+      "id": "honda-cbr150r",
+      "name": "Honda CBR150R",
+      "brand": "Honda",
+      "price": 475000,
+      "rating": 4.6,
+      "image": "default",
+      "categories": ["popular", "trending"],
+      "specsSummary": "150cc • 17.1 HP • 14.4 Nm"
+    },
+    {
+      "id": "yamaha-fzs-v3",
+      "name": "Yamaha FZ-S V3",
+      "brand": "Yamaha",
+      "price": 255000,
+      "rating": 4.4,
+      "image": "default",
+      "categories": ["popular"],
+      "specsSummary": "149cc • 12.4 HP • 13.3 Nm"
+    },
+    {
+      "id": "suzuki-hayabusa",
+      "name": "Suzuki Hayabusa",
+      "brand": "Suzuki",
+      "price": 1850000,
+      "rating": 4.8,
+      "image": "default",
+      "categories": ["popular"],
+      "specsSummary": "1340cc • 188 HP • 150 Nm"
+    },
+    {
+      "id": "royal-enfield-classic-350",
+      "name": "Royal Enfield Classic 350",
+      "brand": "Royal Enfield",
+      "price": 310000,
+      "rating": 4.5,
+      "image": "default",
+      "categories": ["popular", "compare"],
+      "specsSummary": "346cc • 19.1 HP • 28 Nm"
+    },
+    {
+      "id": "bajaj-dominar-400",
+      "name": "Bajaj Dominar 400",
+      "brand": "Bajaj",
+      "price": 380000,
+      "rating": 4.3,
+      "image": "default",
+      "categories": ["popular", "compare"],
+      "specsSummary": "373cc • 39.4 HP • 35 Nm"
+    },
+    {
+      "id": "hero-splendor-plus",
+      "name": "Hero Splendor Plus",
+      "brand": "Hero",
+      "price": 115000,
+      "rating": 4.1,
+      "image": "default",
+      "categories": ["popular"],
+      "specsSummary": "97.2cc • 7.9 HP • 8.05 Nm"
+    },
+    {
+      "id": "tvs-iqube-electric",
+      "name": "TVS iQube Electric",
+      "brand": "TVS",
+      "price": 175000,
+      "rating": 4.2,
+      "image": "default",
+      "categories": ["electric", "compare"],
+      "specsSummary": "Motor • 4.4 kW • 75 km/h"
+    },
+    {
+      "id": "hero-electric-optima",
+      "name": "Hero Electric Optima",
+      "brand": "Hero",
+      "price": 85000,
+      "rating": 4.0,
+      "image": "default",
+      "categories": ["electric"],
+      "specsSummary": "Motor • 1.2 kW • 45 km/h"
+    },
+    {
+      "id": "ola-s1-pro",
+      "name": "Ola S1 Pro",
+      "brand": "Ola",
+      "price": 145000,
+      "rating": 4.3,
+      "image": "default",
+      "categories": ["electric", "compare"],
+      "specsSummary": "Motor • 8.5 kW • 115 km/h"
+    },
+    {
+      "id": "ather-450x",
+      "name": "Ather 450X",
+      "brand": "Ather",
+      "price": 195000,
+      "rating": 4.5,
+      "image": "default",
+      "categories": ["electric"],
+      "specsSummary": "Motor • 6.2 kW • 90 km/h"
+    },
+    {
+      "id": "revolt-rv400",
+      "name": "Revolt RV400",
+      "brand": "Revolt",
+      "price": 155000,
+      "rating": 4.1,
+      "image": "default",
+      "categories": ["electric"],
+      "specsSummary": "Motor • 3 kW • 85 km/h"
+    },
+    {
+      "id": "ultraviolette-f77",
+      "name": "Ultraviolette F77",
+      "brand": "Ultraviolette",
+      "price": 450000,
+      "rating": 4.6,
+      "image": "default",
+      "categories": ["electric"],
+      "specsSummary": "Motor • 25 kW • 140 km/h"
+    },
+    {
+      "id": "kawasaki-zx10r-2024",
+      "name": "Kawasaki ZX-10R 2024",
+      "brand": "Kawasaki",
+      "price": null,
+      "rating": null,
+      "image": "default",
+      "categories": ["upcoming"],
+      "specsSummary": "998cc superbike • specs TBA"
+    },
+    {
+      "id": "harley-sportster-s",
+      "name": "Harley Davidson Sportster S",
+      "brand": "Harley Davidson",
+      "price": null,
+      "rating": null,
+      "image": "default",
+      "categories": ["upcoming"],
+      "specsSummary": "1250cc cruiser • specs TBA"
+    },
+    {
+      "id": "bmw-s1000rr-2024",
+      "name": "BMW S1000RR 2024",
+      "brand": "BMW",
+      "price": null,
+      "rating": null,
+      "image": "default",
+      "categories": ["upcoming"],
+      "specsSummary": "999cc superbike • specs TBA"
+    },
+    {
+      "id": "ducati-panigale-v4",
+      "name": "Ducati Panigale V4",
+      "brand": "Ducati",
+      "price": null,
+      "rating": null,
+      "image": "default",
+      "categories": ["upcoming"],
+      "specsSummary": "1103cc superbike • specs TBA"
+    },
+    {
+      "id": "triumph-street-triple-rs",
+      "name": "Triumph Street Triple RS",
+      "brand": "Triumph",
+      "price": null,
+      "rating": null,
+      "image": "default",
+      "categories": ["upcoming"],
+      "specsSummary": "765cc naked • specs TBA"
+    },
+    {
+      "id": "ktm-390-adventure-2024",
+      "name": "KTM 390 Adventure 2024",
+      "brand": "KTM",
+      "price": null,
+      "rating": null,
+      "image": "default",
+      "categories": ["upcoming"],
+      "specsSummary": "373cc adventure • specs TBA"
+    },
+    {
+      "id": "ktm-rc-390",
+      "name": "KTM RC 390",
+      "brand": "KTM",
+      "price": 350000,
+      "rating": 4.3,
+      "image": "default",
+      "categories": ["compare"],
+      "specsSummary": "373cc • 43 HP • 37 Nm"
+    }
+  ],
+  "categories": {
+    "featured": [
+      "honda-cb150r",
+      "yamaha-r15-v4",
+      "suzuki-gixxer-sf",
+      "kawasaki-ninja-300",
+      "bajaj-pulsar-ns200",
+      "tvs-apache-rtr-200"
+    ],
+    "trending": [
+      "honda-cb150r",
+      "yamaha-r15-v4",
+      "suzuki-gixxer-sf",
+      "kawasaki-ninja-300",
+      "bajaj-pulsar-ns200",
+      "tvs-apache-rtr-200"
+    ],
+    "popular": [
+      "honda-cbr150r",
+      "yamaha-fzs-v3",
+      "suzuki-hayabusa",
+      "royal-enfield-classic-350",
+      "bajaj-dominar-400",
+      "hero-splendor-plus"
+    ],
+    "electric": [
+      "tvs-iqube-electric",
+      "hero-electric-optima",
+      "ola-s1-pro",
+      "ather-450x",
+      "revolt-rv400",
+      "ultraviolette-f77"
+    ],
+    "upcoming": [
+      "kawasaki-zx10r-2024",
+      "harley-sportster-s",
+      "bmw-s1000rr-2024",
+      "ducati-panigale-v4",
+      "triumph-street-triple-rs",
+      "ktm-390-adventure-2024"
+    ]
+  },
+  "comparePairs": [
+    ["honda-cb150r", "yamaha-r15-v4"],
+    ["bajaj-pulsar-ns200", "tvs-apache-rtr-200"],
+    ["royal-enfield-classic-350", "bajaj-dominar-400"],
+    ["tvs-iqube-electric", "ola-s1-pro"],
+    ["suzuki-gixxer-sf", "yamaha-fzs-v3"],
+    ["kawasaki-ninja-300", "ktm-rc-390"]
+  ],
+  "browseCounts": {
+    "brand": [
+      { "name": "Honda", "count": "24" },
+      { "name": "Yamaha", "count": "18" },
+      { "name": "Suzuki", "count": "12" },
+      { "name": "Kawasaki", "count": "8" },
+      { "name": "Bajaj", "count": "15" },
+      { "name": "TVS", "count": "10" },
+      { "name": "Royal Enfield", "count": "6" },
+      { "name": "Hero", "count": "14" },
+      { "name": "KTM", "count": "7" },
+      { "name": "BMW", "count": "5" },
+      { "name": "Ducati", "count": "4" },
+      { "name": "Harley Davidson", "count": "3" }
+    ],
+    "budget": [
+      { "range": "Under ৳1L", "count": "8" },
+      { "range": "৳1-2L", "count": "15" },
+      { "range": "৳2-3L", "count": "12" },
+      { "range": "৳3-4L", "count": "9" },
+      { "range": "৳4-5L", "count": "6" },
+      { "range": "৳5-8L", "count": "5" },
+      { "range": "৳8-12L", "count": "3" },
+      { "range": "Above ৳12L", "count": "2" }
+    ],
+    "displacement": [
+      { "range": "100-125cc", "count": "12" },
+      { "range": "125-150cc", "count": "18" },
+      { "range": "150-200cc", "count": "15" },
+      { "range": "200-300cc", "count": "8" },
+      { "range": "300-400cc", "count": "6" },
+      { "range": "400-600cc", "count": "4" },
+      { "range": "600-800cc", "count": "3" },
+      { "range": "800cc+", "count": "2" }
+    ],
+    "bodyStyle": [
+      { "style": "Sports", "count": "10" },
+      { "style": "Commuter", "count": "22" },
+      { "style": "Adventure", "count": "8" },
+      { "style": "Cruiser", "count": "6" },
+      { "style": "Scooter", "count": "12" },
+      { "style": "Electric", "count": "9" },
+      { "style": "Naked", "count": "7" },
+      { "style": "Touring", "count": "5" }
+    ]
+  }
+}
