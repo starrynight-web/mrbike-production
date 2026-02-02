@@ -26,12 +26,14 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore, useWishlistStore } from "@/store";
+import { useUserStats } from "@/hooks/use-user";
 import { toast } from "sonner";
 
 export function ProfileClient() {
     const router = useRouter();
     const { user, logout, login } = useAuthStore();
     const { bikeIds } = useWishlistStore();
+    const { data: stats, isLoading: statsLoading } = useUserStats();
     const [activeTab, setActiveTab] = useState("overview");
     const [isSaving, setIsSaving] = useState(false);
 
@@ -145,8 +147,10 @@ export function ProfileClient() {
                                 <List className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">2</div>
-                                <p className="text-xs text-muted-foreground">+1 from last month</p>
+                                <div className="text-2xl font-bold">
+                                    {statsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (stats?.listings_count || 0)}
+                                </div>
+                                <p className="text-xs text-muted-foreground">Active advertisements</p>
                             </CardContent>
                         </Card>
                         <Card className="hover:shadow-md transition-shadow">
@@ -155,7 +159,9 @@ export function ProfileClient() {
                                 <Heart className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{bikeIds.size}</div>
+                                <div className="text-2xl font-bold">
+                                    {statsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (stats?.wishlist_count || 0)}
+                                </div>
                                 <p className="text-xs text-muted-foreground">Saved bikes</p>
                             </CardContent>
                         </Card>
@@ -165,7 +171,9 @@ export function ProfileClient() {
                                 <Star className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">5</div>
+                                <div className="text-2xl font-bold">
+                                    {statsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (stats?.reviews_count || 0)}
+                                </div>
                                 <p className="text-xs text-muted-foreground">Helpful contributions</p>
                             </CardContent>
                         </Card>
@@ -175,8 +183,10 @@ export function ProfileClient() {
                                 <Calendar className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">Jan 2026</div>
-                                <p className="text-xs text-muted-foreground">Gold Member</p>
+                                <div className="text-2xl font-bold">
+                                    {statsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (stats?.member_since || "...")}
+                                </div>
+                                <p className="text-xs text-muted-foreground">Verified Member</p>
                             </CardContent>
                         </Card>
                     </div>

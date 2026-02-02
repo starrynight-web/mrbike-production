@@ -75,8 +75,8 @@ export function useSimilarBikes(slug: string) {
     return useQuery({
         queryKey: queryKeys.bikes.similar(slug),
         queryFn: async () => {
-            const response = await api.getBikes({ similar_to: slug });
-            return response.data.results || response.data;
+            const response = await api.getSimilarBikes(slug);
+            return response.data;
         },
         staleTime: 30 * 60 * 1000, // 30 minutes
         enabled: !!slug,

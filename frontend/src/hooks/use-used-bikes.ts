@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usedBikeService } from "@/lib/api";
+import { api } from "@/lib/api-service";
 import type { UsedBikeFilters, UsedBike } from "@/types";
 
 // ============================================
@@ -22,10 +22,7 @@ export function useUsedBikes(filters?: UsedBikeFilters) {
     return useQuery({
         queryKey: usedBikeQueryKeys.list(filters),
         queryFn: async () => {
-            const response = await usedBikeService.getAll(filters);
-            if (!response.success) {
-                throw new Error(response.error?.message || "Failed to fetch used bikes");
-            }
+            const response = await api.getUsedBikes(filters);
             return response.data;
         },
         staleTime: 5 * 60 * 1000,
@@ -39,10 +36,7 @@ export function useUsedBike(id: string) {
     return useQuery({
         queryKey: usedBikeQueryKeys.detail(id),
         queryFn: async () => {
-            const response = await usedBikeService.getById(id);
-            if (!response.success) {
-                throw new Error(response.error?.message || "Failed to fetch used bike");
-            }
+            const response = await api.client.get(`/marketplace/listings/${id}/`);
             return response.data;
         },
         staleTime: 5 * 60 * 1000,
@@ -58,10 +52,7 @@ export function useCreateUsedBike() {
 
     return useMutation({
         mutationFn: async (data: FormData) => {
-            const response = await usedBikeService.create(data);
-            if (!response.success) {
-                throw new Error(response.error?.message || "Failed to create listing");
-            }
+            const response = await api.createUsedBike(data);
             return response.data;
         },
         onSuccess: () => {

@@ -38,8 +38,8 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.bikes',
     'apps.marketplace',
-    'apps.editorial',
-    'apps.engine',
+    'apps.news',
+    'apps.interactions',
     'apps.recommendations',
 ]
 

@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, generics
+from rest_framework import status, generics, permissions
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -16,6 +16,8 @@ import google.oauth2.id_token
 import google.auth.transport.requests
 
 from .serializers import GoogleAuthSerializer, UserSerializer
+from apps.marketplace.models import UsedBikeListing
+from apps.interactions.models import Review, Wishlist
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -174,4 +176,22 @@ class VerifyOTPView(APIView):
             {"success": False, "error": "Invalid or expired OTP"},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class UserDashboardStatsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        listings_count = UsedBikeListing.objects.filter(seller=user).count()
+        wishlist = Wishlist.objects.filter(user=user).first()
+        wishlist_count = wishlist.bikes.count() if wishlist else 0
+        reviews_count = Review.objects.filter(user=user).count()
+        
+        return Response({
+            "listings_count": listings_count,
+            "wishlist_count": wishlist_count,
+            "reviews_count": reviews_count,
+            "member_since": user.date_joined.strftime("%b %Y"),
+        })
 
