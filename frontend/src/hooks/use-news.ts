@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-service";
-import type { NewsArticle } from "@/types";
 
 export function useNews(category?: string) {
     return useQuery({

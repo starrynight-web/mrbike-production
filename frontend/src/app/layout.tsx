@@ -89,6 +89,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Root layout with global providers
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
