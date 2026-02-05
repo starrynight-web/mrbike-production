@@ -18,14 +18,6 @@ export function MobileNav() {
     const pathname = usePathname();
     const { setSearchOpen } = useUIStore();
 
-    const handleClick = (item: (typeof navItems)[0]) => {
-        if (item.action === "search") {
-            setSearchOpen(true);
-            return true; // Prevent navigation
-        }
-        return false;
-    };
-
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 safe-area-pb">
             <div className="flex items-center justify-around h-16 px-2">

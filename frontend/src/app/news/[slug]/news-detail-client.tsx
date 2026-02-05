@@ -24,7 +24,7 @@ interface NewsDetailClientProps {
 }
 
 export function NewsDetailClient({ slug }: NewsDetailClientProps) {
-    const { article, isLoading } = useNewsArticle(slug);
+    const { data: article, isLoading } = useNewsArticle(slug);
 
     if (isLoading) {
         return <LoadingState />;
@@ -135,7 +135,7 @@ export function NewsDetailClient({ slug }: NewsDetailClientProps) {
                 {/* Footer / Tags */}
                 <div className="space-y-6">
                     <div className="flex flex-wrap gap-2">
-                        {article.tags.map(tag => (
+                        {article.tags.map((tag: string) => (
                             <Badge key={tag} variant="secondary" className="px-3 py-1 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                                 <Hash className="h-3 w-3 mr-1" />
                                 {tag}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,15 +8,15 @@ import {
   Search,
   ChevronRight,
   Fuel,
-  Gauge,
   Star,
   TrendingUp,
   ArrowRight,
   Sparkles,
   Zap,
 } from "lucide-react";
-import { APP_CONFIG, BIKE_CATEGORIES } from "@/config/constants";
+import { BIKE_CATEGORIES } from "@/config/constants";
 import { formatPrice } from "@/lib/utils";
+import type { Bike } from "@/types";
 
 import { api } from "@/lib/api-service";
 
@@ -56,8 +57,10 @@ const popularBrands = [
   { name: "CFMoto", logo: "/brands/cfmoto.svg", slug: "cfmoto" },
 ];
 
+import { DebugButton } from "@/components/debug/debug-button";
+
 export default async function HomePage() {
-  let featuredBikes = [];
+  let featuredBikes: Bike[] = [];
   let fetchError = false;
   try {
     const response = await api.getBikes({ limit: 4 });
@@ -70,7 +73,7 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col">
       {/* ==================== HERO SECTION ==================== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-accent py-16 md:py-24">
+      <section className="relative overflow-hidden bg-linear-to-br from-background via-background to-accent py-16 md:py-24">
         {/* Background decoration */}
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-5" />
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
@@ -94,25 +97,31 @@ export default async function HomePage() {
             </p>
 
             {/* Search Bar */}
-            <div className="relative max-w-xl mx-auto mb-8">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search bikes or brands..."
-                className="w-full h-14 pl-12 pr-4 text-lg rounded-full border-2 focus:border-primary"
-              />
-              <Button
-                size="lg"
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-6"
-              >
-                Search
-              </Button>
+            <div className="relative max-w-xl mx-auto mb-8 flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search bikes or brands..."
+                  className="w-full h-14 pl-12 pr-4 text-lg rounded-full border-2 focus:border-primary"
+                />
+                <Button
+                  size="lg"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-6"
+                >
+                  Search
+                </Button>
+              </div>
+              <DebugButton />
             </div>
 
             {/* Category Pills */}
             <div className="flex flex-wrap justify-center gap-2">
               {BIKE_CATEGORIES.map((category) => (
-                <Link key={category.value} href={`/bikes?category=${category.value}`}>
+                <Link
+                  key={category.value}
+                  href={`/bikes?category=${category.value}`}
+                >
                   <Badge
                     variant="outline"
                     className="px-4 py-2 text-sm cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
@@ -145,20 +154,24 @@ export default async function HomePage() {
 
           {fetchError && featuredBikes.length === 0 ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
-              <p>Unable to load featured bikes right now. Showing popular picks later.</p>
+              <p>
+                Unable to load featured bikes right now. Showing popular picks
+                later.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {featuredBikes.map((bike: any) => (
+              {featuredBikes.map((bike: Bike) => (
                 <Link key={bike.id} href={`/bike/${bike.slug || bike.id}`}>
                   <Card className="group h-full overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                    <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
-                      <img
+                    <div className="aspect-4/3 relative overflow-hidden bg-muted">
+                      <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent z-10" />
+                      <Image
                         src={bike.primary_image || "/bikes/default.webp"}
                         alt={bike.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 50vw, 25vw"
                       />
                       <Badge className="absolute top-3 left-3 z-20">
                         {bike.category}
@@ -166,13 +179,15 @@ export default async function HomePage() {
                     </div>
                     <CardContent className="p-4">
                       <p className="text-xs text-muted-foreground mb-1">
-                        {bike.brand?.name || bike.brand}
+                        {typeof bike.brand === "object"
+                          ? bike.brand.name
+                          : bike.brand}
                       </p>
                       <h3 className="font-semibold line-clamp-1 mb-2 group-hover:text-primary transition-colors">
                         {bike.name}
                       </h3>
                       <p className="text-lg font-bold text-primary mb-3">
-                        {formatPrice(bike.price)}
+                        {formatPrice(bike.price || 0)}
                       </p>
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
@@ -181,7 +196,9 @@ export default async function HomePage() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          {bike.popularity_score ? (bike.popularity_score / 20).toFixed(1) : "4.5"}
+                          {bike.popularityScore
+                            ? (bike.popularityScore / 20).toFixed(1)
+                            : "N/A"}
                         </div>
                       </div>
                     </CardContent>
@@ -218,7 +235,7 @@ export default async function HomePage() {
               <Link key={index} href={pick.href}>
                 <Card className="group relative overflow-hidden h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0">
                   <div
-                    className={`absolute inset-0 bg-gradient-to-br ${pick.gradient} opacity-90`}
+                    className={`absolute inset-0 bg-linear-to-br ${pick.gradient} opacity-90`}
                   />
                   <CardContent className="relative p-6 md:p-8 text-white">
                     <pick.icon className="h-10 w-10 mb-4 opacity-80" />
@@ -256,7 +273,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {[1, 2, 3, 4].map((i) => (
               <Card key={i} className="overflow-hidden">
-                <div className="aspect-[4/3] bg-muted animate-pulse" />
+                <div className="aspect-4/3 bg-muted animate-pulse" />
                 <CardContent className="p-4">
                   <div className="h-4 bg-muted rounded animate-pulse mb-2" />
                   <div className="h-6 bg-muted rounded animate-pulse w-2/3 mb-3" />
@@ -290,12 +307,14 @@ export default async function HomePage() {
                 href={`/brands/${brand.slug}`}
                 className="flex flex-col items-center gap-2 p-4 rounded-xl bg-background hover:shadow-md transition-all hover:-translate-y-1"
               >
-                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-muted flex items-center justify-center">
-                  <img
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden relative">
+                  <Image
                     src={brand.logo}
                     alt={brand.name}
-                    className="w-8 h-8 md:w-10 md:h-10 object-contain"
+                    fill
+                    className="object-contain p-2"
                     loading="lazy"
+                    sizes="64px"
                   />
                 </div>
                 <span className="text-xs md:text-sm font-medium text-center">
@@ -310,7 +329,7 @@ export default async function HomePage() {
       {/* ==================== CTA SECTION ==================== */}
       <section className="py-16 md:py-24">
         <div className="container">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-orange-600 p-8 md:p-12 lg:p-16">
+          <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-primary to-orange-600 p-8 md:p-12 lg:p-16">
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
 

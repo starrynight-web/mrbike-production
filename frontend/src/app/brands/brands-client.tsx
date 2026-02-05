@@ -49,7 +49,7 @@ export function BrandsClient() {
             </div>
 
             <div className="mt-20 p-8 md:p-12 rounded-2xl bg-muted/30 text-center space-y-6">
-                <h3 className="text-2xl font-bold">Can't decide which brand?</h3>
+                <h3 className="text-2xl font-bold">Can&apos;t decide which brand?</h3>
                 <p className="text-muted-foreground max-w-lg mx-auto">
                     Compare bikes from different brands side by side to find the perfect match for your needs and budget.
                 </p>

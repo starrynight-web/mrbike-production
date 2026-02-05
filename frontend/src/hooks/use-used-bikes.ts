@@ -6,9 +6,9 @@ import type { UsedBikeFilters, UsedBike } from "@/types";
 // QUERY KEYS
 // ============================================
 export const usedBikeQueryKeys = {
-    all: ["usedBikes"] as const,
-    list: (filters?: UsedBikeFilters) => ["usedBikes", "list", filters] as const,
-    detail: (id: string) => ["usedBikes", "detail", id] as const,
+  all: ["usedBikes"] as const,
+  list: (filters?: UsedBikeFilters) => ["usedBikes", "list", filters] as const,
+  detail: (id: string) => ["usedBikes", "detail", id] as const,
 } as const;
 
 // ============================================
@@ -19,14 +19,14 @@ export const usedBikeQueryKeys = {
  * Fetch paginated list of used bikes with filters
  */
 export function useUsedBikes(filters?: UsedBikeFilters) {
-    return useQuery({
-        queryKey: usedBikeQueryKeys.list(filters),
-        queryFn: async () => {
-            const response = await api.getUsedBikes(filters);
-            return response.data;
-        },
-        staleTime: 5 * 60 * 1000,
-    });
+  return useQuery({
+    queryKey: usedBikeQueryKeys.list(filters),
+    queryFn: async () => {
+      const response = await api.getUsedBikes(filters);
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 }
 
 /**
@@ -36,7 +36,7 @@ export function useUsedBike(id: string) {
     return useQuery({
         queryKey: usedBikeQueryKeys.detail(id),
         queryFn: async () => {
-            const response = await api.client.get(`/marketplace/listings/${id}/`);
+            const response = await api.client.get<UsedBike>(`/marketplace/listings/${id}/`);
             return response.data;
         },
         staleTime: 5 * 60 * 1000,
@@ -48,15 +48,15 @@ export function useUsedBike(id: string) {
  * Create a new used bike listing
  */
 export function useCreateUsedBike() {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: async (data: FormData) => {
-            const response = await api.createUsedBike(data);
-            return response.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: usedBikeQueryKeys.all });
-        },
-    });
+  return useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await api.createUsedBike(data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: usedBikeQueryKeys.all });
+    },
+  });
 }
