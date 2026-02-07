@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAdminUser
 from django.contrib.auth import get_user_model
 from apps.bikes.models import Brand, BikeModel
 from apps.marketplace.models import UsedBikeListing
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, F
+from django.db.models.functions import TruncDate
 from django.utils import timezone
 from datetime import timedelta
 
@@ -47,7 +48,7 @@ class AdminAnalyticsView(APIView):
         
         daily_listings = UsedBikeListing.objects.filter(
             created_at__gte=seven_days_ago
-        ).extra(select={'day': "date(created_at)"}).values('day').annotate(count=Count('id')).order_by('day')
+        ).annotate(day=TruncDate('created_at')).values('day').annotate(count=Count('id')).order_by('day')
         
         return Response({
             "listings_over_time": list(daily_listings),

@@ -4,7 +4,7 @@ from .views import BrandViewSet, BikeModelViewSet
 
 router = DefaultRouter()
 router.register(r'brands', BrandViewSet, basename='brand')
-router.register(r'', BikeModelViewSet, basename='bike-model')
+router.register(r'models', BikeModelViewSet, basename='bike-model')
 
 urlpatterns = [
     path('', include(router.urls)),

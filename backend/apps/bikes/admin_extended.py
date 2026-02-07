@@ -5,6 +5,7 @@ Enables team to add/edit bikes and manage user listings from admin panel
 
 from django.contrib import admin
 from django.utils.html import format_html
+from django.db.models import F
 from .models import Brand, BikeModel, BikeVariant, BikeSpecification
 
 
@@ -55,6 +56,38 @@ class BrandAdmin(admin.ModelAdmin):
             count
         )
     bike_count.short_description = 'Total Bikes'
+
+
+# ============================================================================
+# CUSTOM FILTERS
+# ============================================================================
+
+class EngineCapacityRangeFilter(admin.SimpleListFilter):
+    """Custom filter for engine capacity ranges"""
+    title = 'Engine Capacity'
+    parameter_name = 'engine_capacity_range'
+    
+    def lookups(self, request, model_admin):
+        return (
+            ('under_150', 'Under 150 cc'),
+            ('150_300', '150-300 cc'),
+            ('300_500', '300-500 cc'),
+            ('500_1000', '500-1000 cc'),
+            ('over_1000', 'Over 1000 cc'),
+        )
+    
+    def queryset(self, request, queryset):
+        if self.value() == 'under_150':
+            return queryset.filter(engine_capacity__lt=150)
+        elif self.value() == '150_300':
+            return queryset.filter(engine_capacity__gte=150, engine_capacity__lt=300)
+        elif self.value() == '300_500':
+            return queryset.filter(engine_capacity__gte=300, engine_capacity__lt=500)
+        elif self.value() == '500_1000':
+            return queryset.filter(engine_capacity__gte=500, engine_capacity__lt=1000)
+        elif self.value() == 'over_1000':
+            return queryset.filter(engine_capacity__gte=1000)
+        return queryset
 
 
 # ============================================================================
@@ -111,7 +144,7 @@ class BikeModelAdmin(admin.ModelAdmin):
         'brand',
         'is_available',
         'created_at',
-        ('engine_capacity', admin.NumericRangeFilter),
+        EngineCapacityRangeFilter,
     ]
     search_fields = ['name', 'brand__name', 'slug']
     list_editable = ['is_available', 'category']
@@ -158,7 +191,14 @@ class BikeModelAdmin(admin.ModelAdmin):
     
     inlines = [BikeVariantInline, BikeSpecificationInline]
     prepopulated_fields = {'slug': ('brand', 'name')}
-    readonly_fields = ('created_at', 'updated_at', 'slug')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    def get_readonly_fields(self, request, obj=None):
+        """Make slug readonly only on edit, allow auto-population on create"""
+        readonly = list(self.readonly_fields)
+        if obj is not None:  # Editing existing object
+            readonly.append('slug')
+        return readonly
     
     # Custom ordering in admin list
     ordering = ['-popularity_score', 'name']
@@ -197,10 +237,9 @@ class BikeModelAdmin(admin.ModelAdmin):
     
     def increase_popularity(self, request, queryset):
         """Bulk action: increase popularity score"""
-        for bike in queryset:
-            bike.popularity_score += 10
-            bike.save()
-        self.message_user(request, f'{queryset.count()} bikes popularity increased')
+        count = queryset.count()
+        queryset.update(popularity_score=F('popularity_score') + 10)
+        self.message_user(request, f'{count} bikes popularity increased')
     increase_popularity.short_description = '⭐ Increase popularity (+10)'
 
 

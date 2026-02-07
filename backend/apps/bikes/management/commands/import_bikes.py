@@ -1,8 +1,11 @@
 import json
 import os
+import logging
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 from apps.bikes.models import Brand, BikeModel, BikeVariant, BikeSpecification
+
+logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = 'Import bike data from JSON'
@@ -33,8 +36,9 @@ class Command(BaseCommand):
             if 'cc' in specs_summary.lower():
                 try:
                     engine_cc = int(specs_summary.lower().split('cc')[0].split()[-1])
-                except:
-                    pass
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"Failed to parse engine_cc from specs_summary '{specs_summary}': {str(e)}")
+                    engine_cc = 0
 
             # Main BikeModel
             bike, created = BikeModel.objects.update_or_create(
@@ -54,6 +58,15 @@ class Command(BaseCommand):
             variants_data = bike_data.get('variants', {})
             if variants_data:
                 for v_key, v_val in variants_data.items():
+                    # Handle tire_type - avoid storing "None / None"
+                    front_tire = v_val.get('frontTire')
+                    rear_tire = v_val.get('rearTire')
+                    if front_tire or rear_tire:
+                        tire_parts = [t for t in [front_tire, rear_tire] if t]
+                        tire_type = ' / '.join(tire_parts)
+                    else:
+                        tire_type = None
+                    
                     BikeVariant.objects.update_or_create(
                         bike_model=bike,
                         variant_key=v_key,
@@ -63,7 +76,7 @@ class Command(BaseCommand):
                             'is_default': v_key == 'std',
                             'features': v_val.get('features', []),
                             'braking_system': v_val.get('brakingSystem'),
-                            'tire_type': f"{v_val.get('frontTire')} / {v_val.get('rearTire')}",
+                            'tire_type': tire_type,
                             'mileage_company': v_val.get('quickSpecs', {}).get('mileageCompany'),
                             'mileage_user': v_val.get('quickSpecs', {}).get('mileageUser'),
                             'topspeed_company': v_val.get('quickSpecs', {}).get('topspeedCompany'),

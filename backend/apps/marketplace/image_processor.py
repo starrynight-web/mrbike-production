@@ -36,8 +36,10 @@ class ImageProcessingService:
             }
         """
         
-        # Open image
-        img = Image.open(image_file)
+        # Open image using context manager to ensure proper resource cleanup
+        with Image.open(image_file) as src:
+            # Create a persistent copy since PIL operations modify in-place
+            img = src.copy() if src.mode == 'RGB' else src.convert('RGB')
         
         # Convert RGBA to RGB if necessary
         if img.mode in ('RGBA', 'LA', 'P'):
@@ -125,15 +127,29 @@ class ImageOptimizer:
         """
         Generate HTML srcset for responsive images
         Usage: {% load img_tags %} {{ listing_image|srcset_html }}
+        Safely handles missing image variants with fallback to original
         """
-        return (
-            f'<picture>'
-            f'  <source srcset="{listing_image.webp_image.url}" type="image/webp">'
-            f'  <img src="{listing_image.compressed_image.url}" '
-            f'       alt="Used bike image" '
-            f'       loading="lazy" />'
-            f'</picture>'
-        )
+        # Get available image URLs with fallbacks
+        webp_url = listing_image.webp_image.url if listing_image.webp_image else None
+        compressed_url = listing_image.compressed_image.url if listing_image.compressed_image else None
+        original_url = listing_image.original_image.url if listing_image.original_image else None
+        
+        # Use original as ultimate fallback
+        fallback_url = compressed_url or original_url or ''
+        
+        if not original_url:
+            # No images at all, return empty picture tag
+            return '<picture><img src="" alt="Used bike image" loading="lazy" /></picture>'
+        
+        # Build picture element with available formats
+        picture_html = '<picture>'
+        
+        if webp_url:
+            picture_html += f'<source srcset="{webp_url}" type="image/webp">'
+        
+        picture_html += f'<img src="{fallback_url}" alt="Used bike image" loading="lazy" /></picture>'
+        
+        return picture_html
     
     @staticmethod
     def get_image_url_list(used_bike_listing, include_formats=None):

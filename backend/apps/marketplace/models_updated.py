@@ -3,10 +3,15 @@ Updated Marketplace Models with Image Processing
 Includes automatic compression and WebP conversion for used bike images
 """
 
+import logging
 from django.db import models
 from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from apps.bikes.models import BikeModel
 from .image_processor import ImageProcessingService
+
+logger = logging.getLogger(__name__)
 
 
 class UsedBikeListing(models.Model):
@@ -123,50 +128,9 @@ class ListingImage(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Override save to process image on upload
-        Converts to WebP and creates compressed JPEG version
+        Override save to postpone image processing
+        Image processing now happens asynchronously via signal handler
         """
-        
-        # Only process if this is a new image upload
-        if self.original_image and not self.webp_image:
-            try:
-                # Process image (compress & convert)
-                processed = ImageProcessingService.compress_and_convert(
-                    self.original_image
-                )
-                
-                # Save WebP version
-                if processed.get('webp'):
-                    webp_file = processed['webp']
-                    self.webp_image.save(
-                        webp_file['name'],
-                        webp_file['content'],
-                        save=False
-                    )
-                
-                # Save compressed JPEG version
-                if processed.get('compressed'):
-                    jpg_file = processed['compressed']
-                    self.compressed_image.save(
-                        jpg_file['name'],
-                        jpg_file['content'],
-                        save=False
-                    )
-                
-                # Store file sizes for analytics
-                if self.original_image:
-                    self.file_size_original = self.original_image.size
-                if self.webp_image:
-                    self.file_size_webp = self.webp_image.size
-                if self.compressed_image:
-                    self.file_size_compressed = self.compressed_image.size
-                    
-            except Exception as e:
-                # Log error but don't fail - keep original
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.error(f"Image processing failed for {self.listing.id}: {str(e)}")
-        
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -178,6 +142,73 @@ class ListingImage(models.Model):
             models.Index(fields=['listing', 'order']),
             models.Index(fields=['is_primary']),
         ]
+
+
+# ============================================================================
+# SIGNAL HANDLERS FOR ASYNC IMAGE PROCESSING
+# ============================================================================
+
+@receiver(post_save, sender=ListingImage)
+def process_listing_image(sender, instance, created, **kwargs):
+    """
+    Process image asynchronously when a new ListingImage is created
+    Compresses and converts to WebP in background
+    """
+    if created and instance.original_image and not instance.webp_image:
+        # Queue background task (using threading for simplicity)
+        # In production, use Celery or Django-RQ
+        from threading import Thread
+        
+        def process_image_task():
+            try:
+                # Process image
+                processed = ImageProcessingService.compress_and_convert(
+                    instance.original_image
+                )
+                
+                # Save WebP version
+                if processed.get('webp'):
+                    webp_file = processed['webp']
+                    instance.webp_image.save(
+                        webp_file['name'],
+                        webp_file['content'],
+                        save=False
+                    )
+                
+                # Save compressed JPEG version
+                if processed.get('compressed'):
+                    jpg_file = processed['compressed']
+                    instance.compressed_image.save(
+                        jpg_file['name'],
+                        jpg_file['content'],
+                        save=False
+                    )
+                
+                # Store file sizes
+                if instance.original_image:
+                    instance.file_size_original = instance.original_image.size
+                if instance.webp_image:
+                    instance.file_size_webp = instance.webp_image.size
+                if instance.compressed_image:
+                    instance.file_size_compressed = instance.compressed_image.size
+                
+                # Save the instance with processed images
+                instance.save(update_fields=[
+                    'webp_image', 'compressed_image', 
+                    'file_size_original', 'file_size_webp', 'file_size_compressed'
+                ])
+                
+            except (ValueError, OSError) as e:
+                # Log specific image-related errors
+                listing_id = getattr(instance.listing, 'id', 'unsaved')
+                logger.exception(
+                    f"Image processing failed for listing {listing_id}: {str(e)}"
+                )
+        
+        # Run in background thread to prevent blocking
+        thread = Thread(target=process_image_task)
+        thread.daemon = True
+        thread.start()
     
     @property
     def get_best_url(self):

@@ -26,24 +26,6 @@ export interface Bike {
   features: string[];
 }
 
-export interface Bike {
-  id: number;
-  name: string;
-  category: string;
-  price: string;
-  image_url: string;
-  brand: string;
-  engine_cc: number;
-  fuel_type: string;
-  transmission: string;
-  braking_system: string;
-  published: boolean;
-  featured: boolean;
-  stock: number;
-  ratings: number;
-  reviews_count: number;
-}
-
 export interface UsedBikeListing {
   id: number;
   bike_model: string;

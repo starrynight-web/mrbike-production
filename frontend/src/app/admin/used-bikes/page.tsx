@@ -110,7 +110,7 @@ export default function UsedBikesModeration() {
         try {
             setRejectingId(rejectDialog.id);
             await adminAPI.rejectListing(rejectDialog.id, rejectDialog.reason || "Rejected by admin");
-            toast.error("Listing rejected");
+            toast.success("Listing rejected");
             setListings(listings.map(l => l.id === rejectDialog.id ? { ...l, status: "rejected" } : l));
             setRejectDialog({ open: false, id: null, reason: "" });
         } catch (error) {

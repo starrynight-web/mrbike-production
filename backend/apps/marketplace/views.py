@@ -56,6 +56,6 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         listing = self.get_object()
-        listing.status = 'rejected'
+        listing.status = 'expired'
         listing.save()
         return Response({"status": "rejected"})

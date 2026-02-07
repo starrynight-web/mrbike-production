@@ -123,10 +123,10 @@ export default function AdminBikesPage() {
         try {
             setSubmitting(true);
 
-            let imageUrl = imagePreview;
+            let imageUrl = newBike.image_url || imagePreview;
 
             // Upload image if provided
-            if (imageFile) {
+            if (imageFile && !imageFile.name?.startsWith('data:')) {
                 try {
                     const uploadResult = await adminAPI.uploadImage(imageFile);
                     imageUrl = uploadResult.url;
@@ -134,6 +134,9 @@ export default function AdminBikesPage() {
                     toast.error("Failed to upload image");
                     return;
                 }
+            } else if (imagePreview?.startsWith('data:')) {
+                // Don't use base64 data URLs
+                imageUrl = newBike.image_url || '';
             }
 
             const bikeData = {
@@ -173,6 +176,7 @@ export default function AdminBikesPage() {
             transmission: "manual",
             braking_system: "hydraulic",
             featured: false,
+            image_url: "",
         });
         setImageFile(null);
         setImagePreview("");
@@ -191,8 +195,9 @@ export default function AdminBikesPage() {
             transmission: bike.transmission || "manual",
             braking_system: bike.braking_system || "hydraulic",
             featured: bike.featured || false,
+            image_url: bike.image_url || "",
         });
-        setImagePreview(bike.image_url);
+        setImagePreview(bike.image_url || "");
         setEditingId(bike.id);
         setIsAddDialogOpen(true);
     };
@@ -398,7 +403,30 @@ export default function AdminBikesPage() {
                                 <TabsContent value="image" className="space-y-4 pt-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="image">Bike Image</Label>
-                                        <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted/50 transition">
+                                        <div 
+                                            className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted/50 transition"
+                                            onDragOver={(e) => {
+                                                e.preventDefault();
+                                                e.currentTarget.classList.add('bg-muted/50');
+                                            }}
+                                            onDragLeave={(e) => {
+                                                e.currentTarget.classList.remove('bg-muted/50');
+                                            }}
+                                            onDrop={(e) => {
+                                                e.preventDefault();
+                                                e.currentTarget.classList.remove('bg-muted/50');
+                                                const files = e.dataTransfer.files;
+                                                if (files && files[0]) {
+                                                    const file = files[0];
+                                                    setImageFile(file);
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => {
+                                                        setImagePreview(reader.result as string);
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }}
+                                        >
                                             <input
                                                 id="image"
                                                 type="file"
@@ -407,7 +435,7 @@ export default function AdminBikesPage() {
                                                 onChange={handleImageSelect}
                                             />
                                             <label htmlFor="image" className="cursor-pointer flex flex-col items-center gap-2">
-                                                {imagePreview ? (
+                                                {imagePreview && !imagePreview.startsWith('data:') ? (
                                                     <>
                                                         <img src={imagePreview} alt="preview" className="h-32 w-32 object-cover rounded" />
                                                         <span className="text-sm text-muted-foreground">Click to change image</span>

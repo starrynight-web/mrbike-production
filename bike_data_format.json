@@ -120,7 +120,7 @@
     "spec_type": "company"
   },
   
-  "__________________________": "CATEGORY 5: DETAILED SPECIFICATIONS",
+  "_section_5_detailed_specifications": "CATEGORY 5: DETAILED SPECIFICATIONS",
   "detailed_specs": {
     "engine_performance": {
       "engine": {
@@ -229,7 +229,7 @@
     }
   },
   
-  "__________________________": "CATEGORY 6: PRICING & FINANCIAL",
+  "_section_6_pricing_financial": "CATEGORY 6: PRICING & FINANCIAL",
   "pricing_financial": {
     "base_pricing": {
       "currency": "BDT",
@@ -265,7 +265,7 @@
     ]
   },
   
-  "__________________________": "CATEGORY 7: RATINGS & REVIEWS",
+  "_section_7_ratings_reviews": "CATEGORY 7: RATINGS & REVIEWS",
   "ratings_reviews": {
     "rating": {
       "average": 4.5,

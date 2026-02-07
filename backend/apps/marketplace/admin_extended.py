@@ -78,7 +78,7 @@ class UsedBikeListingAdmin(admin.ModelAdmin):
     
     search_fields = ['title', 'description', 'seller__email', 'location', 'custom_brand', 'custom_model']
     
-    list_editable = ['status', 'is_featured']
+    list_editable = ['is_featured']
     
     fieldsets = (
         ('📋 Listing Details', {
@@ -175,21 +175,41 @@ class UsedBikeListingAdmin(admin.ModelAdmin):
     toggle_featured.short_description = '⭐ Toggle Featured'
     
     def send_verification_email(self, request, queryset):
-        """Send verification email to sellers"""
+        """Send verification email to sellers asynchronously"""
         from django.core.mail import send_mass_mail
+        from django.core.mail.message import EmailMessage
+        from threading import Thread
         
-        messages = []
-        for listing in queryset:
-            messages.append((
-                'Please verify your listing',
-                f'Hi {listing.seller.username},\n\nPlease verify your listing: {listing.title}',
-                'noreply@mrbikebd.com',
-                [listing.seller.email]
-            ))
+        # Filter listings with valid email
+        listings_to_email = [
+            listing for listing in queryset 
+            if listing.seller and listing.seller.email
+        ]
         
-        if messages:
-            send_mass_mail(tuple(messages))
-            self.message_user(request, f'📧 Email sent to {len(messages)} sellers')
+        if not listings_to_email:
+            self.message_user(request, '❌ No sellers with valid email addresses found')
+            return
+        
+        def send_emails_background():
+            """Send emails in background thread"""
+            messages = []
+            for listing in listings_to_email:
+                messages.append((
+                    'Please verify your listing',
+                    f'Hi {listing.seller.username},\n\nPlease verify your listing: {listing.title}',
+                    'noreply@mrbikebd.com',
+                    [listing.seller.email]
+                ))
+            
+            if messages:
+                send_mass_mail(tuple(messages))
+        
+        # Send emails in background thread
+        email_thread = Thread(target=send_emails_background)
+        email_thread.daemon = True
+        email_thread.start()
+        
+        self.message_user(request, f'📧 Queued emails for {len(listings_to_email)} sellers')
     send_verification_email.short_description = '📧 Send verification emails'
     
     # Custom display functions
@@ -284,7 +304,6 @@ class ListingImageAdmin(admin.ModelAdmin):
     list_filter = [
         'is_primary',
         'created_at',
-        ('file_size_webp', admin.NumericRangeFilter),
     ]
     
     search_fields = ['listing__title']
@@ -316,7 +335,7 @@ class ListingImageAdmin(admin.ModelAdmin):
     
     def listing_title(self, obj):
         """Show listing title with link"""
-        url = reverse('admin:marketplace_usedbkelisting_change', args=[obj.listing.id])
+        url = reverse('admin:marketplace_usedbbikelisting_change', args=[obj.listing.id])
         return format_html('<a href="{}">{}</a>', url, obj.listing.title)
     listing_title.short_description = 'Listing'
     

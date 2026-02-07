@@ -18,18 +18,18 @@ class AuthThrottle(SimpleRateThrottle):
     """
     scope = 'auth'
     
-    def get_cache_key(self):
-        if self.request.user and self.request.user.is_authenticated:
+    def get_cache_key(self, request, view):
+        if request.user and request.user.is_authenticated:
             # Throttle by user ID for authenticated users
             return self.cache_format % {
                 'scope': self.scope,
-                'ident': self.request.user.id
+                'ident': request.user.id
             }
         else:
             # Throttle by IP for anonymous users
             return self.cache_format % {
                 'scope': self.scope,
-                'ident': self.get_client_ip(self.request)
+                'ident': self.get_client_ip(request)
             }
     
     def get_client_ip(self, request):
@@ -51,13 +51,13 @@ class MarketplaceCreateThrottle(SimpleRateThrottle):
     """
     scope = 'marketplace_create'
     
-    def get_cache_key(self):
-        if not self.request.user or not self.request.user.is_authenticated:
+    def get_cache_key(self, request, view):
+        if not request.user or not request.user.is_authenticated:
             return None  # Only throttle authenticated users
         
         return self.cache_format % {
             'scope': self.scope,
-            'ident': self.request.user.id
+            'ident': request.user.id
         }
 
 
@@ -68,35 +68,61 @@ class AdminActionThrottle(SimpleRateThrottle):
     """
     scope = 'admin_action'
     
-    def get_cache_key(self):
-        if not self.request.user or not self.request.user.is_staff:
+    def __init__(self):
+        super().__init__()
+        self._last_request = None
+    
+    def get_cache_key(self, request, view):
+        if not request.user or not request.user.is_staff:
             return None
         
+        self._last_request = request
         return self.cache_format % {
             'scope': self.scope,
-            'ident': self.request.user.id
+            'ident': request.user.id
         }
     
-    def throttle_success(self, request, view):
+    def throttle_success(self):
         """Log admin actions for audit trail"""
-        result = super().throttle_success(request, view)
+        result = super().throttle_success()
         
-        if result and request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+        if result and self._last_request and self._last_request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+            email = getattr(self._last_request.user, 'email', 'unknown')
             logger.info(
-                f"Admin action: {request.method} {request.path} by {request.user.email}"
+                f"Admin action: {self._last_request.method} {self._last_request.path} by {email}"
             )
         
         return result
 
 
-class SearchThrottle(UserRateThrottle, AnonRateThrottle):
+class SearchThrottle(SimpleRateThrottle):
     """
     Rate limit for search queries
     Prevents search abuse (e.g., extracting entire database)
     - 1000 requests per hour for authenticated users
     - 100 requests per hour for anonymous users
     """
-    scope = 'search'
+    
+    def get_cache_key(self, request, view):
+        if request.user and request.user.is_authenticated:
+            # Use user-specific scope and rate for authenticated users
+            self.scope = 'search_user'
+            return self.cache_format % {
+                'scope': self.scope,
+                'ident': f"user:{request.user.id}"
+            }
+        else:
+            # Use anonymous scope and rate
+            self.scope = 'search_anon'
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(',')[0].strip()
+            else:
+                ip = request.META.get('REMOTE_ADDR', 'unknown')
+            return self.cache_format % {
+                'scope': self.scope,
+                'ident': f"anon:{ip}"
+            }
 
 
 class ImageUploadThrottle(SimpleRateThrottle):
@@ -107,13 +133,13 @@ class ImageUploadThrottle(SimpleRateThrottle):
     """
     scope = 'image_upload'
     
-    def get_cache_key(self):
-        if not self.request.user or not self.request.user.is_authenticated:
+    def get_cache_key(self, request, view):
+        if not request.user or not request.user.is_authenticated:
             return None
         
         return self.cache_format % {
             'scope': self.scope,
-            'ident': self.request.user.id
+            'ident': request.user.id
         }
 
 
@@ -125,12 +151,12 @@ class IPBasedThrottle(SimpleRateThrottle):
     """
     scope = 'ip_based'
     
-    def get_cache_key(self):
-        x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
+    def get_cache_key(self, request, view):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
             ip = x_forwarded_for.split(',')[0].strip()
         else:
-            ip = self.request.META.get('REMOTE_ADDR', 'unknown')
+            ip = request.META.get('REMOTE_ADDR', 'unknown')
         
         return self.cache_format % {
             'scope': self.scope,
@@ -146,15 +172,15 @@ class BurstThrottle(SimpleRateThrottle):
     """
     scope = 'burst'
     
-    def get_cache_key(self):
-        if self.request.user and self.request.user.is_authenticated:
-            ident = self.request.user.id
+    def get_cache_key(self, request, view):
+        if request.user and request.user.is_authenticated:
+            ident = request.user.id
         else:
-            x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
             if x_forwarded_for:
                 ident = x_forwarded_for.split(',')[0].strip()
             else:
-                ident = self.request.META.get('REMOTE_ADDR', 'unknown')
+                ident = request.META.get('REMOTE_ADDR', 'unknown')
         
         return self.cache_format % {
             'scope': self.scope,
@@ -170,7 +196,8 @@ THROTTLE_RATES_CONFIG = {
     'auth': '10/hour',              # Login: 10 per hour
     'marketplace_create': '5/hour', # New listings: 5 per hour
     'admin_action': '100/hour',     # Admin actions: 100 per hour
-    'search': '1000/hour',          # Search: 1000 per hour
+    'search_user': '1000/hour',     # Search (authenticated): 1000 per hour
+    'search_anon': '100/hour',      # Search (anonymous): 100 per hour
     'image_upload': '20/hour',      # Image upload: 20 per hour
     'ip_based': '5000/hour',        # IP global: 5000 per hour
     'burst': '30/minute',           # Burst: 30 per minute

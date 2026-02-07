@@ -3,11 +3,15 @@ Django Settings - Security Hardening Configuration
 Add these settings to backend/core/settings.py for production security
 """
 
+import os
+
 # ============================================================================
 # SECURITY: HTTPS & SSL
 # ============================================================================
 
 # Force HTTPS in production
+# Note: DEBUG and SECRET_KEY should be imported from the main settings module
+# Assuming this file is imported in settings.py after DEBUG is defined
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
@@ -276,9 +280,14 @@ SECURE_BROWSER_XSS_FILTER = True
 # ADMIN: Secure admin configuration
 # ============================================================================
 
-ADMIN_URL = 'django-admin-' + SECRET_KEY[:8] + '/'  # Obscure admin URL
+# Use dedicated environment variable for admin URL obscuring token (safer than SECRET_KEY)
+ADMIN_URL_TOKEN = os.environ.get('ADMIN_URL_TOKEN', 'admin-panel')
+ADMIN_URL = f'django-admin-{ADMIN_URL_TOKEN}/'
 ADMIN_SITE_HEADER = 'MrBikeBD Admin'
 ADMIN_SITE_TITLE = 'MrBikeBD'
+
+# Important: Set ADMIN_URL_TOKEN environment variable in production
+# Example: export ADMIN_URL_TOKEN="your-custom-secure-token"
 
 
 # ============================================================================
