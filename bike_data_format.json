@@ -1,29 +1,21 @@
-COMPLETE BIKE DATA SCHEMA
-
-________________________
-
-CATEGORY 1: CORE IDENTITY
 {
+  "________________________": "CATEGORY 1: CORE IDENTITY",
   "core_identity": {
     "slug": "honda-cb150r-standard",
-    "bike_name": "Honda CB150R Standard",
+    "bike_name": "Honda CB150R",
     "page_title": "MrBike | Honda CB150R - Detailed Information",
     "brand": "Honda",
     "model": "CB150R",
-    "variant_key": "std",
-    "variant_name": "Standard",
     "category": "sports",
     "subcategory": "naked",
     "year": 2024,
-    "status": "active"
-  }
-}
-_________________
-
-CATEGORY 2: VISUAL ASSETS
-{
+    "status": "active",
+    "default_variant_key": "std",
+    "current_variant_key": "std"
+  },
+  
+  "_________________": "CATEGORY 2: VISUAL ASSETS",
   "visual_assets": {
-    "primary_image": "https://...",
     "gallery": [
       {
         "url": "https://...",
@@ -62,38 +54,52 @@ CATEGORY 2: VISUAL ASSETS
     },
     "video_url": "https://...",
     "360_view_url": "https://..."
-  }
-}
-_______________________
-
-CATEGORY 3: VARIANTS (Dynamic)
-{
+  },
+  
+  "_______________________": "CATEGORY 3: VARIANTS (Single Source of Truth)",
   "variants": [
     {
       "variant_key": "std",
-      "variant_name": "Honda CB150R Standard",
+      "variant_name": "Standard",
+      "full_name": "Honda CB150R Standard",
       "price": 450000,
       "currency": "BDT",
       "is_default": true,
-      "color_options": ["Red", "Black", "Blue"],
-      "features": ["ABS", "LED Headlight", "Digital Display"]
+      "color_options": [
+        {"name": "Red", "price_adjustment": 0},
+        {"name": "Black", "price_adjustment": 0},
+        {"name": "Blue", "price_adjustment": 5000}
+      ],
+      "features": ["ABS", "LED Headlight", "Digital Display"],
+      "braking_system": "Single Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "40 kmpl",
+      "mileage_user": "35-38 kmpl",
+      "topspeed_company": "130 km/h",
+      "topspeed_user": "125-128 km/h"
     },
     {
       "variant_key": "abs",
-      "variant_name": "Honda CB150R ABS",
+      "variant_name": "ABS",
+      "full_name": "Honda CB150R ABS",
       "price": 480000,
       "currency": "BDT",
       "is_default": false,
-      "color_options": ["Red", "Black"],
-      "features": ["Dual Channel ABS", "LED Headlight", "Digital Display", "Traction Control"]
+      "color_options": [
+        {"name": "Red", "price_adjustment": 0},
+        {"name": "Black", "price_adjustment": 0}
+      ],
+      "features": ["Dual Channel ABS", "LED Headlight", "Digital Display", "Traction Control"],
+      "braking_system": "Dual Channel ABS",
+      "tire_type": "Tubeless Radial",
+      "mileage_company": "39 kmpl",
+      "mileage_user": "34-37 kmpl",
+      "topspeed_company": "130 km/h",
+      "topspeed_user": "125-128 km/h"
     }
-  ]
-}
-
-_________________________
-
-CATEGORY 4: QUICK SPECIFICATIONS (Toggle: Company vs User)
-{
+  ],
+  
+  "_________________________": "CATEGORY 4: QUICK SPECIFICATIONS (Reference Layer)",
   "quick_specs": {
     "engine_capacity": "149.16 cc",
     "mileage": {
@@ -111,173 +117,131 @@ CATEGORY 4: QUICK SPECIFICATIONS (Toggle: Company vs User)
     "max_torque": "13.7 Nm",
     "fuel_tank": "12 L",
     "kerb_weight": "136 kg",
-    "spec_type": "company" // or "user"
-  }
-}
-__________________________
-
-CATEGORY 5: DETAILED SPECIFICATIONS
-
-{
-  "engine_performance": {
-    "engine": {
-      "engine_type": "Single Cylinder, 4-Stroke, SOHC",
-      "displacement": "149.16 cc",
-      "max_power": "16.4 HP @ 9000 rpm",
-      "max_torque": "13.7 Nm @ 7000 rpm",
-      "bore_stroke": "57.3 mm x 57.8 mm",
-      "compression_ratio": "11.3:1",
-      "fuel_system": "PGM-FI (Programmed Fuel Injection)",
-      "starting": "Electric & Kick Start",
-      "cooling_system": "Liquid Cooled",
-      "valve_train": "SOHC, 4 Valves",
-      "emission_standard": "Euro 4"
-    },
-    "performance": {
-      "top_speed": {
-        "company": "130 km/h",
-        "user": "125-128 km/h"
+    "spec_type": "company"
+  },
+  
+  "__________________________": "CATEGORY 5: DETAILED SPECIFICATIONS",
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, SOHC",
+        "displacement": "149.16 cc",
+        "max_power": "16.4 HP @ 9000 rpm",
+        "max_torque": "13.7 Nm @ 7000 rpm",
+        "bore_stroke": "57.3 mm x 57.8 mm",
+        "compression_ratio": "11.3:1",
+        "fuel_system": "PGM-FI (Programmed Fuel Injection)",
+        "starting": "Electric & Kick Start",
+        "cooling_system": "Liquid Cooled",
+        "valve_train": "SOHC, 4 Valves",
+        "emission_standard": "Euro 4"
       },
-      "acceleration_0_60": "4.8 seconds",
-      "acceleration_0_100": "12.5 seconds",
-      "fuel_efficiency": {
-        "company": "40 kmpl",
-        "user": "35-38 kmpl",
-        "average": 36.5
+      "performance": {
+        "acceleration_0_60": "4.8 seconds",
+        "acceleration_0_100": "12.5 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "12 L",
+        "reserve_fuel": "2.5 L",
+        "range_per_tank": "438 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Clutch",
+        "gearbox": "6-Speed",
+        "gear_pattern": "1-N-2-3-4-5-6",
+        "final_drive": "Chain Drive"
       },
-      "fuel_type": "Petrol",
-      "fuel_tank_capacity": "12 L",
-      "reserve_fuel": "2.5 L",
-      "range_per_tank": "438 km"
-    }
-  }
-}
-__________________________________
-
-5.2 Transmission & Braking
-{
-  "transmission_braking": {
-    "transmission": {
-      "clutch": "Wet Multiplate Clutch",
-      "gearbox": "6-Speed",
-      "gear_pattern": "1-N-2-3-4-5-6",
-      "final_drive": "Chain Drive"
+      "brakes": {
+        "front": "276 mm Disc Brake",
+        "rear": "220 mm Disc Brake",
+        "system": "Hydraulic Disc",
+        "abs": true,
+        "abs_type": "Dual Channel ABS",
+        "abs_front": true,
+        "abs_rear": true
+      }
     },
-    "brakes": {
-      "front": "276 mm Disc Brake",
-      "rear": "220 mm Disc Brake",
-      "system": "Hydraulic Disc",
-      "abs": true,
-      "abs_type": "Dual Channel ABS",
-      "abs_front": true,
-      "abs_rear": true
-    }
-  }
-}
-
-_______________________
-
-5.3 Dimensions & Chassis
-
-{
-  "dimensions_chassis": {
-    "dimensions": {
-      "length": "2035 mm",
-      "width": "720 mm",
-      "height": "1090 mm",
-      "wheelbase": "1310 mm",
-      "ground_clearance": "160 mm",
-      "seat_height": "795 mm"
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "null",
+        "width": "720 mm",
+        "height": "1090 mm",
+        "wheelbase": "1310 mm",
+        "ground_clearance": "160 mm",
+        "seat_height": "795 mm"
+      },
+      "chassis": {
+        "frame_type": "Diamond Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Monoshock with Pro-Link",
+        "adjustable_suspension": true
+      },
+      "weight": {
+        "kerb_weight": "136 kg",
+        "dry_weight": "128 kg",
+        "payload_capacity": "150 kg"
+      }
     },
-    "chassis": {
-      "frame_type": "Diamond Frame",
-      "suspension_front": "Telescopic Fork",
-      "suspension_rear": "Monoshock with Pro-Link",
-      "adjustable_suspension": true
+    "wheels_tyres": {
+      "tyres": {
+        "front": "100/80-17",
+        "rear": "130/70-17",
+        "type": "Tubeless Radial",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
     },
-    "weight": {
-      "kerb_weight": "136 kg",
-      "dry_weight": "128 kg",
-      "payload_capacity": "150 kg"
-    }
-  }
-}
-
-_______________
-
-5.4 Wheels & Tyres
-
-{
-  "wheels_tyres": {
-    "tyres": {
-      "front": "100/80-17",
-      "rear": "130/70-17",
-      "type": "Tubeless Radial",
-      "brand": "MRF"
-    },
-    "wheels": {
-      "front": "17-inch Alloy",
-      "rear": "17-inch Alloy",
-      "material": "Alloy"
-    }
-  }
-}
-
-_____________________
-
-5.5 Electrical & Features
-
-{
-  "electrical_features": {
-    "lighting": {
-      "headlight": "LED",
-      "tail_light": "LED",
-      "turn_signals": "LED",
-      "daytime_running_lights": true
-    },
-    "instrument_cluster": {
-      "type": "Digital LCD",
-      "display_items": [
-        "Speedometer",
-        "Tachometer",
-        "Odometer",
-        "Trip Meter",
-        "Fuel Gauge",
-        "Gear Position Indicator",
-        "Clock"
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Tachometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Gear Position Indicator",
+          "Clock"
+        ]
+      },
+      "battery": {
+        "type": "12V, 5Ah Maintenance-Free",
+        "capacity": "5Ah"
+      },
+      "additional_features": [
+        "Pass Switch",
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Service Reminder"
       ]
-    },
-    "battery": {
-      "type": "12V, 5Ah Maintenance-Free",
-      "capacity": "5Ah"
-    },
-    "additional_features": [
-      "Pass Switch",
-      "Engine Kill Switch",
-      "Side Stand Indicator",
-      "Low Fuel Warning",
-      "Service Reminder"
-    ]
-  }
-}
-
-
-__________________
-
-CATEGORY 6: PRICING & FINANCIAL
-
-{
+    }
+  },
+  
+  "__________________________": "CATEGORY 6: PRICING & FINANCIAL",
   "pricing_financial": {
-    "price": {
-      "amount": 450000,
+    "base_pricing": {
       "currency": "BDT",
-      "formatted": "৳ 4,50,000",
       "location": "Dhaka",
-      "price_type": "ex-showroom",
-      "on_road_price": 485000,
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 450000,
       "insurance": 15000,
       "registration": 10000,
-      "road_tax": 10000
+      "road_tax": 10000,
+      "on_road_price": 485000
     },
     "emi": {
       "monthly": 12500,
@@ -298,20 +262,10 @@ CATEGORY 6: PRICING & FINANCIAL
         "description": "Get ৳10,000 extra on exchange",
         "valid_until": "2026-02-28"
       }
-    ],
-    "colors_pricing": {
-      "Red": 450000,
-      "Black": 450000,
-      "Blue": 455000
-    }
-  }
-}
-
-__________________________
-
-CATEGORY 7: RATINGS & REVIEWS
-
-{
+    ]
+  },
+  
+  "__________________________": "CATEGORY 7: RATINGS & REVIEWS",
   "ratings_reviews": {
     "rating": {
       "average": 4.5,
@@ -326,36 +280,12 @@ CATEGORY 7: RATINGS & REVIEWS
       }
     },
     "breakdown": {
-      "performance": {
-        "score": 4.6,
-        "formatted": "4.6/5",
-        "count": 120
-      },
-      "looks": {
-        "score": 4.8,
-        "formatted": "4.8/5",
-        "count": 125
-      },
-      "reliability": {
-        "score": 4.9,
-        "formatted": "4.9/5",
-        "count": 115
-      },
-      "comfort": {
-        "score": 4.3,
-        "formatted": "4.3/5",
-        "count": 110
-      },
-      "value_for_money": {
-        "score": 4.4,
-        "formatted": "4.4/5",
-        "count": 118
-      },
-      "mileage": {
-        "score": 4.2,
-        "formatted": "4.2/5",
-        "count": 105
-      }
+      "performance": {"score": 4.6, "formatted": "4.6/5", "count": 120},
+      "looks": {"score": 4.8, "formatted": "4.8/5", "count": 125},
+      "reliability": {"score": 4.9, "formatted": "4.9/5", "count": 115},
+      "comfort": {"score": 4.3, "formatted": "4.3/5", "count": 110},
+      "value_for_money": {"score": 4.4, "formatted": "4.4/5", "count": 118},
+      "mileage": {"score": 4.2, "formatted": "4.2/5", "count": 105}
     },
     "review_summary": {
       "pros": [
@@ -381,58 +311,24 @@ CATEGORY 7: RATINGS & REVIEWS
         "helpful_votes": 12
       }
     ]
-  }
-}
-
-___________________
-
-CATEGORY 8: VARIANT COMPARISON TABLE
-
-{
+  },
+  
+  "____________________": "CATEGORY 8: VARIANT COMPARISON (Computed View)",
   "variant_comparison": {
     "variants": ["std", "abs"],
-    "comparison_data": {
-      "price": {
-        "std": "৳ 4,50,000",
-        "abs": "৳ 4,80,000"
-      },
-      "braking_system": {
-        "std": "Single Channel ABS",
-        "abs": "Dual Channel ABS"
-      },
-      "tire_type": {
-        "std": "Tubeless",
-        "abs": "Tubeless Radial"
-      },
-      "mileage_company": {
-        "std": "40 kmpl",
-        "abs": "39 kmpl"
-      },
-      "mileage_user": {
-        "std": "35-38 kmpl",
-        "abs": "34-37 kmpl"
-      },
-      "topspeed_company": {
-        "std": "130 km/h",
-        "abs": "130 km/h"
-      },
-      "topspeed_user": {
-        "std": "125-128 km/h",
-        "abs": "125-128 km/h"
-      },
-      "features": {
-        "std": ["LED Headlight", "Digital Display"],
-        "abs": ["LED Headlight", "Digital Display", "Traction Control"]
-      }
-    }
-  }
-}
-
-______________________
-
-CATEGORY 9: SIMILAR BIKES (Recommendations)
-
-{
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+  "______________________": "CATEGORY 9: SIMILAR BIKES (Recommendations)",
   "similar_bikes": [
     {
       "slug": "yamaha-mt-15-v2",
@@ -467,14 +363,9 @@ CATEGORY 9: SIMILAR BIKES (Recommendations)
       "similarity_score": 85,
       "similarity_reason": ["Same engine capacity", "Sports fairing", "Budget friendly"]
     }
-  ]
-}
-
-__________________
-
-CATEGORY 10: USED BIKES (Marketplace)
-
-{
+  ],
+  
+  "__________________": "CATEGORY 10: USED BIKES (Marketplace)",
   "used_bikes": [
     {
       "listing_id": "UB12345",
@@ -540,14 +431,9 @@ CATEGORY 10: USED BIKES (Marketplace)
       "verified": true,
       "listing_date": "2026-01-22"
     }
-  ]
-}
-
-_____________________
-
-CATEGORY 11: ADDITIONAL METADATA
-
-{
+  ],
+  
+  "_____________________": "CATEGORY 11: ADDITIONAL METADATA",
   "metadata": {
     "popularity_score": 85,
     "search_keywords": [
@@ -569,5 +455,3 @@ CATEGORY 11: ADDITIONAL METADATA
     "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna"]
   }
 }
-
-___________________

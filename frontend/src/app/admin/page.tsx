@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -12,58 +13,104 @@ import {
     Clock,
     AlertCircle,
     ArrowUpRight,
-    ArrowDownRight
+    ArrowDownRight,
+    Loader
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-const stats = [
-    {
-        title: "Total Users",
-        value: "1,248",
-        change: "+12%",
-        trend: "up",
-        icon: Users,
-    },
-    {
-        title: "Official Bikes",
-        value: "315",
-        change: "+5",
-        trend: "up",
-        icon: Bike,
-    },
-    {
-        title: "Active Used Ads",
-        value: "84",
-        change: "-2",
-        trend: "down",
-        icon: Store,
-    },
-    {
-        title: "Monthly Traffic",
-        value: "45.2k",
-        change: "+18%",
-        trend: "up",
-        icon: TrendingUp,
-    },
-];
-
-const pendingApprovals = [
-    { id: "1", bike: "Yamaha R15 V3", seller: "Karim Ahmed", date: "2 mins ago", price: "৳3,50,000" },
-    { id: "2", bike: "Suzuki Gixxer SF", seller: "Sabbir Khan", date: "15 mins ago", price: "৳2,10,000" },
-    { id: "3", bike: "Honda CBR 150R", seller: "Tanvir Hasan", date: "1 hour ago", price: "৳4,20,000" },
-];
+import { toast } from "sonner";
+import { adminAPI } from "@/lib/admin-api";
 
 export default function AdminDashboard() {
-    const handleApprove = (itemId: string) => {
-        console.log("Approving item:", itemId);
-        // TODO: Call API to approve the listing
+    const [stats, setStats] = useState<any[]>([]);
+    const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [approvingId, setApprovingId] = useState<number | null>(null);
+    const [rejectingId, setRejectingId] = useState<number | null>(null);
+
+    useEffect(() => {
+        loadDashboardData();
+    }, []);
+
+    const loadDashboardData = async () => {
+        try {
+            setLoading(true);
+            const [dashboardStats, pendingListings] = await Promise.all([
+                adminAPI.getDashboardStats(),
+                adminAPI.getRecentPending(5),
+            ]);
+
+            // Transform stats for display
+            const formattedStats = [
+                {
+                    title: "Total Users",
+                    value: dashboardStats.total_users.toLocaleString(),
+                    change: `${dashboardStats.user_change > 0 ? '+' : ''}${dashboardStats.user_change}%`,
+                    trend: dashboardStats.user_change > 0 ? "up" : "down",
+                    icon: Users,
+                },
+                {
+                    title: "Official Bikes",
+                    value: dashboardStats.total_bikes.toLocaleString(),
+                    change: `${dashboardStats.bikes_change > 0 ? '+' : ''}${dashboardStats.bikes_change}`,
+                    trend: dashboardStats.bikes_change > 0 ? "up" : "down",
+                    icon: Bike,
+                },
+                {
+                    title: "Active Used Ads",
+                    value: dashboardStats.active_listings.toLocaleString(),
+                    change: `${dashboardStats.listings_change > 0 ? '+' : ''}${dashboardStats.listings_change}`,
+                    trend: dashboardStats.listings_change > 0 ? "up" : "down",
+                    icon: Store,
+                },
+                {
+                    title: "Monthly Traffic",
+                    value: `${(dashboardStats.monthly_traffic / 1000).toFixed(1)}k`,
+                    change: `${dashboardStats.traffic_change > 0 ? '+' : ''}${dashboardStats.traffic_change}%`,
+                    trend: dashboardStats.traffic_change > 0 ? "up" : "down",
+                    icon: TrendingUp,
+                },
+            ];
+
+            setStats(formattedStats);
+            setPendingApprovals(pendingListings);
+        } catch (error) {
+            console.error("Failed to load dashboard:", error);
+            toast.error("Failed to load dashboard data");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleReject = (itemId: string) => {
-        console.log("Rejecting item:", itemId);
-        // TODO: Call API to reject the listing
+    const handleApprove = async (listingId: number) => {
+        try {
+            setApprovingId(listingId);
+            await adminAPI.approveListing(listingId);
+            toast.success("Listing approved successfully!");
+            setPendingApprovals(pendingApprovals.filter(p => p.id !== listingId));
+            await loadDashboardData();
+        } catch (error) {
+            console.error("Failed to approve listing:", error);
+            toast.error("Failed to approve listing");
+        } finally {
+            setApprovingId(null);
+        }
+    };
+
+    const handleReject = async (listingId: number) => {
+        try {
+            setRejectingId(listingId);
+            await adminAPI.rejectListing(listingId, "Rejected from admin dashboard");
+            toast.success("Listing rejected");
+            setPendingApprovals(pendingApprovals.filter(p => p.id !== listingId));
+            await loadDashboardData();
+        } catch (error) {
+            console.error("Failed to reject listing:", error);
+            toast.error("Failed to reject listing");
+        } finally {
+            setRejectingId(null);
+        }
     };
 
     return (
@@ -74,36 +121,42 @@ export default function AdminDashboard() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {stats.map((stat, i) => (
-                    <motion.div
-                        key={stat.title}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                    >
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                                <stat.icon className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{stat.value}</div>
-                                <div className="flex items-center text-xs mt-1">
-                                    <span className={cn(
-                                        "flex items-center font-medium mr-1",
-                                        stat.trend === "up" ? "text-green-600" : "text-red-600"
-                                    )}>
-                                        {stat.trend === "up" ? <ArrowUpRight className="h-3 w-3 mr-0.5" /> : <ArrowDownRight className="h-3 w-3 mr-0.5" />}
-                                        {stat.change}
-                                    </span>
-                                    <span className="text-muted-foreground">from last week</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                ))}
-            </div>
+            {loading && stats.length === 0 ? (
+                <div className="flex justify-center items-center py-12">
+                    <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                    {stats.map((stat, i) => (
+                        <motion.div
+                            key={stat.title}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                        >
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                                    <stat.icon className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{stat.value}</div>
+                                    <div className="flex items-center text-xs mt-1">
+                                        <span className={cn(
+                                            "flex items-center font-medium mr-1",
+                                            stat.trend === "up" ? "text-green-600" : "text-red-600"
+                                        )}>
+                                            {stat.trend === "up" ? <ArrowUpRight className="h-3 w-3 mr-0.5" /> : <ArrowDownRight className="h-3 w-3 mr-0.5" />}
+                                            {stat.change}
+                                        </span>
+                                        <span className="text-muted-foreground">from last week</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    ))}
+                </div>
+            )}
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
                 {/* Pending Moderation */}
@@ -118,32 +171,59 @@ export default function AdminDashboard() {
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-6">
-                            {pendingApprovals.map((item) => (
-                                <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-muted/40 border-none transition-colors hover:bg-muted/60">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded bg-background flex items-center justify-center border">
-                                            <Bike className="h-6 w-6 text-muted-foreground" />
+                        {pendingApprovals.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">
+                                <Bike className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                <p>No pending listings</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                {pendingApprovals.map((item) => (
+                                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-muted/40 border-none transition-colors hover:bg-muted/60">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded bg-background flex items-center justify-center border">
+                                                {item.image_url ? (
+                                                    <img src={item.image_url} alt={item.bike_model} className="h-12 w-12 rounded object-cover" />
+                                                ) : (
+                                                    <Bike className="h-6 w-6 text-muted-foreground" />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold leading-none">{item.bike_model} ({item.year})</p>
+                                                <p className="text-sm text-muted-foreground mt-1">by {item.seller_name} • ৳{item.price.toLocaleString()}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-semibold leading-none">{item.bike}</p>
-                                            <p className="text-sm text-muted-foreground mt-1">by {item.seller} • {item.price}</p>
+                                        <div className="flex items-center gap-3 self-end sm:self-center">
+                                            <span className="text-xs text-muted-foreground mr-2 flex items-center gap-1">
+                                                <Clock className="h-3 w-3" /> {new Date(item.created_at).toLocaleDateString()}
+                                            </span>
+                                            <Button 
+                                                size="sm" 
+                                                variant="ghost" 
+                                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                onClick={() => handleReject(item.id)}
+                                                disabled={rejectingId === item.id}
+                                            >
+                                                {rejectingId === item.id ? <Loader className="h-4 w-4 animate-spin" /> : <AlertCircle className="h-4 w-4" />}
+                                            </Button>
+                                            <Button 
+                                                size="sm" 
+                                                className="h-8 bg-green-600 hover:bg-green-700"
+                                                onClick={() => handleApprove(item.id)}
+                                                disabled={approvingId === item.id}
+                                            >
+                                                {approvingId === item.id ? (
+                                                    <Loader className="h-4 w-4 mr-1.5 animate-spin" />
+                                                ) : (
+                                                    <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                                                )}
+                                                Approve
+                                            </Button>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 self-end sm:self-center">
-                                        <span className="text-xs text-muted-foreground mr-2 flex items-center gap-1">
-                                            <Clock className="h-3 w-3" /> {item.date}
-                                        </span>
-                                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleReject(item.id)}>
-                                            <AlertCircle className="h-4 w-4" />
-                                        </Button>
-                                        <Button size="sm" className="h-8 bg-green-600 hover:bg-green-700" onClick={() => handleApprove(item.id)}>
-                                            <CheckCircle2 className="h-4 w-4 mr-1.5" /> Approve
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 

@@ -12,129 +12,111 @@ interface RequestConfig extends RequestInit {
     timeout?: number;
 }
 
+import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from "axios";
+
+// ============================================
+// API CLIENT - TYPE-SAFE HTTP CLIENT
+// ============================================
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
 class ApiClient {
-    private baseUrl: string;
-    private defaultTimeout: number = 30000;
+    private client: AxiosInstance;
 
-    constructor(baseUrl: string = "") {
-        this.baseUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL || "";
+    constructor(baseUrl: string) {
+        this.client = axios.create({
+            baseURL: baseUrl,
+            headers: {
+                "Content-Type": "application/json",
+            },
+            withCredentials: true,
+        });
+
+        this.setupInterceptors();
     }
 
-    /**
-     * Build URL with query parameters
-     */
-    private buildUrl(endpoint: string, params?: Record<string, string | number | boolean | undefined>): string {
-        const url = new URL(endpoint, this.baseUrl || window.location.origin);
-
-        if (params) {
-            Object.entries(params).forEach(([key, value]) => {
-                if (value !== undefined && value !== null && value !== "") {
-                    url.searchParams.append(key, String(value));
+    private setupInterceptors() {
+        // Request interceptor: Add JWT token
+        this.client.interceptors.request.use(
+            (config: InternalAxiosRequestConfig) => {
+                const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+                if (token && config.headers) {
+                    config.headers.Authorization = `Bearer ${token}`;
                 }
-            });
-        }
+                return config;
+            },
+            (error) => Promise.reject(error)
+        );
 
-        return url.toString();
-    }
+        // Response interceptor: Handle token refresh
+        this.client.interceptors.response.use(
+            (response: AxiosResponse) => response,
+            async (error) => {
+                const originalRequest = error.config;
+                if (
+                    error.response?.status === 401 &&
+                    !originalRequest._retry &&
+                    !originalRequest.url?.includes("/auth/")
+                ) {
+                    originalRequest._retry = true;
+                    const refreshToken = typeof window !== "undefined" ? localStorage.getItem("refreshToken") : null;
 
-    /**
-     * Get auth headers from session
-     */
-    private getAuthHeaders(): Record<string, string> {
-        // Token will be handled by NextAuth cookies automatically
-        // Add any custom headers here
-        return {};
-    }
+                    if (refreshToken) {
+                        try {
+                            const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+                                refresh: refreshToken,
+                            });
+                            const { access } = response.data;
 
-    /**
-     * Create abort controller with timeout
-     */
-    private createAbortController(timeout: number): AbortController {
-        const controller = new AbortController();
-        setTimeout(() => controller.abort(), timeout);
-        return controller;
-    }
+                            if (typeof window !== "undefined") {
+                                localStorage.setItem("accessToken", access);
+                            }
 
-    /**
-     * Parse API error from response
-     */
-    private async parseError(response: Response): Promise<ApiError> {
-        try {
-            const data = await response.json();
-            return {
-                code: data.code || `HTTP_${response.status}`,
-                message: data.message || response.statusText,
-                details: data.details,
-            };
-        } catch {
-            return {
-                code: `HTTP_${response.status}`,
-                message: response.statusText || "An error occurred",
-            };
-        }
-    }
+                            originalRequest.headers.Authorization = `Bearer ${access}`;
+                            return this.client(originalRequest);
+                        } catch (refreshError) {
+                            // Clear tokens and redirect to login if refresh fails
+                            if (typeof window !== "undefined") {
+                                localStorage.removeItem("accessToken");
+                                localStorage.removeItem("refreshToken");
+                                window.location.href = "/login";
+                            }
+                        }
+                    }
+                }
 
-    /**
-     * Core request method
-     */
-    private async request<T>(
-        method: HttpMethod,
-        endpoint: string,
-        config: RequestConfig = {}
-    ): Promise<ApiResponse<T>> {
-        const { params, timeout = this.defaultTimeout, ...fetchConfig } = config;
-        const url = this.buildUrl(endpoint, params);
-        const controller = this.createAbortController(timeout);
+                // Format error to match ApiResponse type structure
+                const apiError: ApiError = {
+                    code: error.response?.data?.code || `HTTP_${error.response?.status || "UNKNOWN"}`,
+                    message: error.response?.data?.message || error.message || "An error occurred",
+                    details: error.response?.data?.details,
+                };
 
-        try {
-            const response = await fetch(url, {
-                method,
-                ...fetchConfig,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...this.getAuthHeaders(),
-                    ...fetchConfig.headers,
-                },
-                signal: controller.signal,
-                credentials: "include", // Include cookies for auth
-            });
-
-            // Handle no content response
-            if (response.status === 204) {
-                return { success: true };
+                return Promise.reject({ success: false, error: apiError });
             }
+        );
+    }
 
-            // Handle error responses
-            if (!response.ok) {
-                const error = await this.parseError(response);
-                return { success: false, error };
-            }
-
-            // Parse successful response
-            const data = await response.json();
+    /**
+     * Helper to wrap axios calls in our ApiResponse format
+     */
+    private async wrapRequest<T>(request: Promise<AxiosResponse>): Promise<ApiResponse<T>> {
+        try {
+            const response = await request;
             return {
                 success: true,
-                data: data.data ?? data,
-                meta: data.meta,
+                data: response.data.data ?? response.data,
+                meta: response.data.meta,
             };
-        } catch (error) {
-            // Handle abort/timeout
-            if (error instanceof Error && error.name === "AbortError") {
-                return {
-                    success: false,
-                    error: {
-                        code: "TIMEOUT",
-                        message: "Request timed out",
-                    },
-                };
-            }
+        } catch (error: any) {
+            // Error is already formatted in interceptor or is a network error
+            if (error.success === false) return error;
 
-            // Handle network errors
             return {
                 success: false,
                 error: {
                     code: "NETWORK_ERROR",
-                    message: error instanceof Error ? error.message : "Network error",
+                    message: error.message || "Network error",
                 },
             };
         }
@@ -143,114 +125,54 @@ class ApiClient {
     /**
      * GET request
      */
-    async get<T>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
-        return this.request<T>("GET", endpoint, config);
+    async get<T>(endpoint: string, config?: any): Promise<ApiResponse<T>> {
+        return this.wrapRequest<T>(this.client.get(endpoint, config));
     }
 
     /**
      * POST request
      */
-    async post<T>(
-        endpoint: string,
-        data?: unknown,
-        config?: RequestConfig
-    ): Promise<ApiResponse<T>> {
-        return this.request<T>("POST", endpoint, {
-            ...config,
-            body: data ? JSON.stringify(data) : undefined,
-        });
+    async post<T>(endpoint: string, data?: unknown, config?: any): Promise<ApiResponse<T>> {
+        return this.wrapRequest<T>(this.client.post(endpoint, data, config));
     }
 
     /**
      * PUT request
      */
-    async put<T>(
-        endpoint: string,
-        data?: unknown,
-        config?: RequestConfig
-    ): Promise<ApiResponse<T>> {
-        return this.request<T>("PUT", endpoint, {
-            ...config,
-            body: data ? JSON.stringify(data) : undefined,
-        });
+    async put<T>(endpoint: string, data?: unknown, config?: any): Promise<ApiResponse<T>> {
+        return this.wrapRequest<T>(this.client.put(endpoint, data, config));
     }
 
     /**
      * PATCH request
      */
-    async patch<T>(
-        endpoint: string,
-        data?: unknown,
-        config?: RequestConfig
-    ): Promise<ApiResponse<T>> {
-        return this.request<T>("PATCH", endpoint, {
-            ...config,
-            body: data ? JSON.stringify(data) : undefined,
-        });
+    async patch<T>(endpoint: string, data?: unknown, config?: any): Promise<ApiResponse<T>> {
+        return this.wrapRequest<T>(this.client.patch(endpoint, data, config));
     }
 
     /**
      * DELETE request
      */
-    async delete<T>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
-        return this.request<T>("DELETE", endpoint, config);
+    async delete<T>(endpoint: string, config?: any): Promise<ApiResponse<T>> {
+        return this.wrapRequest<T>(this.client.delete(endpoint, config));
     }
 
     /**
      * Upload file with multipart form data
      */
-    async upload<T>(
-        endpoint: string,
-        formData: FormData,
-        config?: RequestConfig
-    ): Promise<ApiResponse<T>> {
-        const { timeout = 60000, ...fetchConfig } = config || {};
-        const url = this.buildUrl(endpoint);
-        const controller = this.createAbortController(timeout);
-
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                ...fetchConfig,
-                headers: {
-                    ...this.getAuthHeaders(),
-                    // Don't set Content-Type - let browser set it with boundary
-                },
-                body: formData,
-                signal: controller.signal,
-                credentials: "include",
-            });
-
-            if (!response.ok) {
-                const error = await this.parseError(response);
-                return { success: false, error };
-            }
-
-            const data = await response.json();
-            return {
-                success: true,
-                data: data.data ?? data,
-            };
-        } catch (error) {
-            if (error instanceof Error && error.name === "AbortError") {
-                return {
-                    success: false,
-                    error: { code: "TIMEOUT", message: "Upload timed out" },
-                };
-            }
-            return {
-                success: false,
-                error: {
-                    code: "NETWORK_ERROR",
-                    message: error instanceof Error ? error.message : "Upload failed",
-                },
-            };
-        }
+    async upload<T>(endpoint: string, formData: FormData, config?: any): Promise<ApiResponse<T>> {
+        return this.wrapRequest<T>(this.client.post(endpoint, formData, {
+            ...config,
+            headers: {
+                ...config?.headers,
+                "Content-Type": "multipart/form-data",
+            },
+        }));
     }
 }
 
 // Export singleton instance
-export const api = new ApiClient();
+export const api = new ApiClient(API_BASE_URL);
 
 // ============================================
 // API SERVICE METHODS
