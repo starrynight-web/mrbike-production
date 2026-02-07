@@ -3,7 +3,7 @@
  * Handles all admin operations for bikes and used bikes management
  */
 
-import { api } from './api';
+import { api } from "./api";
 
 // ==================== TYPES ====================
 
@@ -24,6 +24,7 @@ export interface Bike {
   transmission: string;
   braking_system: string;
   features: string[];
+  description?: string;
 }
 
 export interface UsedBikeListing {
@@ -37,7 +38,7 @@ export interface UsedBikeListing {
   year: number;
   mileage: number;
   condition: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   image_url: string;
   description: string;
   created_at: string;
@@ -66,12 +67,16 @@ class AdminAPI {
    */
   async getAllBikes(params?: {
     search?: string;
-    status?: 'published' | 'draft';
-    sort?: 'name' | 'price' | 'rating';
+    status?: "published" | "draft";
+    sort?: "name" | "price" | "rating";
     limit?: number;
     offset?: number;
   }) {
-    const response = await api.get('/bikes/', { params });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.get<any>("/bikes/", { params });
+    if (!response.success || !response.data) {
+      return { results: [], count: 0 };
+    }
     return response.data;
   }
 
@@ -87,7 +92,7 @@ class AdminAPI {
    * Create new bike
    */
   async createBike(data: Partial<Bike>) {
-    const response = await api.post('/bikes/', data);
+    const response = await api.post("/bikes/", data);
     return response.data;
   }
 
@@ -109,8 +114,11 @@ class AdminAPI {
   /**
    * Bulk update bike status
    */
-  async bulkUpdateBikes(ids: number[], updates: { published?: boolean; featured?: boolean }) {
-    const response = await api.post('/bikes/bulk-update/', {
+  async bulkUpdateBikes(
+    ids: number[],
+    updates: { published?: boolean; featured?: boolean },
+  ) {
+    const response = await api.post("/bikes/bulk-update/", {
       ids,
       ...updates,
     });
@@ -131,14 +139,18 @@ class AdminAPI {
    * Get all used bike listings with filtering
    */
   async getAllUsedBikes(params?: {
-    status?: 'pending' | 'approved' | 'rejected';
+    status?: "pending" | "approved" | "rejected";
     search?: string;
     condition?: string;
-    sort?: 'newest' | 'price_asc' | 'price_desc';
+    sort?: "newest" | "price_asc" | "price_desc";
     limit?: number;
     offset?: number;
   }) {
-    const response = await api.get('/used-bikes/', { params });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.get<any>("/used-bikes/", { params });
+    if (!response.success || !response.data) {
+      return { results: [], count: 0 };
+    }
     return response.data;
   }
 
@@ -195,15 +207,32 @@ class AdminAPI {
    * Get admin dashboard statistics
    */
   async getDashboardStats(): Promise<AdminStats> {
-    const response = await api.get('/admin/stats/');
-    return response.data;
+    const response = await api.get<AdminStats>("/admin/stats/");
+    if (!response.success || !response.data) {
+      return {
+        total_users: 0,
+        total_bikes: 0,
+        active_listings: 0,
+        monthly_traffic: 0,
+        pending_approvals: 0,
+        user_change: 0,
+        bikes_change: 0,
+        listings_change: 0,
+        traffic_change: 0,
+      };
+    }
+    return response.data as AdminStats;
   }
 
   /**
    * Get pending approvals count
    */
   async getPendingApprovalsCount(): Promise<{ count: number }> {
-    const response = await api.get('/used-bikes/?status=pending&limit=1');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.get<any>("/used-bikes/?status=pending&limit=1");
+    if (!response.success || !response.data) {
+      return { count: 0 };
+    }
     return { count: response.data.count || 0 };
   }
 
@@ -211,9 +240,16 @@ class AdminAPI {
    * Get recent pending listings (for dashboard)
    */
   async getRecentPending(limit: number = 5): Promise<UsedBikeListing[]> {
-    const response = await api.get('/used-bikes/?status=pending&ordering=-created_at', {
-      params: { limit },
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.get<any>(
+      "/used-bikes/?status=pending&ordering=-created_at",
+      {
+        params: { limit },
+      },
+    );
+    if (!response.success || !response.data) {
+      return [];
+    }
     return response.data.results || [];
   }
 
@@ -222,12 +258,15 @@ class AdminAPI {
   /**
    * Upload image with compression preview
    */
-  async uploadImage(file: File): Promise<{ url: string; size: number; originalSize: number }> {
+  async uploadImage(
+    file: File,
+  ): Promise<{ url: string; size: number; originalSize: number }> {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append("image", file);
 
-    const response = await api.post('/bikes/upload-image/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.post<any>("/bikes/upload-image/", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
 
     return response.data;
@@ -245,8 +284,8 @@ class AdminAPI {
   /**
    * Search bikes and listings
    */
-  async search(query: string, type: 'bikes' | 'used-bikes' = 'bikes') {
-    const endpoint = type === 'bikes' ? '/bikes/' : '/used-bikes/';
+  async search(query: string, type: "bikes" | "used-bikes" = "bikes") {
+    const endpoint = type === "bikes" ? "/bikes/" : "/used-bikes/";
     const response = await api.get(endpoint, {
       params: { search: query },
     });
@@ -262,7 +301,8 @@ class AdminAPI {
     conditions: string[];
     fuelTypes: string[];
   }> {
-    const response = await api.get('/admin/filter-options/');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.get<any>("/admin/filter-options/");
     return response.data;
   }
 
@@ -272,7 +312,7 @@ class AdminAPI {
    * Get all brands
    */
   async getAllBrands() {
-    const response = await api.get('/brands/');
+    const response = await api.get("/brands/");
     return response.data;
   }
 
@@ -280,7 +320,7 @@ class AdminAPI {
    * Create brand
    */
   async createBrand(data: { name: string; logo_url?: string }) {
-    const response = await api.post('/brands/', data);
+    const response = await api.post("/brands/", data);
     return response.data;
   }
 
@@ -304,8 +344,8 @@ class AdminAPI {
   /**
    * Get usage analytics
    */
-  async getAnalytics(period: 'week' | 'month' | 'year' = 'month') {
-    const response = await api.get('/admin/analytics/', {
+  async getAnalytics(period: "week" | "month" | "year" = "month") {
+    const response = await api.get("/admin/analytics/", {
       params: { period },
     });
     return response.data;
@@ -322,10 +362,13 @@ class AdminAPI {
   /**
    * Export data
    */
-  async exportData(type: 'bikes' | 'listings' | 'users', format: 'csv' | 'excel' = 'csv') {
+  async exportData(
+    type: "bikes" | "listings" | "users",
+    format: "csv" | "excel" = "csv",
+  ) {
     const response = await api.get(`/admin/export-${type}/`, {
       params: { format },
-      responseType: 'blob',
+      responseType: "blob",
     });
     return response.data;
   }

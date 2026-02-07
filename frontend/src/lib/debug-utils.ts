@@ -48,9 +48,11 @@ async function scanDirectory(currentPath: string, routePrefix: string, routes: R
       await scanDirectory(path.join(currentPath, dirName), nextPrefix, routes);
     } else if (entry.isFile()) {
       const fileName = entry.name;
+      const isPage = fileName.startsWith('page.');
+      const isRoute = fileName.startsWith('route.');
       
-      if (fileName === 'page.tsx' || fileName === 'page.js' || fileName === 'page.jsx' || fileName === 'page.ts') {
-        // Found a page
+      if ((isPage || isRoute) && (fileName.endsWith('.tsx') || fileName.endsWith('.ts') || fileName.endsWith('.js') || fileName.endsWith('.jsx'))) {
+        // Found a page or route
         const fullPath = path.join(currentPath, fileName);
         const fileContent = fs.readFileSync(fullPath, 'utf-8');
         
@@ -67,7 +69,7 @@ async function scanDirectory(currentPath: string, routePrefix: string, routes: R
           status,
           params,
           authRequired,
-          type: 'page'
+          type: isRoute ? 'route' : 'page'
         });
       }
     }
@@ -87,6 +89,7 @@ function checkAuthRequirement(content: string): boolean {
     content.includes('getServerSession') || 
     content.includes('redirect("/login")') ||
     content.includes("redirect('/login')") ||
-    content.includes('middleware') // unlikely in page, but possible ref
+    content.includes('middleware') ||
+    content.includes('adminAPI') // Admin pages usually require auth
   );
 }

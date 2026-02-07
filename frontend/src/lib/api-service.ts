@@ -6,6 +6,7 @@ import {
   getMockNews,
   getMockNewsArticle,
   getMockUsedBikes,
+  getMockUsedBikeById,
   getMockBikeBySlug,
   getMockSimilarBikes,
   getMockReviews,
@@ -136,10 +137,22 @@ class ApiService {
   // Marketplace APIs
   async getUsedBikes(params: QueryParams = {}) {
     try {
-      return await this.client.get("/marketplace/listings/", { params });
+      const res = await this.client.get("/marketplace/listings/", { params });
+      return res;
     } catch (error) {
       this.handleError("getUsedBikes", error);
-      return getMockUsedBikes(params);
+      const mock = getMockUsedBikes(params);
+      return { data: mock.data };
+    }
+  }
+
+  async getUsedBike(id: string) {
+    try {
+      const res = await this.client.get(`/marketplace/listings/${id}/`);
+      return res;
+    } catch (error) {
+      this.handleError("getUsedBike", error);
+      return getMockUsedBikeById(id);
     }
   }
 

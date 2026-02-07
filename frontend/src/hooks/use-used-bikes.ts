@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-service";
-import type { UsedBikeFilters, UsedBike } from "@/types";
+import type { UsedBikeFilters } from "@/types";
 
 // ============================================
 // QUERY KEYS
@@ -33,15 +33,15 @@ export function useUsedBikes(filters?: UsedBikeFilters) {
  * Fetch single used bike by ID
  */
 export function useUsedBike(id: string) {
-    return useQuery({
-        queryKey: usedBikeQueryKeys.detail(id),
-        queryFn: async () => {
-            const response = await api.client.get<UsedBike>(`/marketplace/listings/${id}/`);
-            return response.data;
-        },
-        staleTime: 5 * 60 * 1000,
-        enabled: !!id,
-    });
+  return useQuery({
+    queryKey: usedBikeQueryKeys.detail(id),
+    queryFn: async () => {
+      const response = await api.getUsedBike(id);
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled: !!id,
+  });
 }
 
 /**

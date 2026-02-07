@@ -327,83 +327,133 @@ export const getMockNewsArticle = (slug: string) => {
   return { data: article };
 };
 
-const MOCK_USED_BIKES = [
-  {
-    id: "ub-1",
-    bikeName: "Yamaha R15 V3",
-    brandName: "Yamaha",
-    sellerId: "s-1",
-    sellerName: "Sajid Khan",
-    sellerPhone: "017********",
-    images: [
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Yamaha_Motor_Logo_%28full%29.svg/2560px-Yamaha_Motor_Logo_%28full%29.svg.png",
-    ],
-    thumbnailUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Yamaha_Motor_Logo_%28full%29.svg/2560px-Yamaha_Motor_Logo_%28full%29.svg.png",
-    price: 350000,
-    year: 2021,
-    kmDriven: 12000,
-    condition: "excellent",
-    accidentHistory: false,
-    location: {
-      city: "Dhaka",
-      area: "Mirpur",
-    },
-    status: "active",
-    isFeatured: true,
-    isVerified: true,
-    expiresAt: new Date("2024-12-31"),
-    createdAt: new Date("2023-10-01"),
-    updatedAt: new Date("2023-10-01"),
-  },
-  {
-    id: "ub-2",
-    bikeName: "Suzuki Gixxer SF",
-    brandName: "Suzuki",
-    sellerId: "s-2",
-    sellerName: "Tanvir Ahmed",
-    sellerPhone: "018********",
-    images: [
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Suzuki_logo_2.svg/2560px-Suzuki_logo_2.svg.png",
-    ],
-    thumbnailUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Suzuki_logo_2.svg/2560px-Suzuki_logo_2.svg.png",
-    price: 180000,
-    year: 2019,
-    kmDriven: 25000,
-    condition: "good",
-    accidentHistory: false,
-    location: {
-      city: "Chittagong",
-      area: "Agrabad",
-    },
-    status: "active",
-    isFeatured: false,
-    isVerified: true,
-    expiresAt: new Date("2024-12-30"),
-    createdAt: new Date("2023-10-05"),
-    updatedAt: new Date("2023-10-05"),
-  },
-];
+// Used bikes from bikes.json (used bike catalogue & listing)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getUsedBikesFromJson(): any[] {
+  const raw = (bikesData as { usedBikes?: unknown[] }).usedBikes;
+  if (!Array.isArray(raw)) return [];
+  const defaultImg =
+    (bikesData.images as Record<string, string>)?.["default"] ||
+    "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=1000&q=80";
+  return raw.map((u: Record<string, unknown>) => {
+    const images = (u.images as string[]) || ["default"];
+    const thumb = (u.thumbnailUrl as string) || "default";
+    const resolve = (key: string) =>
+      key === "default" ? defaultImg : key;
+    const imgUrls = images.map(resolve);
+    const thumbUrl = resolve(thumb);
+    return {
+      id: u.id,
+      bikeName: u.bikeName,
+      brandName: u.brandName,
+      sellerId: u.sellerId,
+      sellerName: u.sellerName,
+      sellerPhone: u.sellerPhone,
+      images: imgUrls,
+      thumbnailUrl: thumbUrl,
+      price: Number(u.price),
+      year: Number(u.year),
+      kmDriven: Number(u.kmDriven),
+      condition: (u.condition as string) || "good",
+      accidentHistory: Boolean(u.accidentHistory),
+      location: {
+        city: (u.location as { city?: string })?.city ?? "",
+        area: (u.location as { area?: string })?.area ?? "",
+      },
+      status: (u.status as string) || "active",
+      description: (u.description as string) || "",
+      isFeatured: Boolean(u.isFeatured),
+      isVerified: Boolean(u.isVerified),
+      expiresAt: new Date((u.expiresAt as string) || Date.now()),
+      createdAt: new Date((u.createdAt as string) || Date.now()),
+      updatedAt: new Date((u.updatedAt as string) || Date.now()),
+      similarIds: Array.isArray(u.similarIds) ? (u.similarIds as string[]) : [],
+    };
+  });
+}
+
+const usedBikesCache = getUsedBikesFromJson();
 
 export const getMockUsedBikes = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: Record<string, any> = {},
 ) => {
-  let filtered = MOCK_USED_BIKES;
+  let filtered = [...usedBikesCache];
 
   if (params.featured) {
     filtered = filtered.filter((b) => b.isFeatured);
   }
+  if (params.brand && Array.isArray(params.brand) && params.brand.length > 0) {
+    const brands = (params.brand as string[]).map((b: string) =>
+      b.toLowerCase(),
+    );
+    filtered = filtered.filter((b) =>
+      brands.includes(b.brandName.toLowerCase()),
+    );
+  }
+  if (
+    params.condition &&
+    Array.isArray(params.condition) &&
+    params.condition.length > 0
+  ) {
+    const conditions = (params.condition as string[]).map((c: string) =>
+      c.toLowerCase(),
+    );
+    filtered = filtered.filter((b) =>
+      conditions.includes(String(b.condition).toLowerCase()),
+    );
+  }
+  const minP = params.minPrice ?? params.priceMin;
+  const maxP = params.maxPrice ?? params.priceMax;
+  if (minP != null) {
+    filtered = filtered.filter((b) => b.price >= Number(minP));
+  }
+  if (maxP != null) {
+    filtered = filtered.filter((b) => b.price <= Number(maxP));
+  }
+  if (params.location) {
+    const loc = String(params.location).toLowerCase();
+    filtered = filtered.filter(
+      (b) =>
+        b.location.city.toLowerCase().includes(loc) ||
+        (b.location.area && b.location.area.toLowerCase().includes(loc)),
+    );
+  }
+  if (params.ids && Array.isArray(params.ids) && params.ids.length > 0) {
+    const idSet = new Set(params.ids as string[]);
+    filtered = filtered.filter((b) => idSet.has(b.id));
+  }
+
+  const page = Number(params.page) || 1;
+  const limit = Math.min(Number(params.limit) || 12, 50);
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+  const start = (currentPage - 1) * limit;
+  const usedBikes = filtered.slice(start, start + limit);
 
   return {
     data: {
-      results: filtered,
-      count: filtered.length,
-      next: null,
-      previous: null,
+      usedBikes,
+      meta: {
+        page: currentPage,
+        limit,
+        total,
+        totalPages,
+        hasPrevPage: currentPage > 1,
+        hasNextPage: currentPage < totalPages,
+        currentPage,
+      },
     },
   };
+};
+
+export const getMockUsedBikeById = (id: string) => {
+  const bike = usedBikesCache.find((b) => b.id === id);
+  if (!bike) {
+    throw new Error("Used bike not found in mock data");
+  }
+  return { data: bike };
 };
 
 export const getMockReviews = (bikeId: string | number) => {
