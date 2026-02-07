@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useBrand, useBrandBikes } from "@/hooks/use-brands";
 import { BikeCard } from "@/components/bikes/bike-card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ChevronRight, ArrowLeft, Info, MapPin } from "lucide-react";
 import { Bike } from "@/types";

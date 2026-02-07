@@ -2,58 +2,58 @@
 
 import { useEffect, useState } from "react";
 import {
-    Plus,
-    Search,
-    Filter,
-    MoreVertical,
-    Edit2,
-    Trash2,
-    Copy,
-    Bike,
-    ExternalLink,
-    ChevronDown,
-    Save,
+  Plus,
+  Search,
+  Filter,
+  MoreVertical,
+  Edit2,
+  Trash2,
+  Copy,
+  Bike,
+  ExternalLink,
+  Save,
     Loader,
-    Upload
+    Upload,
 } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/utils";
@@ -229,22 +229,47 @@ export default function AdminBikesPage() {
         }
     };
 
-    const filteredBikes = bikes.filter(bike => {
-        const matchesSearch = bike.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            bike.brand.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = categoryFilter === "all" || bike.category === categoryFilter;
-        return matchesSearch && matchesCategory;
-    });
+  const filteredBikes = bikes.filter((bike) => {
+    const matchesSearch =
+      bike.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      bike.brand.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      categoryFilter === "all" || bike.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
 
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Official Bikes</h1>
-                    <p className="text-muted-foreground">
-                        Manage the database of official motorcycle models available in Bangladesh.
-                    </p>
-                </div>
+  const handleDelete = (id: string) => {
+    if (confirm("Are you sure you want to delete this bike model?")) {
+      setBikes(bikes.filter((b) => b.id !== id));
+      toast.success("Bike model deleted successfully");
+    }
+  };
+
+  const handleDuplicate = (id: string) => {
+    const bikeToDuplicate = bikes.find((b) => b.id === id);
+    if (bikeToDuplicate) {
+      const newBike = {
+        ...bikeToDuplicate,
+        // eslint-disable-next-line
+        id: Date.now().toString(),
+        name: `${bikeToDuplicate.name} (Copy)`,
+        status: "draft" as const,
+      };
+      setBikes([newBike, ...bikes]);
+      toast.success("Bike model duplicated as draft");
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Official Bikes</h1>
+          <p className="text-muted-foreground">
+            Manage the database of official motorcycle models available in
+            Bangladesh.
+          </p>
+        </div>
 
                 <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
                     setIsAddDialogOpen(open);
@@ -264,12 +289,12 @@ export default function AdminBikesPage() {
                                 </DialogDescription>
                             </DialogHeader>
 
-                            <Tabs defaultValue="basic" className="mt-6">
-                                <TabsList className="grid w-full grid-cols-3">
-                                    <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                                    <TabsTrigger value="engine">Engine & Performance</TabsTrigger>
-                                    <TabsTrigger value="image">Image</TabsTrigger>
-                                </TabsList>
+              <Tabs defaultValue="basic" className="mt-6">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                  <TabsTrigger value="engine">Engine & Performance</TabsTrigger>
+                  <TabsTrigger value="image">Image</TabsTrigger>
+                </TabsList>
 
                                 <TabsContent value="basic" className="space-y-4 pt-4">
                                     <div className="grid grid-cols-2 gap-4">
