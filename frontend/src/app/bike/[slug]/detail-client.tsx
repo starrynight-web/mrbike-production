@@ -29,7 +29,7 @@ import {
   useSubmitReview,
   useSimilarBikes,
 } from "@/hooks/use-bikes";
-import { useWishlistStore, useCompareStore, useAuthStore } from "@/store";
+import { useWishlistStore, useCompareStore, useAuthStore, useHasHydrated } from "@/store";
 import { EMI_CONFIG } from "@/config/constants";
 import type { Review } from "@/types";
 import {
@@ -371,6 +371,7 @@ function SimilarNewBikes({
       ) : (
         <div className="flex flex-col gap-4">
           {(Array.isArray(similarBikes) ? similarBikes : []).map(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (bike: any) => {
               const bikeId = bike.id || bike.slug;
               const bikeName = bike.name || "";
@@ -444,15 +445,21 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
     return (bikesData.bikes as MockBikeData[]).find((b) => b.id === slug);
   }, [slug]);
 
-  const mockUsedBikes = useMemo(() => getMockUsedBikes().data.results, []);
+  const mockUsedBikes = useMemo(
+    () => getMockUsedBikes({ limit: 4 }).data.usedBikes ?? [],
+    [],
+  );
 
   // Fetch bike data from API (fallback)
   const { data: bike, isLoading, error } = useBike(slug);
   const { data: reviews } = useBikeReviews(bike?.id || mockBike?.id || "");
 
   // Store hooks
-  const { isInWishlist, toggleWishlist } = useWishlistStore();
+  const { isInFavorites, toggleFavorite } = useWishlistStore();
   const { isBikeSelected, addBike, removeBike } = useCompareStore();
+  const wishlistHydrated = useHasHydrated(useWishlistStore);
+  const compareHydrated = useHasHydrated(useCompareStore);
+  const storesReady = wishlistHydrated && compareHydrated;
 
   // Get variant data (variants live at top-level in API)
   const variants = bike?.variants || mockBike?.variants || {};
@@ -494,12 +501,12 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
   const basePrice =
     currentVariant?.price || mockBike?.price || bike?.priceRange?.min || 0;
   const bikeRating = mockBike?.rating || bike?.rating?.average || 4.5;
-  const bikeId = mockBike?.id || bike?.id || slug;
+  const bikeId = String(mockBike?.id ?? bike?.id ?? slug);
   const bikeDescription = bike?.description || mockBike?.description || "";
   const totalReviews = reviews?.length || 128;
 
-  const isWishlisted = isInWishlist(bikeId);
-  const isInCompare = bike ? isBikeSelected(bike.id) : false;
+  const isFavorited = isInFavorites(bikeId);
+  const isInCompare = bike ? isBikeSelected(String(bike.id)) : false;
 
   const downPayment = basePrice * (EMI_CONFIG.downPaymentPercent / 100);
   const loanAmount = basePrice - downPayment;
@@ -510,12 +517,18 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
   );
 
   const handleCompareToggle = () => {
-    if (!bike) return;
+    if (!bike || !storesReady) return;
+    const id = String(bike.id);
     if (isInCompare) {
-      removeBike(bike.id);
+      removeBike(id);
     } else {
       addBike(bike);
     }
+  };
+
+  const handleFavoriteClick = () => {
+    if (!storesReady) return;
+    toggleFavorite(bikeId);
   };
 
   const handleVariantChange = (variantKey: string) => {
@@ -570,21 +583,22 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
           </div>
           <div className="flex gap-2">
             <Button
-              variant={isWishlisted ? "default" : "outline"}
+              type="button"
+              variant={isFavorited ? "default" : "outline"}
               size="sm"
-              onClick={() => toggleWishlist(bikeId)}
+              onClick={handleFavoriteClick}
+              disabled={!storesReady}
               className="gap-2"
             >
-              <Heart
-                className={cn("h-4 w-4", isWishlisted && "fill-current")}
-              />
-              {isWishlisted ? "Wishlisted" : "Add to Wishlist"}
+              <Heart className={cn("h-4 w-4", isFavorited && "fill-current")} />
+              {isFavorited ? "Saved to Favorites" : "Add to Favorites"}
             </Button>
             <Button
+              type="button"
               variant={isInCompare ? "default" : "outline"}
               size="sm"
               onClick={handleCompareToggle}
-              disabled={!bike}
+              disabled={!bike || !storesReady}
               className="gap-2"
             >
               <Check className={cn("h-4 w-4", !isInCompare && "opacity-0")} />
@@ -755,14 +769,15 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
             </div>
             {mockUsedBikes.length > 0 ? (
               <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
-                {mockUsedBikes.map((usedBike, index) => (
-                  <div
-                    key={index}
-                    className="shrink-0 w-40 bg-muted/50 rounded-lg overflow-hidden border hover:shadow-md transition-shadow cursor-pointer"
+                {mockUsedBikes.map((usedBike) => (
+                  <Link
+                    key={usedBike.id}
+                    href={`/used-bike/${usedBike.id}`}
+                    className="shrink-0 w-40 bg-muted/50 rounded-lg overflow-hidden border hover:shadow-md transition-shadow block"
                   >
                     <div className="aspect-[4/3] bg-muted relative">
                       <Image
-                        src={defaultImage}
+                        src={usedBike.thumbnailUrl || defaultImage}
                         alt={usedBike.bikeName}
                         fill
                         className="object-cover"
@@ -775,11 +790,11 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                       <p className="text-primary font-semibold text-sm">
                         {formatPrice(usedBike.price)}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground capitalize">
                         {usedBike.condition}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (

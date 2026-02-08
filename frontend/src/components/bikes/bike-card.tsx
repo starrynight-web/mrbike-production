@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatPrice } from "@/lib/utils";
-import { useWishlistStore, useCompareStore } from "@/store";
+import { useWishlistStore, useCompareStore, useHasHydrated } from "@/store";
 import type { Bike } from "@/types";
 
 interface BikeCardProps {
@@ -21,23 +21,29 @@ export function BikeCard({
   showCompare = true,
   priority = false,
 }: BikeCardProps) {
-  const { isInWishlist, toggleWishlist } = useWishlistStore();
+  const { isInFavorites, toggleFavorite } = useWishlistStore();
   const { isBikeSelected, addBike, removeBike } = useCompareStore();
+  const wishlistHydrated = useHasHydrated(useWishlistStore);
+  const compareHydrated = useHasHydrated(useCompareStore);
+  const storesReady = wishlistHydrated && compareHydrated;
 
-  const isWishlisted = isInWishlist(bike.id);
-  const isSelected = isBikeSelected(bike.id);
+  const bikeId = String(bike.id);
+  const isFavorited = isInFavorites(bikeId);
+  const isSelected = isBikeSelected(bikeId);
 
-  const handleWishlistClick = (e: React.MouseEvent) => {
+  const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleWishlist(bike.id);
+    if (!storesReady) return;
+    toggleFavorite(bikeId);
   };
 
   const handleCompareClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!storesReady) return;
     if (isSelected) {
-      removeBike(bike.id);
+      removeBike(bikeId);
     } else {
       addBike(bike);
     }
@@ -74,26 +80,28 @@ export function BikeCard({
 
             {/* Wishlist Button */}
             <button
-              onClick={handleWishlistClick}
+              type="button"
+              onClick={handleFavoriteClick}
+              disabled={!storesReady}
               className={cn(
                 "absolute top-3 right-3 z-20 p-2 rounded-full transition-all duration-200",
-                isWishlisted
+                isFavorited
                   ? "bg-red-500 text-white"
                   : "bg-white/80 text-gray-600 hover:bg-white hover:text-red-500",
               )}
               aria-label={
-                isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+                isFavorited ? "Remove from favorites" : "Add to favorites"
               }
             >
-              <Heart
-                className={cn("h-4 w-4", isWishlisted && "fill-current")}
-              />
+              <Heart className={cn("h-4 w-4", isFavorited && "fill-current")} />
             </button>
 
             {/* Compare Checkbox */}
             {showCompare && (
               <button
+                type="button"
                 onClick={handleCompareClick}
+                disabled={!storesReady}
                 className={cn(
                   "absolute bottom-3 right-3 z-20 flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-all duration-200",
                   isSelected

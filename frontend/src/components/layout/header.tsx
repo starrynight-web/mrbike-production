@@ -40,7 +40,7 @@ const navLinks = [
 
 export function Header() {
   const pathname = usePathname();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
   const { bikeIds } = useWishlistStore();
   const { isMobileMenuOpen, setMobileMenuOpen, isSearchOpen, setSearchOpen } =
     useUIStore();
@@ -227,7 +227,10 @@ export function Header() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="text-destructive"
-                    onClick={() => signOut()}
+                    onClick={() => {
+                      logout();
+                      signOut();
+                    }}
                   >
                     Sign Out
                   </DropdownMenuItem>

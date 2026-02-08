@@ -2,10 +2,8 @@
 
 import { useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { Bike, Loader2, Chrome } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PasswordInput } from "@/components/ui/password-input";
 import {
   Card,
   CardContent,
@@ -15,12 +13,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
 import { useAuthStore } from "@/store";
 import { toast } from "sonner";
+import Link from "next/link";
 
-export default function LoginPage() {
+export default function RegistrationPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
       <Suspense
@@ -30,66 +30,64 @@ export default function LoginPage() {
           </Card>
         }
       >
-        <LoginContent />
+        <RegistrationContent />
       </Suspense>
     </div>
   );
 }
 
-function LoginContent() {
+function RegistrationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuthStore();
-  const mockLoginTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const mockRegisterTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Form state
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const handleMockRegister = (e?: React.FormEvent, isMockData = false) => {
+    if (e) e.preventDefault();
 
-    // Simulate API login
-    mockLoginTimeoutRef.current = setTimeout(() => {
-      // For demo purposes, we accept any login
-      login({
-        id: "user-123",
-        email: email,
-        name: "Demo User",
-        role: "user",
-        phoneVerified: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      toast.success("Successfully logged in!");
-      router.push(callbackUrl);
-      router.refresh();
-    }, 1000);
-  };
+    if (!isMockData && password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
 
-  const handleMockLogin = (role: "user" | "admin" = "user") => {
     setIsLoading(true);
     // Simulate API delay
-    mockLoginTimeoutRef.current = setTimeout(() => {
+    mockRegisterTimeoutRef.current = setTimeout(() => {
+      const userData = isMockData
+        ? {
+            id: "user-123",
+            email: "demo@mrbikebd.com",
+            name: "Demo User",
+            role: "user" as const,
+          }
+        : {
+            id: `user-${Date.now()}`,
+            email: email,
+            name: name,
+            role: "user" as const,
+          };
+
       login({
-        id: role === "admin" ? "admin-1" : "user-123",
-        email: role === "admin" ? "admin@mrbikebd.com" : "demo@mrbikebd.com",
-        name: role === "admin" ? "Admin User" : "Demo User",
-        role: role,
+        ...userData,
         phoneVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      toast.success(`Successfully logged in as ${role}!`);
+      toast.success("Successfully registered!");
       router.push(callbackUrl);
       router.refresh();
     }, 1000);
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleRegister = () => {
     setIsLoading(true);
     signIn("google", { callbackUrl });
   };
@@ -100,32 +98,38 @@ function LoginContent() {
         <div className="mx-auto bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
           <Bike className="h-6 w-6 text-primary" />
         </div>
-        <CardTitle className="text-2xl">Welcome Back</CardTitle>
-        <CardDescription>Sign in to your MrBikeBD account</CardDescription>
+        <CardTitle className="text-2xl">Create an Account</CardTitle>
+        <CardDescription>Sign up to get started with MrBikeBD</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form
+          onSubmit={(e) => handleMockRegister(e, false)}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
-              placeholder="demo@mrbikebd.com"
+              placeholder="john@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link
-                href="/forgot-password"
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
+            <Label htmlFor="password">Password</Label>
             <PasswordInput
               id="password"
               placeholder="••••••••"
@@ -134,12 +138,22 @@ function LoginContent() {
               required
             />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <PasswordInput
+              id="confirmPassword"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
 
           <Button className="w-full" type="submit" disabled={isLoading}>
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : null}
-            Sign In
+            Sign Up
           </Button>
         </form>
 
@@ -148,25 +162,20 @@ function LoginContent() {
             <p className="text-xs text-center text-muted-foreground uppercase mb-2">
               Development Mode
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => handleMockLogin("user")}
-                disabled={isLoading}
-              >
-                User Login
-              </Button>
-
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => handleMockLogin("admin")}
-                disabled={isLoading}
-              >
-                Admin Login
-              </Button>
-            </div>
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={() => handleMockRegister(undefined, true)}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Register with Mock Data (Demo User)
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Creates account: <strong>demo@mrbikebd.com</strong>
+            </p>
           </div>
         )}
 
@@ -184,7 +193,7 @@ function LoginContent() {
         <Button
           variant="outline"
           className="w-full"
-          onClick={handleGoogleLogin}
+          onClick={handleGoogleRegister}
           disabled={isLoading}
         >
           <Chrome className="mr-2 h-4 w-4" />
@@ -193,12 +202,12 @@ function LoginContent() {
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/registration"
+            href="/login"
             className="text-primary font-medium hover:underline"
           >
-            Sign up
+            Sign in
           </Link>
         </p>
       </CardFooter>

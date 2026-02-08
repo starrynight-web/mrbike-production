@@ -3,12 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bike as BikeIcon, Frown } from "lucide-react";
-import {
-  BikeCard,
-  BikeFilters,
-  BikeFiltersSidebar,
-  CompareBar,
-} from "@/components/bikes";
+import { BikeCard, BikeFilters, BikeFiltersSidebar } from "@/components/bikes";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBikes, useBrands } from "@/hooks/use-bikes";
 import { useFilterStore } from "@/store";
@@ -175,9 +170,6 @@ export function BikeCataloguePage() {
           </div>
         </div>
       </div>
-
-      {/* Floating Compare Bar */}
-      <CompareBar />
     </div>
   );
 }

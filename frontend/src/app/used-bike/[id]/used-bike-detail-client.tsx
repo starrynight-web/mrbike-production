@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   Clock,
   Share2,
+  Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,8 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUsedBike } from "@/hooks/use-used-bikes";
 import { cn, formatPrice, formatRelativeTime } from "@/lib/utils";
+import { getMockUsedBikes } from "@/lib/mock-adapter";
+import { useWishlistStore } from "@/store";
 
 interface UsedBikeDetailClientProps {
   id: string;
@@ -29,9 +32,19 @@ interface UsedBikeDetailClientProps {
 export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const { data: bike, isLoading, error } = useUsedBike(id);
+  const { isInWishlist, toggleWishlist } = useWishlistStore();
 
-  // TODO: Use a real similar used bikes hook when available
-  // For now we just show empty or reuse existing logic
+  // Determine if wishlisted
+  const isWishlisted = bike ? isInWishlist(bike.id) : false;
+
+  // Similar ads from mock (bike may have similarIds when from mock data)
+  const similarBikes = useMemo(() => {
+    if (!bike) return [];
+    const ids = (bike as { similarIds?: string[] }).similarIds;
+    if (!ids?.length) return getMockUsedBikes({ limit: 4 }).data.usedBikes ?? [];
+    const { data } = getMockUsedBikes({ ids, limit: ids.length });
+    return data.usedBikes ?? [];
+  }, [bike]);
 
   if (isLoading) {
     return <DetailSkeleton />;
@@ -325,6 +338,16 @@ export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
             {/* Actions */}
             <div className="flex gap-2">
               <Button
+                variant={isWishlisted ? "default" : "outline"}
+                className="flex-1 gap-2"
+                onClick={() => toggleWishlist(bike.id)}
+              >
+                <Heart
+                  className={cn("h-4 w-4", isWishlisted && "fill-current")}
+                />
+                {isWishlisted ? "Saved" : "Save to Wishlist"}
+              </Button>
+              <Button
                 variant="outline"
                 className="flex-1"
                 onClick={handleShare}
@@ -340,6 +363,44 @@ export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
             </div>
           </div>
         </div>
+
+        {/* Similar ads */}
+        {similarBikes.length > 0 && (
+          <div className="mt-12 pt-8 border-t">
+            <h2 className="text-xl font-semibold mb-4">Similar ads</h2>
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {similarBikes
+                .filter((b) => b.id !== bike.id)
+                .map((b) => (
+                  <Link
+                    key={b.id}
+                    href={`/used-bike/${b.id}`}
+                    className="shrink-0 w-48 rounded-lg overflow-hidden border bg-card hover:shadow-md transition-shadow block"
+                  >
+                    <div className="aspect-[4/3] bg-muted relative">
+                      <Image
+                        src={b.thumbnailUrl}
+                        alt={b.bikeName}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="p-3">
+                      <p className="font-medium text-sm line-clamp-1">
+                        {b.bikeName}
+                      </p>
+                      <p className="text-primary font-semibold text-sm mt-0.5">
+                        {formatPrice(b.price)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {b.kmDriven.toLocaleString()} km • {b.location.city}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

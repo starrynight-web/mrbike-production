@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  Heart,
   List,
   LogOut,
   Bike,
@@ -15,6 +13,7 @@ import {
   CreditCard,
   CheckCircle2,
   Loader2,
+  Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,41 +26,24 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore, useWishlistStore } from "@/store";
 import { useUserStats } from "@/hooks/use-user";
 import { toast } from "sonner";
+import Image from "next/image";
+
+// Import Profile Components
+import { AccountManagement } from "@/components/profile/account-management";
+import { WishlistTab } from "@/components/profile/wishlist-tab";
+import { FavoritesTab } from "@/components/profile/favorites-tab";
 
 export function ProfileClient() {
   const router = useRouter();
-  const { user, logout, login } = useAuthStore();
-  const { bikeIds } = useWishlistStore();
+  const { user, logout } = useAuthStore();
+  const { bikeIds, favoriteIds } = useWishlistStore();
   const { data: stats, isLoading: statsLoading } = useUserStats();
   const [activeTab, setActiveTab] = useState("overview");
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Settings Form State
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    location: "",
-  });
-
-  useEffect(() => {
-    if (user) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setFormData({
-        name: user.name || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        location: user.location || "",
-      });
-    }
-  }, [user]);
 
   useEffect(() => {
     if (!user && !statsLoading) {
@@ -86,21 +68,6 @@ export function ProfileClient() {
     router.push("/");
   };
 
-  const handleSaveSettings = async () => {
-    setIsSaving(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Update local user state
-    login({
-      ...user,
-      ...formData,
-    });
-
-    setIsSaving(false);
-    toast.success("Profile updated successfully");
-  };
-
   return (
     <div className="container py-10 space-y-8 max-w-6xl mx-auto">
       {/* Header Section */}
@@ -118,8 +85,8 @@ export function ProfileClient() {
               <span className="flex items-center gap-1">
                 <Mail className="h-3.5 w-3.5" /> {user.email}
               </span>
-              {formData.location && <span className="hidden sm:inline">•</span>}
-              {formData.location && <span>{formData.location}</span>}
+              {user.location && <span className="hidden sm:inline">•</span>}
+              {user.location && <span>{user.location}</span>}
               {user.phoneVerified && (
                 <Badge
                   variant="secondary"
@@ -174,6 +141,12 @@ export function ProfileClient() {
             className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             Wishlist ({bikeIds.size})
+          </TabsTrigger>
+          <TabsTrigger
+            value="favorites"
+            className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            Favorites ({favoriteIds.size})
           </TabsTrigger>
           <TabsTrigger
             value="notifications"
@@ -463,48 +436,14 @@ export function ProfileClient() {
           </div>
         </TabsContent>
 
-        {/* WISHLIST TAB */}
-        <TabsContent value="wishlist" className="space-y-6">
-          <h3 className="text-lg font-medium">
-            Your Wishlist ({bikeIds.size})
-          </h3>
-          {bikeIds.size === 0 ? (
-            <div className="text-center py-16 bg-muted/20 rounded-lg border-dashed border-2 flex flex-col items-center">
-              <Heart className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="font-semibold text-lg">Your wishlist is empty</h3>
-              <p className="text-muted-foreground mb-6 max-w-sm">
-                Save bikes you are interested in to compare them later or get
-                notified about price drops.
-              </p>
-              <Button asChild>
-                <Link href="/bikes">Browse Bikes</Link>
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Placeholder for Wishlist items - in real app would fetch by IDs */}
-              {[...Array(bikeIds.size > 0 ? Math.min(bikeIds.size, 3) : 0)].map(
-                (_, i) => (
-                  <Card key={i} className="overflow-hidden group">
-                    <div className="aspect-video bg-muted relative">
-                      <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                        <Bike className="h-8 w-8 opacity-20" />
-                      </div>
-                    </div>
-                    <CardContent className="p-4">
-                      <h4 className="font-semibold">Saved Bike Item {i + 1}</h4>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Bike details would load here...
-                      </p>
-                      <Button variant="outline" size="sm" className="w-full">
-                        View Details
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ),
-              )}
-            </div>
-          )}
+        {/* WISHLIST TAB (Updated) */}
+        <TabsContent value="wishlist">
+          <WishlistTab />
+        </TabsContent>
+
+        {/* FAVORITES TAB (New) */}
+        <TabsContent value="favorites">
+          <FavoritesTab />
         </TabsContent>
 
         {/* NOTIFICATIONS TAB */}
@@ -651,68 +590,9 @@ export function ProfileClient() {
           </Card>
         </TabsContent>
 
-        {/* SETTINGS TAB */}
+        {/* SETTINGS TAB (Updated) */}
         <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Details</CardTitle>
-              <CardDescription>
-                Manage your public profile and contact info.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  value={formData.email}
-                  disabled
-                  className="bg-muted"
-                />
-                <p className="text-[0.8rem] text-muted-foreground">
-                  Email cannot be changed as it is linked to your account.
-                </p>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  placeholder="+880 1XXX XXXXXX"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="location">City / District</Label>
-                <Input
-                  id="location"
-                  placeholder="e.g. Dhaka, Chittagong"
-                  value={formData.location}
-                  onChange={(e) =>
-                    setFormData({ ...formData, location: e.target.value })
-                  }
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={handleSaveSettings} disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSaving ? "Saving..." : "Save Changes"}
-              </Button>
-            </CardFooter>
-          </Card>
+          <AccountManagement />
         </TabsContent>
       </Tabs>
     </div>

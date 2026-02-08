@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
 import { Header, Footer, MobileNav } from "@/components/layout";
+import { CompareBar } from "@/components/bikes";
 import { APP_CONFIG, SEO_DEFAULTS } from "@/config/constants";
 
 const geistSans = Geist({
@@ -84,6 +85,8 @@ export const metadata: Metadata = {
   },
 };
 
+// ... existing imports
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -106,6 +109,7 @@ export default function RootLayout({
           <main className="flex-1 pb-20 lg:pb-0">{children}</main>
           <Footer />
           <MobileNav />
+          <CompareBar />
         </Providers>
       </body>
     </html>

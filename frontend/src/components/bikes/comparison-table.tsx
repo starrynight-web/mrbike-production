@@ -77,6 +77,7 @@ export function ComparisonTable({ bikes, onRemove }: ComparisonTableProps) {
     isWinner: boolean = false,
   ) => (
     <div
+      key={bike.id}
       className={cn(
         "p-4 border-r last:border-r-0 flex items-center min-h-[60px]",
         isWinner &&

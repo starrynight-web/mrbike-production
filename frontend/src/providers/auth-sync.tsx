@@ -15,7 +15,7 @@ interface NextAuthUser {
 
 export function AuthSync() {
     const { data: session, status } = useSession();
-    const { login, logout, setLoading } = useAuthStore();
+    const { login, setLoading } = useAuthStore();
 
     useEffect(() => {
         if (status === "loading") {
@@ -35,12 +35,12 @@ export function AuthSync() {
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });
-        } else if (status === "unauthenticated") {
-            logout();
         }
+        // Do not call logout() when unauthenticated: keep persisted login state
+        // so a single reload does not log the user out. Sign Out clears the store explicitly.
 
         setLoading(false);
-    }, [session, status, login, logout, setLoading]);
+    }, [session, status, login, setLoading]);
 
     return null;
 }

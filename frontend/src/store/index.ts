@@ -1,6 +1,36 @@
 import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
+import { useState, useEffect } from "react";
 import type { User, Bike } from "@/types";
+
+/** Use from persisted stores so UI waits for rehydration and clicks are not overwritten. */
+export function useHasHydrated(store: {
+  persist?: {
+    hasHydrated: () => boolean;
+    onFinishHydration: (fn: () => void) => () => void;
+  };
+}): boolean {
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    const p = store.persist;
+    // If no persist middleware, it's always "hydrated"
+    if (!p) {
+      const t = setTimeout(() => setHydrated(true), 0);
+      return () => clearTimeout(t);
+    }
+
+    // If already hydrated, set state (wrapped to avoid sync render warning)
+    if (p.hasHydrated()) {
+      const t = setTimeout(() => setHydrated(true), 0);
+      return () => clearTimeout(t);
+    }
+
+    // Otherwise wait for finish event
+    const unsub = p.onFinishHydration(() => setHydrated(true));
+    return unsub;
+  }, [store]);
+  return hydrated;
+}
 
 // ============================================
 // AUTH STORE
@@ -29,7 +59,10 @@ export const useAuthStore = create<AuthState>()(
       }),
       {
         name: "auth-storage",
-        partialize: (state) => ({ user: state.user }),
+        partialize: (state) => ({
+          user: state.user,
+          isAuthenticated: !!state.user,
+        }),
       },
     ),
     { name: "AuthStore" },
@@ -76,12 +109,25 @@ export const useCompareStore = create<CompareState>()(
 // ============================================
 // WISHLIST STORE
 // ============================================
+// ============================================
+// WISHLIST STORE
+// ============================================
 interface WishlistState {
-  bikeIds: Set<string>;
+  bikeIds: Set<string>; // Used Bikes
+  favoriteIds: Set<string>; // New Bikes
+
+  // Wishlist Actions (Used Bikes)
   addToWishlist: (bikeId: string) => void;
   removeFromWishlist: (bikeId: string) => void;
   isInWishlist: (bikeId: string) => boolean;
   toggleWishlist: (bikeId: string) => void;
+
+  // Favorites Actions (New Bikes)
+  addToFavorites: (bikeId: string) => void;
+  removeFromFavorites: (bikeId: string) => void;
+  isInFavorites: (bikeId: string) => boolean;
+  toggleFavorite: (bikeId: string) => void;
+
   clearWishlist: () => void;
   syncFromServer: (bikeIds: string[]) => void;
 }
@@ -91,6 +137,9 @@ export const useWishlistStore = create<WishlistState>()(
     persist(
       (set, get) => ({
         bikeIds: new Set<string>(),
+        favoriteIds: new Set<string>(),
+
+        // Wishlist Implementation
         addToWishlist: (bikeId) => {
           const newSet = new Set(get().bikeIds);
           newSet.add(bikeId);
@@ -110,7 +159,30 @@ export const useWishlistStore = create<WishlistState>()(
             addToWishlist(bikeId);
           }
         },
-        clearWishlist: () => set({ bikeIds: new Set<string>() }),
+
+        // Favorites Implementation
+        addToFavorites: (bikeId) => {
+          const newSet = new Set(get().favoriteIds);
+          newSet.add(bikeId);
+          set({ favoriteIds: newSet });
+        },
+        removeFromFavorites: (bikeId) => {
+          const newSet = new Set(get().favoriteIds);
+          newSet.delete(bikeId);
+          set({ favoriteIds: newSet });
+        },
+        isInFavorites: (bikeId) => get().favoriteIds.has(bikeId),
+        toggleFavorite: (bikeId) => {
+          const { favoriteIds, addToFavorites, removeFromFavorites } = get();
+          if (favoriteIds.has(bikeId)) {
+            removeFromFavorites(bikeId);
+          } else {
+            addToFavorites(bikeId);
+          }
+        },
+
+        clearWishlist: () =>
+          set({ bikeIds: new Set<string>(), favoriteIds: new Set<string>() }),
         syncFromServer: (bikeIds) => set({ bikeIds: new Set(bikeIds) }),
       }),
       {
@@ -125,6 +197,7 @@ export const useWishlistStore = create<WishlistState>()(
               state: {
                 ...parsed.state,
                 bikeIds: new Set(parsed.state.bikeIds || []),
+                favoriteIds: new Set(parsed.state.favoriteIds || []),
               },
             };
           },
@@ -134,6 +207,7 @@ export const useWishlistStore = create<WishlistState>()(
               state: {
                 ...value.state,
                 bikeIds: Array.from(value.state.bikeIds),
+                favoriteIds: Array.from(value.state.favoriteIds),
               },
             };
             localStorage.setItem(name, JSON.stringify(serialized));
