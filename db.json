@@ -1,0 +1,6548 @@
+[
+  {
+  "core_identity": {
+    "slug": "bajaj-pulsar-n250-standard",
+    "bike_name": "Bajaj Pulsar N250",
+    "page_title": "MrBike | Bajaj Pulsar N250 - Detailed Information",
+    "brand": "Bajaj",
+    "model": "Pulsar N250",
+    "category": "sports",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "std",
+    "current_variant_key": "std"
+  },
+  
+
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926162/bikes/BAJAJ/Bajaj%20Avenger%20160%20ABS/bajaj-avenger-160-abs-back-view.webp",
+        "alt": "Bajaj Pulsar N250 - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926163/bikes/BAJAJ/Bajaj%20Avenger%20160%20ABS/bajaj-avenger-160-abs-front-view.webp",
+        "alt": "Bajaj Pulsar N250 - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926166/bikes/BAJAJ/Bajaj%20Avenger%20160%20ABS/bajaj-avenger-160-abs-right-view.webp",
+        "alt": "Bajaj Pulsar N250 - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926167/bikes/BAJAJ/Bajaj%20Avenger%20160%20ABS/bajaj-avenger-160-abs-showroom-view.webp",
+        "alt": "Bajaj Pulsar N250 - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926167/bikes/BAJAJ/Bajaj%20Avenger%20160%20ABS/bajaj-avenger-160-abs-showroom-view.webp",
+        "alt": "Bajaj Pulsar N250 - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "std",
+      "variant_name": "Standard",
+      "full_name": "Bajaj Pulsar N250",
+      "price": 395000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Sparkle Black", "price_adjustment": 0},
+        {"name": "Sapphire Blue", "price_adjustment": 0},
+        {"name": "Fiery Red", "price_adjustment": 0}
+      ],
+      "features": ["Dual Channel ABS", "LED Headlight", "Digital Display", "Slipper Clutch"],
+      "braking_system": "Dual Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "38 kmpl",
+      "mileage_user": "34-36 kmpl",
+      "topspeed_company": "135 km/h",
+      "topspeed_user": "130-133 km/h"
+    }
+  ],
+  
+
+  "quick_specs": {
+    "engine_capacity": "249.0 cc",
+    "mileage": {
+      "company": "38 kmpl",
+      "user": "34-36 kmpl",
+      "average": 35
+    },
+    "top_speed": {
+      "company": "135 km/h",
+      "user": "130-133 km/h",
+      "average": 131.5
+    },
+    "transmission": "5 Speed",
+    "max_power": "24.5 HP",
+    "max_torque": "21.5 Nm",
+    "fuel_tank": "14 L",
+    "kerb_weight": "164 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, SOHC, Oil-Cooled",
+        "displacement": "249.0 cc",
+        "max_power": "24.5 HP @ 8750 rpm",
+        "max_torque": "21.5 Nm @ 6500 rpm",
+        "bore_stroke": "72.0 mm x 61.0 mm",
+        "compression_ratio": "9.8:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Oil-Cooled with Twin Spark Technology",
+        "valve_train": "SOHC, 2 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "4.5 seconds",
+        "acceleration_0_100": "12.2 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "14 L",
+        "reserve_fuel": "2.8 L",
+        "range_per_tank": "490 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Slipper Clutch",
+        "gearbox": "5-Speed",
+        "gear_pattern": "1-N-2-3-4-5",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "300 mm Disc Brake",
+        "rear": "230 mm Disc Brake",
+        "system": "Hydraulic Disc",
+        "abs": true,
+        "abs_type": "Dual Channel ABS",
+        "abs_front": true,
+        "abs_rear": true
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2055 mm",
+        "width": "804 mm",
+        "height": "1060 mm",
+        "wheelbase": "1353 mm",
+        "ground_clearance": "165 mm",
+        "seat_height": "805 mm"
+      },
+      "chassis": {
+        "frame_type": "Perimeter Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Monoshock with Nitrox",
+        "adjustable_suspension": true
+      },
+      "weight": {
+        "kerb_weight": "164 kg",
+        "dry_weight": "156 kg",
+        "payload_capacity": "150 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "100/80-17",
+        "rear": "130/70-17",
+        "type": "Tubeless",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Full Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Tachometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Gear Position Indicator",
+          "Clock",
+          "Service Reminder"
+        ]
+      },
+      "battery": {
+        "type": "12V, 6Ah Maintenance-Free",
+        "capacity": "6Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch"
+      ]
+    }
+  },
+  
+
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 395000,
+      "insurance": 14000,
+      "registration": 9000,
+      "road_tax": 9000,
+      "on_road_price": 427000
+    },
+    "emi": {
+      "monthly": 11900,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 80000,
+      "total_payable": 438400,
+      "processing_fee": 2000
+    },
+    "offers": [
+      {
+        "title": "Free 3 Years Insurance",
+        "description": "Comprehensive insurance coverage included",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Exchange Bonus",
+        "description": "Get ৳8,000 extra on exchange",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.5,
+      "total_reviews": 104,
+      "formatted": "4.5/5.0",
+      "distribution": {
+        "5_star": 65,
+        "4_star": 28,
+        "3_star": 9,
+        "2_star": 1,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.6, "formatted": "4.6/5", "count": 98},
+      "looks": {"score": 4.4, "formatted": "4.4/5", "count": 100},
+      "reliability": {"score": 4.5, "formatted": "4.5/5", "count": 92},
+      "comfort": {"score": 4.3, "formatted": "4.3/5", "count": 90},
+      "value_for_money": {"score": 4.7, "formatted": "4.7/5", "count": 102},
+      "mileage": {"score": 4.2, "formatted": "4.2/5", "count": 85}
+    },
+    "review_summary": {
+      "pros": [
+        "Strong mid-range performance",
+        "Excellent value for money",
+        "Comfortable for city and highway",
+        "Good fuel efficiency for a 250cc"
+      ],
+      "cons": [
+        "Heavier than 150–200cc rivals",
+        "Basic suspension setup",
+        "No quick shifter or advanced electronics"
+      ]
+    },
+    "verified_purchases": 82,
+    "user_reviews": [
+      {
+        "user_name": "Imran Hossain",
+        "rating": 5,
+        "comment": "Best 250cc naked bike under 4 lakhs. Perfect balance of power and practicality.",
+        "date": "2026-01-25",
+        "verified": true,
+        "helpful_votes": 14
+      }
+    ]
+  },
+  
+ 
+  "variant_comparison": {
+    "variants": ["std"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 88,
+    "search_keywords": [
+      "Bajaj Pulsar N250",
+      "250cc naked bike",
+      "Pulsar N250 price Bangladesh",
+      "N250 mileage",
+      "Bajaj sports bike"
+    ],
+    "tags": ["sports", "250cc", "Bajaj", "naked", "ABS", "slipper clutch"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": true,
+    "is_new_launch": false,
+    "launch_date": "2022-09-10",
+    "warranty": "5 Years or 75,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi"]
+  }
+},
+
+{
+
+  "core_identity": {
+    "slug": "bajaj-avenger-160-abs-standard-duplicate-removed",
+    "bike_name": "Bajaj Avenger 160 ABS",
+    "page_title": "MrBike | Bajaj Avenger 160 ABS - Detailed Information",
+    "brand": "Bajaj",
+    "model": "Avenger 160 ABS",
+    "category": "cruiser",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "abs",
+    "current_variant_key": "abs"
+  },
+  
+
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926168/bikes/BAJAJ/Bajaj%20CT100%20ES/bajaj-ct-100-es-back-view.webp",
+        "alt": "Bajaj Avenger 160 ABS - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926168/bikes/BAJAJ/Bajaj%20CT100%20ES/bajaj-ct-100-es-front-view.webp",
+        "alt": "Bajaj Avenger 160 ABS - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926170/bikes/BAJAJ/Bajaj%20CT100%20ES/bajaj-ct-100-es-left%20view.webp",
+        "alt": "Bajaj Avenger 160 ABS - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926171/bikes/BAJAJ/Bajaj%20CT100%20ES/bajaj-ct-100-es-right-view.webp",
+        "alt": "Bajaj Avenger 160 ABS - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926172/bikes/BAJAJ/Bajaj%20CT100%20ES/bajaj-ct-100-es-showroom-view.webp",
+        "alt": "Bajaj Avenger 160 ABS - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "abs",
+      "variant_name": "ABS",
+      "full_name": "Bajaj Avenger 160 ABS",
+      "price": 285000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Aurora Black", "price_adjustment": 0},
+        {"name": "Moon White", "price_adjustment": 0},
+        {"name": "Sapphire Blue", "price_adjustment": 0}
+      ],
+      "features": ["Single Channel ABS", "LED Headlight", "Digital Display", "Cruise Pegs"],
+      "braking_system": "Single Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "50 kmpl",
+      "mileage_user": "45-48 kmpl",
+      "topspeed_company": "110 km/h",
+      "topspeed_user": "105-108 km/h"
+    }
+  ],
+  
+  
+  "quick_specs": {
+    "engine_capacity": "160.0 cc",
+    "mileage": {
+      "company": "50 kmpl",
+      "user": "45-48 kmpl",
+      "average": 46.5
+    },
+    "top_speed": {
+      "company": "110 km/h",
+      "user": "105-108 km/h",
+      "average": 106.5
+    },
+    "transmission": "5 Speed",
+    "max_power": "15.0 HP",
+    "max_torque": "13.7 Nm",
+    "fuel_tank": "13 L",
+    "kerb_weight": "155 kg",
+    "spec_type": "company"
+  },
+
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, SOHC, Air-Cooled",
+        "displacement": "160.0 cc",
+        "max_power": "15.0 HP @ 8500 rpm",
+        "max_torque": "13.7 Nm @ 7000 rpm",
+        "bore_stroke": "60.0 mm x 56.0 mm",
+        "compression_ratio": "9.5:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Air-Cooled",
+        "valve_train": "SOHC, 2 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "6.2 seconds",
+        "acceleration_0_100": "18.5 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "13 L",
+        "reserve_fuel": "2.5 L",
+        "range_per_tank": "605 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Clutch",
+        "gearbox": "5-Speed",
+        "gear_pattern": "1-N-2-3-4-5",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "260 mm Disc Brake",
+        "rear": "130 mm Drum Brake",
+        "system": "Hydraulic Disc (Front), Drum (Rear)",
+        "abs": true,
+        "abs_type": "Single Channel ABS",
+        "abs_front": true,
+        "abs_rear": false
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2200 mm",
+        "width": "806 mm",
+        "height": "1078 mm",
+        "wheelbase": "1490 mm",
+        "ground_clearance": "169 mm",
+        "seat_height": "737 mm"
+      },
+      "chassis": {
+        "frame_type": "Twin Spar Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Dual Shock Absorbers with Nitrox",
+        "adjustable_suspension": true
+      },
+      "weight": {
+        "kerb_weight": "155 kg",
+        "dry_weight": "147 kg",
+        "payload_capacity": "150 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "90/90-17",
+        "rear": "130/90-15",
+        "type": "Tubeless",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "15-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Clock"
+        ]
+      },
+      "battery": {
+        "type": "12V, 5Ah Maintenance-Free",
+        "capacity": "5Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Cruise Pegs"
+      ]
+    }
+  },
+
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 285000,
+      "insurance": 10000,
+      "registration": 7000,
+      "road_tax": 7000,
+      "on_road_price": 309000
+    },
+    "emi": {
+      "monthly": 8600,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 57000,
+      "total_payable": 319600,
+      "processing_fee": 1500
+    },
+    "offers": [
+      {
+        "title": "Free Helmet & Riding Jacket",
+        "description": "Get premium safety gear on purchase",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Loyalty Bonus",
+        "description": "Extra ৳5,000 off for existing Bajaj owners",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.2,
+      "total_reviews": 92,
+      "formatted": "4.2/5.0",
+      "distribution": {
+        "5_star": 42,
+        "4_star": 30,
+        "3_star": 15,
+        "2_star": 4,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.0, "formatted": "4.0/5", "count": 85},
+      "looks": {"score": 4.5, "formatted": "4.5/5", "count": 90},
+      "reliability": {"score": 4.4, "formatted": "4.4/5", "count": 80},
+      "comfort": {"score": 4.6, "formatted": "4.6/5", "count": 88},
+      "value_for_money": {"score": 4.3, "formatted": "4.3/5", "count": 90},
+      "mileage": {"score": 4.5, "formatted": "4.5/5", "count": 78}
+    },
+    "review_summary": {
+      "pros": [
+        "Best-in-class mileage for a cruiser",
+        "Extremely comfortable for long rides",
+        "Low seat height ideal for short riders",
+        "Affordable maintenance"
+      ],
+      "cons": [
+        "Underpowered for highway overtakes",
+        "Basic rear drum brake",
+        "No dual-channel ABS"
+      ]
+    },
+    "verified_purchases": 74,
+    "user_reviews": [
+      {
+        "user_name": "Farhan Kabir",
+        "rating": 4,
+        "comment": "Perfect city cruiser with amazing mileage. Not fast, but very relaxing to ride.",
+        "date": "2026-01-18",
+        "verified": true,
+        "helpful_votes": 10
+      }
+    ]
+  },
+  
+ 
+  "variant_comparison": {
+    "variants": ["abs"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 72,
+    "search_keywords": [
+      "Bajaj Avenger 160 ABS",
+      "160cc cruiser bike",
+      "Avenger 160 price Bangladesh",
+      "Bajaj cruiser",
+      "Avenger mileage"
+    ],
+    "tags": ["cruiser", "160cc", "Bajaj", "commuter", "ABS", "high mileage"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": false,
+    "is_new_launch": false,
+    "launch_date": "2022-03-15",
+    "warranty": "5 Years or 75,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi"]
+  }
+},
+
+{
+
+  "core_identity": {
+    "slug": "cfmoto-250cl-c-standard",
+    "bike_name": "CFMOTO 250CL-C",
+    "page_title": "MrBike | CFMOTO 250CL-C - Detailed Information",
+    "brand": "CFMOTO",
+    "model": "250CL-C",
+    "category": "cruiser",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "std",
+    "current_variant_key": "std"
+  },
+  
+
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926173/bikes/BAJAJ/Bajaj%20Discover%20110%20Disc/bajaj-discover-110-disc-back%20view.webp",
+        "alt": "CFMOTO 250CL-C - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926173/bikes/BAJAJ/Bajaj%20Discover%20110%20Disc/bajaj-discover-110-disc-front-view.webp",
+        "alt": "CFMOTO 250CL-C - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926175/bikes/BAJAJ/Bajaj%20Discover%20110%20Disc/bajaj-discover-110-disc-left-view.webp",
+        "alt": "CFMOTO 250CL-C - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926176/bikes/BAJAJ/Bajaj%20Discover%20110%20Disc/bajaj-discover-110-disc-right-view.webp",
+        "alt": "CFMOTO 250CL-C - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926177/bikes/BAJAJ/Bajaj%20Discover%20110%20Disc/bajaj-discover-110-disc-showroom-view.webp",
+        "alt": "CFMOTO 250CL-C - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "std",
+      "variant_name": "Standard",
+      "full_name": "CFMOTO 250CL-C",
+      "price": 448500,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Teal Green", "price_adjustment": 0},
+        {"name": "Nebula Black", "price_adjustment": 0},
+        {"name": "Bordeaux Red", "price_adjustment": 0}
+      ],
+      "features": ["Dual Channel ABS", "LED Headlight", "Digital Display", "6-Speed Transmission"],
+      "braking_system": "Dual Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "30 kmpl",
+      "mileage_user": "30-35 kmpl",
+      "topspeed_company": "150 km/h",
+      "topspeed_user": "130-150 km/h"
+    }
+  ],
+  
+
+  "quick_specs": {
+    "engine_capacity": "249.0 cc",
+    "mileage": {
+      "company": "30 kmpl",
+      "user": "30-35 kmpl",
+      "average": 32.5
+    },
+    "top_speed": {
+      "company": "150 km/h",
+      "user": "130-150 km/h",
+      "average": 140
+    },
+    "transmission": "6 Speed",
+    "max_power": "24.81 HP",
+    "max_torque": "20.5 Nm",
+    "fuel_tank": "13.5 L",
+    "kerb_weight": "165 kg",
+    "spec_type": "company"
+  },
+  
+
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, DOHC, Liquid-Cooled",
+        "displacement": "249.0 cc",
+        "max_power": "24.81 HP @ 9800 rpm",
+        "max_torque": "20.5 Nm @ 7000 rpm",
+        "bore_stroke": "72.0 mm x 61.2 mm",
+        "compression_ratio": "11.5:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Liquid-Cooled",
+        "valve_train": "DOHC, 4 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "5.8 seconds",
+        "acceleration_0_100": "14.5 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "13.5 L",
+        "reserve_fuel": "2.7 L",
+        "range_per_tank": "405 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Clutch",
+        "gearbox": "6-Speed",
+        "gear_pattern": "1-N-2-3-4-5-6",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "300 mm Disc Brake",
+        "rear": "230 mm Disc Brake",
+        "system": "Hydraulic Disc",
+        "abs": true,
+        "abs_type": "Dual Channel ABS",
+        "abs_front": true,
+        "abs_rear": true
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2210 mm",
+        "width": "805 mm",
+        "height": "1075 mm",
+        "wheelbase": "1470 mm",
+        "ground_clearance": "150 mm",
+        "seat_height": "690 mm"
+      },
+      "chassis": {
+        "frame_type": "Diamond Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Twin Shock Absorbers",
+        "adjustable_suspension": false
+      },
+      "weight": {
+        "kerb_weight": "165 kg",
+        "dry_weight": "157 kg",
+        "payload_capacity": "150 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "110/70-17",
+        "rear": "140/70-15",
+        "type": "Tubeless",
+        "brand": "Ceat"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "15-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Full Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Tachometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Gear Position Indicator",
+          "Clock",
+          "Service Reminder"
+        ]
+      },
+      "battery": {
+        "type": "12V, 6Ah Maintenance-Free",
+        "capacity": "6Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch"
+      ]
+    }
+  },
+  
+
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 448500,
+      "insurance": 16000,
+      "registration": 10000,
+      "road_tax": 10000,
+      "on_road_price": 484500
+    },
+    "emi": {
+      "monthly": 13500,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 90000,
+      "total_payable": 496000,
+      "processing_fee": 2500
+    },
+    "offers": [
+      {
+        "title": "Free Riding Gear Pack",
+        "description": "Includes full-face helmet and premium gloves",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Extended Warranty Offer",
+        "description": "Get 2 years warranty for just ৳5,000 extra",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.3,
+      "total_reviews": 28,
+      "formatted": "4.3/5.0",
+      "distribution": {
+        "5_star": 16,
+        "4_star": 8,
+        "3_star": 3,
+        "2_star": 1,
+        "1_star": 0
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.2, "formatted": "4.2/5", "count": 26},
+      "looks": {"score": 4.7, "formatted": "4.7/5", "count": 28},
+      "reliability": {"score": 4.0, "formatted": "4.0/5", "count": 22},
+      "comfort": {"score": 4.5, "formatted": "4.5/5", "count": 25},
+      "value_for_money": {"score": 4.1, "formatted": "4.1/5", "count": 27},
+      "mileage": {"score": 4.0, "formatted": "4.0/5", "count": 24}
+    },
+    "review_summary": {
+      "pros": [
+        "Striking retro-modern cruiser design",
+        "Smooth 6-speed gearbox with good low-end torque",
+        "Dual-channel ABS as standard",
+        "Comfortable ergonomics for long rides"
+      ],
+      "cons": [
+        "Heavier than sporty 250cc rivals",
+        "Mileage lower than commuter bikes",
+        "Limited service network outside major cities"
+      ]
+    },
+    "verified_purchases": 21,
+    "user_reviews": [
+      {
+        "user_name": "Tanvir R.",
+        "rating": 5,
+        "comment": "Best-looking cruiser under 5 lakhs in Bangladesh. Perfect for weekend rides on the Dhaka-Chittagong highway.",
+        "date": "2026-01-28",
+        "verified": true,
+        "helpful_votes": 12
+      }
+    ]
+  },
+  
+
+  "variant_comparison": {
+    "variants": ["std"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 82,
+    "search_keywords": [
+      "CFMOTO 250CL-C",
+      "250cc cruiser bike Bangladesh",
+      "CFMOTO 250CL-C price 2026",
+      "250CL-C mileage",
+      "CFMOTO retro cruiser"
+    ],
+    "tags": ["cruiser", "250cc", "CFMOTO", "naked", "ABS", "liquid-cooled", "6-speed", "retro"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": true,
+    "is_new_launch": false,
+    "launch_date": "2023-11-15",
+    "warranty": "2 Years or 20,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna"]
+  }
+},
+
+{
+ 
+  "core_identity": {
+    "slug": "suzuki-gsx-r150-abs-standard",
+    "bike_name": "Suzuki GSX-R150 ABS",
+    "page_title": "MrBike | Suzuki GSX-R150 ABS - Detailed Information",
+    "brand": "Suzuki",
+    "model": "GSX-R150 ABS",
+    "category": "sports",
+    "subcategory": "faired",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "abs",
+    "current_variant_key": "abs"
+  },
+ 
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926178/bikes/BAJAJ/Bajaj%20Platina%20100%20ES/bajaj-platina-100-es-back-view.webp",
+        "alt": "Suzuki GSX-R150 ABS - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926179/bikes/BAJAJ/Bajaj%20Platina%20100%20ES/bajaj-platina-100-es-front-view.webp",
+        "alt": "Suzuki GSX-R150 ABS - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926180/bikes/BAJAJ/Bajaj%20Platina%20100%20ES/bajaj-platina-100-es-left-view.webp",
+        "alt": "Suzuki GSX-R150 ABS - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926181/bikes/BAJAJ/Bajaj%20Platina%20100%20ES/bajaj-platina-100-es-right-view.webp",
+        "alt": "Suzuki GSX-R150 ABS - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926182/bikes/BAJAJ/Bajaj%20Platina%20100%20ES/bajaj-platina-100-es-showroom-view.webp",
+        "alt": "Suzuki GSX-R150 ABS - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+  
+  "variants": [
+    {
+      "variant_key": "abs",
+      "variant_name": "ABS",
+      "full_name": "Suzuki GSX-R150 ABS",
+      "price": 385000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Metallic Triton Blue", "price_adjustment": 0},
+        {"name": "Glass Sparkle Black", "price_adjustment": 0},
+        {"name": "Pearl Mirage White", "price_adjustment": 0}
+      ],
+      "features": ["Single Channel ABS", "LED Headlight", "Digital Display", "Slipper Clutch", "Full Fairing"],
+      "braking_system": "Single Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "45 kmpl",
+      "mileage_user": "40-42 kmpl",
+      "topspeed_company": "135 km/h",
+      "topspeed_user": "128-132 km/h"
+    }
+  ],
+  
+ 
+  "quick_specs": {
+    "engine_capacity": "147.3 cc",
+    "mileage": {
+      "company": "45 kmpl",
+      "user": "40-42 kmpl",
+      "average": 41
+    },
+    "top_speed": {
+      "company": "135 km/h",
+      "user": "128-132 km/h",
+      "average": 130
+    },
+    "transmission": "6 Speed",
+    "max_power": "18.9 HP",
+    "max_torque": "14.0 Nm",
+    "fuel_tank": "11 L",
+    "kerb_weight": "131 kg",
+    "spec_type": "company"
+  },
+  
+
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, DOHC, Liquid-Cooled",
+        "displacement": "147.3 cc",
+        "max_power": "18.9 HP @ 10500 rpm",
+        "max_torque": "14.0 Nm @ 9000 rpm",
+        "bore_stroke": "62.0 mm x 48.8 mm",
+        "compression_ratio": "11.5:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Liquid-Cooled",
+        "valve_train": "DOHC, 4 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "5.2 seconds",
+        "acceleration_0_100": "14.8 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "11 L",
+        "reserve_fuel": "2.2 L",
+        "range_per_tank": "451 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Slipper Clutch",
+        "gearbox": "6-Speed",
+        "gear_pattern": "1-N-2-3-4-5-6",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "270 mm Disc Brake",
+        "rear": "220 mm Disc Brake",
+        "system": "Hydraulic Disc",
+        "abs": true,
+        "abs_type": "Single Channel ABS",
+        "abs_front": true,
+        "abs_rear": false
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "1990 mm",
+        "width": "705 mm",
+        "height": "1035 mm",
+        "wheelbase": "1300 mm",
+        "ground_clearance": "150 mm",
+        "seat_height": "785 mm"
+      },
+      "chassis": {
+        "frame_type": "Diamond Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Monoshock with Adjustable Preload",
+        "adjustable_suspension": true
+      },
+      "weight": {
+        "kerb_weight": "131 kg",
+        "dry_weight": "124 kg",
+        "payload_capacity": "130 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "100/80-17",
+        "rear": "130/70-17",
+        "type": "Tubeless",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Full Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Tachometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Gear Position Indicator",
+          "Clock",
+          "Service Reminder"
+        ]
+      },
+      "battery": {
+        "type": "12V, 4Ah Maintenance-Free",
+        "capacity": "4Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch"
+      ]
+    }
+  },
+  
+
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 385000,
+      "insurance": 13500,
+      "registration": 8500,
+      "road_tax": 8500,
+      "on_road_price": 415500
+    },
+    "emi": {
+      "monthly": 11600,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 77000,
+      "total_payable": 428600,
+      "processing_fee": 2000
+    },
+    "offers": [
+      {
+        "title": "Free Suzuki Racing Kit",
+        "description": "Includes branded helmet cover and tank pad",
+        "valid_until": "2026-03-15"
+      },
+      {
+        "title": "Exchange Bonus",
+        "description": "Get ৳7,000 extra on exchange of any bike",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.4,
+      "total_reviews": 112,
+      "formatted": "4.4/5.0",
+      "distribution": {
+        "5_star": 62,
+        "4_star": 35,
+        "3_star": 12,
+        "2_star": 2,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.5, "formatted": "4.5/5", "count": 105},
+      "looks": {"score": 4.7, "formatted": "4.7/5", "count": 110},
+      "reliability": {"score": 4.4, "formatted": "4.4/5", "count": 98},
+      "comfort": {"score": 4.0, "formatted": "4.0/5", "count": 95},
+      "value_for_money": {"score": 4.3, "formatted": "4.3/5", "count": 108},
+      "mileage": {"score": 4.2, "formatted": "4.2/5", "count": 90}
+    },
+    "review_summary": {
+      "pros": [
+        "Aggressive supersport styling inspired by GSX-R1000",
+        "Smooth high-revving engine with slipper clutch",
+        "Lightweight and agile handling",
+        "Excellent build quality from Suzuki"
+      ],
+      "cons": [
+        "Aggressive riding posture not ideal for daily commuting",
+        "Only single-channel ABS (no rear ABS)",
+        "Small fuel tank limits touring range"
+      ]
+    },
+    "verified_purchases": 94,
+    "user_reviews": [
+      {
+        "user_name": "Adnan M.",
+        "rating": 5,
+        "comment": "Feels like a mini superbike! Perfect for weekend canyon rides and track days. The slipper clutch is a game-changer.",
+        "date": "2026-01-22",
+        "verified": true,
+        "helpful_votes": 18
+      }
+    ]
+  },
+  
+
+  "variant_comparison": {
+    "variants": ["abs"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 89,
+    "search_keywords": [
+      "Suzuki GSX-R150 ABS",
+      "150cc sports bike",
+      "GSX-R150 price Bangladesh",
+      "Suzuki faired bike",
+      "GSX-R150 mileage"
+    ],
+    "tags": ["sports", "150cc", "Suzuki", "faired", "ABS", "slipper clutch", "liquid-cooled"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": true,
+    "is_new_launch": false,
+    "launch_date": "2022-06-10",
+    "warranty": "3 Years or 30,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi", "Mymensingh"]
+  }
+},
+
+{
+
+  "core_identity": {
+    "slug": "royal-enfield-meteor-350-supernova",
+    "bike_name": "Royal Enfield Meteor 350 (Supernova)",
+    "page_title": "MrBike | Royal Enfield Meteor 350 (Supernova) - Detailed Information",
+    "brand": "Royal Enfield",
+    "model": "Meteor 350",
+    "category": "cruiser",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "supernova",
+    "current_variant_key": "supernova"
+  },
+
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926187/bikes/BAJAJ/Bajaj%20Platina%20110%20H%20Gear%20Disc%20Brake/bajaj-platina-110-h-gear-disc-brake-showroom-view.webp",
+        "alt": "Royal Enfield Meteor 350 (Supernova) - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926183/bikes/BAJAJ/Bajaj%20Platina%20110%20H%20Gear%20Disc%20Brake/bajaj-platina-110-h-gear-disc-brake-back-view.webp",
+        "alt": "Royal Enfield Meteor 350 (Supernova) - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926184/bikes/BAJAJ/Bajaj%20Platina%20110%20H%20Gear%20Disc%20Brake/bajaj-platina-110-h-gear-disc-brake-front-view.webp",
+        "alt": "Royal Enfield Meteor 350 (Supernova) - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926185/bikes/BAJAJ/Bajaj%20Platina%20110%20H%20Gear%20Disc%20Brake/bajaj-platina-110-h-gear-disc-brake-left-view.webp",
+        "alt": "Royal Enfield Meteor 350 (Supernova) - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926186/bikes/BAJAJ/Bajaj%20Platina%20110%20H%20Gear%20Disc%20Brake/bajaj-platina-110-h-gear-disc-brake-right-view.webp",
+        "alt": "Royal Enfield Meteor 350 (Supernova) - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "supernova",
+      "variant_name": "Supernova",
+      "full_name": "Royal Enfield Meteor 350 Supernova",
+      "price": 485000,
+      "currency": "BDT",
+      "is_default": false,
+      "color_options": [
+        {"name": "Stellar Black", "price_adjustment": 0},
+        {"name": "Cosmic Blue", "price_adjustment": 0},
+        {"name": "Interstellar Green", "price_adjustment": 0}
+      ],
+      "features": ["Dual Channel ABS", "LED Headlight", "Tripper Navigation System", "Cruise Control", "Tubeless Tyres", "Alloy Wheels"],
+      "braking_system": "Dual Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "35 kmpl",
+      "mileage_user": "32-34 kmpl",
+      "topspeed_company": "120 km/h",
+      "topspeed_user": "115-118 km/h"
+    }
+  ],
+
+  "quick_specs": {
+    "engine_capacity": "349.0 cc",
+    "mileage": {
+      "company": "35 kmpl",
+      "user": "32-34 kmpl",
+      "average": 33
+    },
+    "top_speed": {
+      "company": "120 km/h",
+      "user": "115-118 km/h",
+      "average": 116.5
+    },
+    "transmission": "5 Speed",
+    "max_power": "20.2 HP",
+    "max_torque": "27.0 Nm",
+    "fuel_tank": "15 L",
+    "kerb_weight": "191 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, SOHC, Air-Oil Cooled",
+        "displacement": "349.0 cc",
+        "max_power": "20.2 HP @ 6100 rpm",
+        "max_torque": "27.0 Nm @ 4000 rpm",
+        "bore_stroke": "72.0 mm x 85.8 mm",
+        "compression_ratio": "9.5:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Air-Oil Cooled (J-Series Engine)",
+        "valve_train": "SOHC, 2 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "5.1 seconds",
+        "acceleration_0_100": "15.8 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "15 L",
+        "reserve_fuel": "3.0 L",
+        "range_per_tank": "525 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Clutch",
+        "gearbox": "5-Speed",
+        "gear_pattern": "1-N-2-3-4-5",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "300 mm Disc Brake",
+        "rear": "270 mm Disc Brake",
+        "system": "Hydraulic Disc",
+        "abs": true,
+        "abs_type": "Dual Channel ABS",
+        "abs_front": true,
+        "abs_rear": true
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2160 mm",
+        "width": "830 mm",
+        "height": "1120 mm",
+        "wheelbase": "1400 mm",
+        "ground_clearance": "170 mm",
+        "seat_height": "765 mm"
+      },
+      "chassis": {
+        "frame_type": "Twin Spar Frame",
+        "suspension_front": "Telescopic Fork with 41mm Stanchions",
+        "suspension_rear": "Twin Tube Emulsion Shock Absorbers with Adjustable Preload",
+        "adjustable_suspension": true
+      },
+      "weight": {
+        "kerb_weight": "191 kg",
+        "dry_weight": "182 kg",
+        "payload_capacity": "170 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "100/90-19",
+        "rear": "130/70-17",
+        "type": "Tubeless",
+        "brand": "CEAT"
+      },
+      "wheels": {
+        "front": "19-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Analog + Digital Tripper Navigation System",
+        "display_items": [
+          "Speedometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Gear Position Indicator",
+          "Clock",
+          "Bluetooth Navigation (via RE App)",
+          "Service Reminder"
+        ]
+      },
+      "battery": {
+        "type": "12V, 8Ah Maintenance-Free",
+        "capacity": "8Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch",
+        "USB Charging Port",
+        "Cruise Control"
+      ]
+    }
+  },
+  
+
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 485000,
+      "insurance": 17000,
+      "registration": 11000,
+      "road_tax": 11000,
+      "on_road_price": 524000
+    },
+    "emi": {
+      "monthly": 14700,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 97000,
+      "total_payable": 539200,
+      "processing_fee": 2500
+    },
+    "offers": [
+      {
+        "title": "Free Premium Riding Gear",
+        "description": "Includes Royal Enfield leather jacket and full-face helmet",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Extended Warranty",
+        "description": "3 Years warranty included at no extra cost",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.6,
+      "total_reviews": 186,
+      "formatted": "4.6/5.0",
+      "distribution": {
+        "5_star": 128,
+        "4_star": 42,
+        "3_star": 12,
+        "2_star": 3,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.4, "formatted": "4.4/5", "count": 175},
+      "looks": {"score": 4.8, "formatted": "4.8/5", "count": 182},
+      "reliability": {"score": 4.7, "formatted": "4.7/5", "count": 160},
+      "comfort": {"score": 4.9, "formatted": "4.9/5", "count": 170},
+      "value_for_money": {"score": 4.5, "formatted": "4.5/5", "count": 180},
+      "mileage": {"score": 4.3, "formatted": "4.3/5", "count": 150}
+    },
+    "review_summary": {
+      "pros": [
+        "Unmatched comfort for long-distance touring",
+        "Refined J-series engine with strong low-end torque",
+        "Premium Supernova features like cruise control and Tripper nav",
+        "Excellent build quality and road presence"
+      ],
+      "cons": [
+        "Heaviest in its class at 191 kg",
+        "Top speed limited for highway overtakes",
+        "Higher price than Fireball and Stellar variants"
+      ]
+    },
+    "verified_purchases": 152,
+    "user_reviews": [
+      {
+        "user_name": "Samiul I.",
+        "rating": 5,
+        "comment": "Rode from Dhaka to Cox’s Bazar non-stop—zero fatigue. The Supernova is the ultimate Bangladeshi tourer. Worth every taka.",
+        "date": "2026-01-30",
+        "verified": true,
+        "helpful_votes": 24
+      }
+    ]
+  },
+
+  "variant_comparison": {
+    "variants": ["supernova"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+ 
+  "metadata": {
+    "popularity_score": 94,
+    "search_keywords": [
+      "Royal Enfield Meteor 350 Supernova",
+      "Meteor 350 Supernova price Bangladesh",
+      "RE Meteor 350 cruise control",
+      "350cc cruiser bike",
+      "Meteor 350 mileage"
+    ],
+    "tags": ["cruiser", "350cc", "Royal Enfield", "naked", "ABS", "tubeless", "cruise control", "Tripper Nav", "touring"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": true,
+    "is_new_launch": false,
+    "launch_date": "2021-01-20",
+    "warranty": "3 Years or 30,000 km (Standard)",
+    "service_interval": "5,000 km or 6 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi", "Mymensingh", "Barishal"]
+  }
+},
+
+{
+
+  "core_identity": {
+    "slug": "honda-cb150r-exmotion-standard",
+    "bike_name": "Honda CB150R Exmotion",
+    "page_title": "MrBike | Honda CB150R Exmotion - Detailed Information",
+    "brand": "Honda",
+    "model": "CB150R Exmotion",
+    "category": "sports",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "std",
+    "current_variant_key": "std"
+  },
+  
+  
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926188/bikes/BAJAJ/Bajaj%20Pulsar%20150%20SD/bajaj-pulsar-150-sd-back-view.webp",
+        "alt": "Honda CB150R Exmotion - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926189/bikes/BAJAJ/Bajaj%20Pulsar%20150%20SD/bajaj-pulsar-150-sd-front-view.webp",
+        "alt": "Honda CB150R Exmotion - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926190/bikes/BAJAJ/Bajaj%20Pulsar%20150%20SD/bajaj-pulsar-150-sd-left-view.webp",
+        "alt": "Honda CB150R Exmotion - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926191/bikes/BAJAJ/Bajaj%20Pulsar%20150%20SD/bajaj-pulsar-150-sd-right-view.webp",
+        "alt": "Honda CB150R Exmotion - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926192/bikes/BAJAJ/Bajaj%20Pulsar%20150%20SD/bajaj-pulsar-150-sd-showroom-view.webp",
+        "alt": "Honda CB150R Exmotion - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "std",
+      "variant_name": "Standard",
+      "full_name": "Honda CB150R Exmotion",
+      "price": 425000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Matte Axis Grey Metallic", "price_adjustment": 0},
+        {"name": "Matte Pearl Solar Red", "price_adjustment": 0},
+        {"name": "Matte Black", "price_adjustment": 0}
+      ],
+      "features": ["Dual Channel ABS", "LED Headlight", "Digital Display", "Slipper Clutch", "Upside-Down Forks"],
+      "braking_system": "Dual Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "42 kmpl",
+      "mileage_user": "38-40 kmpl",
+      "topspeed_company": "130 km/h",
+      "topspeed_user": "125-128 km/h"
+    }
+  ],
+  
+  
+  "quick_specs": {
+    "engine_capacity": "149.0 cc",
+    "mileage": {
+      "company": "42 kmpl",
+      "user": "38-40 kmpl",
+      "average": 39
+    },
+    "top_speed": {
+      "company": "130 km/h",
+      "user": "125-128 km/h",
+      "average": 126.5
+    },
+    "transmission": "6 Speed",
+    "max_power": "17.1 HP",
+    "max_torque": "14.4 Nm",
+    "fuel_tank": "12 L",
+    "kerb_weight": "138 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, DOHC, Liquid-Cooled",
+        "displacement": "149.0 cc",
+        "max_power": "17.1 HP @ 9000 rpm",
+        "max_torque": "14.4 Nm @ 7000 rpm",
+        "bore_stroke": "57.3 mm x 57.8 mm",
+        "compression_ratio": "11.3:1",
+        "fuel_system": "PGM-FI (Programmed Fuel Injection)",
+        "starting": "Electric Start",
+        "cooling_system": "Liquid-Cooled",
+        "valve_train": "DOHC, 4 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "5.0 seconds",
+        "acceleration_0_100": "14.2 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "12 L",
+        "reserve_fuel": "2.4 L",
+        "range_per_tank": "468 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Slipper Clutch",
+        "gearbox": "6-Speed",
+        "gear_pattern": "1-N-2-3-4-5-6",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "276 mm Disc Brake",
+        "rear": "220 mm Disc Brake",
+        "system": "Hydraulic Disc",
+        "abs": true,
+        "abs_type": "Dual Channel ABS",
+        "abs_front": true,
+        "abs_rear": true
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2019 mm",
+        "width": "785 mm",
+        "height": "1061 mm",
+        "wheelbase": "1356 mm",
+        "ground_clearance": "165 mm",
+        "seat_height": "800 mm"
+      },
+      "chassis": {
+        "frame_type": "Diamond Frame",
+        "suspension_front": "41mm Inverted Telescopic Fork (USD)",
+        "suspension_rear": "Monoshock with Pro-Link System",
+        "adjustable_suspension": true
+      },
+      "weight": {
+        "kerb_weight": "138 kg",
+        "dry_weight": "130 kg",
+        "payload_capacity": "150 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "100/80-17",
+        "rear": "130/70-17",
+        "type": "Tubeless",
+        "brand": "IRC"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Full Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Tachometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Gear Position Indicator",
+          "Clock",
+          "Service Reminder"
+        ]
+      },
+      "battery": {
+        "type": "12V, 5Ah Maintenance-Free",
+        "capacity": "5Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch"
+      ]
+    }
+  },
+  
+  
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 425000,
+      "insurance": 15000,
+      "registration": 9500,
+      "road_tax": 9500,
+      "on_road_price": 459000
+    },
+    "emi": {
+      "monthly": 12800,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 85000,
+      "total_payable": 470800,
+      "processing_fee": 2200
+    },
+    "offers": [
+      {
+        "title": "Free Honda Premium Kit",
+        "description": "Includes branded helmet, gloves, and tank bag",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Loyalty Bonus",
+        "description": "Extra ৳10,000 off for existing Honda owners",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+  
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.5,
+      "total_reviews": 98,
+      "formatted": "4.5/5.0",
+      "distribution": {
+        "5_star": 58,
+        "4_star": 30,
+        "3_star": 8,
+        "2_star": 1,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.6, "formatted": "4.6/5", "count": 92},
+      "looks": {"score": 4.7, "formatted": "4.7/5", "count": 95},
+      "reliability": {"score": 4.8, "formatted": "4.8/5", "count": 88},
+      "comfort": {"score": 4.2, "formatted": "4.2/5", "count": 85},
+      "value_for_money": {"score": 4.3, "formatted": "4.3/5", "count": 94},
+      "mileage": {"score": 4.4, "formatted": "4.4/5", "count": 80}
+    },
+    "review_summary": {
+      "pros": [
+        "Aggressive Neo Sports Café styling",
+        "Premium USD forks and dual-channel ABS",
+        "Smooth high-revving engine with slipper clutch",
+        "Honda’s legendary reliability and resale value"
+      ],
+      "cons": [
+        "Higher price than rivals like Yamaha MT-15",
+        "Slightly stiff rear suspension for city bumps",
+        "Limited service network outside major cities"
+      ]
+    },
+    "verified_purchases": 82,
+    "user_reviews": [
+      {
+        "user_name": "Nafis R.",
+        "rating": 5,
+        "comment": "The best-looking 150cc naked bike in Bangladesh. Feels like a mini CBR with real performance and premium hardware.",
+        "date": "2026-01-27",
+        "verified": true,
+        "helpful_votes": 16
+      }
+    ]
+  },
+  
+  
+  "variant_comparison": {
+    "variants": ["std"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 87,
+    "search_keywords": [
+      "Honda CB150R Exmotion",
+      "CB150R price Bangladesh",
+      "Honda 150cc naked bike",
+      "CB150R mileage",
+      "Neo Sports Café"
+    ],
+    "tags": ["sports", "150cc", "Honda", "naked", "ABS", "slipper clutch", "USD forks", "liquid-cooled"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": true,
+    "is_new_launch": false,
+    "launch_date": "2022-08-15",
+    "warranty": "3 Years or 30,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi", "Mymensingh"]
+  }
+},
+{
+
+  "core_identity": {
+    "slug": "hero-karizma-xmr-210-standard",
+    "bike_name": "Hero Karizma XMR 210",
+    "page_title": "MrBike | Hero Karizma XMR 210 - Detailed Information",
+    "brand": "Hero",
+    "model": "Karizma XMR 210",
+    "category": "sports",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "std",
+    "current_variant_key": "std"
+  },
+  
+  
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926193/bikes/BAJAJ/Bajaj%20Pulsar%20F250/bajaj-pulsar-f250-back-view.webp",
+        "alt": "Hero Karizma XMR 210 - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926194/bikes/BAJAJ/Bajaj%20Pulsar%20F250/bajaj-pulsar-f250-front-view.webp",
+        "alt": "Hero Karizma XMR 210 - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926195/bikes/BAJAJ/Bajaj%20Pulsar%20F250/bajaj-pulsar-f250-left-view.webp",
+        "alt": "Hero Karizma XMR 210 - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926196/bikes/BAJAJ/Bajaj%20Pulsar%20F250/bajaj-pulsar-f250-right-view.webp",
+        "alt": "Hero Karizma XMR 210 - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926197/bikes/BAJAJ/Bajaj%20Pulsar%20F250/bajaj-pulsar-f250-showroom-view.webp",
+        "alt": "Hero Karizma XMR 210 - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "std",
+      "variant_name": "Standard",
+      "full_name": "Hero Karizma XMR 210",
+      "price": 295000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Stealth Fighter", "price_adjustment": 0},
+        {"name": "Cyber White", "price_adjustment": 0},
+        {"name": "Aurora Blue", "price_adjustment": 0}
+      ],
+      "features": ["Dual Channel ABS", "LED Headlight", "Digital Display", "Slipper Clutch", "Upside-Down Forks"],
+      "braking_system": "Dual Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "40 kmpl",
+      "mileage_user": "36-38 kmpl",
+      "topspeed_company": "135 km/h",
+      "topspeed_user": "130-133 km/h"
+    }
+  ],
+  
+  
+  "quick_specs": {
+    "engine_capacity": "210.0 cc",
+    "mileage": {
+      "company": "40 kmpl",
+      "user": "36-38 kmpl",
+      "average": 37
+    },
+    "top_speed": {
+      "company": "135 km/h",
+      "user": "130-133 km/h",
+      "average": 131.5
+    },
+    "transmission": "6 Speed",
+    "max_power": "25.5 HP",
+    "max_torque": "20.4 Nm",
+    "fuel_tank": "13.5 L",
+    "kerb_weight": "157 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, DOHC, Oil-Cooled",
+        "displacement": "210.0 cc",
+        "max_power": "25.5 HP @ 9500 rpm",
+        "max_torque": "20.4 Nm @ 7000 rpm",
+        "bore_stroke": "67.0 mm x 59.6 mm",
+        "compression_ratio": "11.0:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Oil-Cooled with Twin Spark Technology",
+        "valve_train": "DOHC, 4 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "4.3 seconds",
+        "acceleration_0_100": "12.8 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "13.5 L",
+        "reserve_fuel": "2.7 L",
+        "range_per_tank": "499 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Slipper Clutch",
+        "gearbox": "6-Speed",
+        "gear_pattern": "1-N-2-3-4-5-6",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "300 mm Disc Brake",
+        "rear": "230 mm Disc Brake",
+        "system": "Hydraulic Disc",
+        "abs": true,
+        "abs_type": "Dual Channel ABS",
+        "abs_front": true,
+        "abs_rear": true
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2040 mm",
+        "width": "805 mm",
+        "height": "1070 mm",
+        "wheelbase": "1365 mm",
+        "ground_clearance": "165 mm",
+        "seat_height": "810 mm"
+      },
+      "chassis": {
+        "frame_type": "Diamond Frame",
+        "suspension_front": "41mm Inverted Telescopic Fork (USD)",
+        "suspension_rear": "Monoshock with Adjustable Preload",
+        "adjustable_suspension": true
+      },
+      "weight": {
+        "kerb_weight": "157 kg",
+        "dry_weight": "149 kg",
+        "payload_capacity": "150 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "100/80-17",
+        "rear": "130/70-17",
+        "type": "Tubeless",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Full Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Tachometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Gear Position Indicator",
+          "Clock",
+          "Service Reminder"
+        ]
+      },
+      "battery": {
+        "type": "12V, 6Ah Maintenance-Free",
+        "capacity": "6Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch"
+      ]
+    }
+  },
+  
+  
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 295000,
+      "insurance": 11000,
+      "registration": 8000,
+      "road_tax": 8000,
+      "on_road_price": 322000
+    },
+    "emi": {
+      "monthly": 9000,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 60000,
+      "total_payable": 334000,
+      "processing_fee": 1800
+    },
+    "offers": [
+      {
+        "title": "Free Hero Racing Kit",
+        "description": "Includes full-face helmet and riding gloves",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Exchange Bonus",
+        "description": "Get ৳8,000 extra on exchange of any bike",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+  
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.4,
+      "total_reviews": 86,
+      "formatted": "4.4/5.0",
+      "distribution": {
+        "5_star": 50,
+        "4_star": 26,
+        "3_star": 8,
+        "2_star": 1,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.6, "formatted": "4.6/5", "count": 82},
+      "looks": {"score": 4.5, "formatted": "4.5/5", "count": 84},
+      "reliability": {"score": 4.3, "formatted": "4.3/5", "count": 75},
+      "comfort": {"score": 4.2, "formatted": "4.2/5", "count": 78},
+      "value_for_money": {"score": 4.7, "formatted": "4.7/5", "count": 85},
+      "mileage": {"score": 4.3, "formatted": "4.3/5", "count": 72}
+    },
+    "review_summary": {
+      "pros": [
+        "Best-in-class power for a sub-3-lakh bike",
+        "Premium USD forks and dual-channel ABS",
+        "Aggressive styling with modern LED lighting",
+        "Excellent value for money in the 200cc segment"
+      ],
+      "cons": [
+        "Slightly firm suspension for rough city roads",
+        "Higher vibration at top speeds",
+        "Brand perception still catching up to Japanese rivals"
+      ]
+    },
+    "verified_purchases": 70,
+    "user_reviews": [
+      {
+        "user_name": "Rakib H.",
+        "rating": 5,
+        "comment": "Unbeatable performance under 3 lakhs! The slipper clutch and USD forks make it feel like a premium sports bike.",
+        "date": "2026-01-24",
+        "verified": true,
+        "helpful_votes": 19
+      }
+    ]
+  },
+  
+  
+  "variant_comparison": {
+    "variants": ["std"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 85,
+    "search_keywords": [
+      "Hero Karizma XMR 210",
+      "Karizma XMR 210 price Bangladesh",
+      "Hero 210cc bike",
+      "XMR 210 mileage",
+      "Hero sports bike"
+    ],
+    "tags": ["sports", "210cc", "Hero", "naked", "ABS", "slipper clutch", "USD forks", "oil-cooled"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": true,
+    "is_new_launch": false,
+    "launch_date": "2023-07-10",
+    "warranty": "5 Years or 75,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi", "Mymensingh"]
+  }
+},
+
+{
+
+  "core_identity": {
+    "slug": "hero-thriller-160r-4v-standard",
+    "bike_name": "Hero Thriller 160R 4V",
+    "page_title": "MrBike | Hero Thriller 160R 4V - Detailed Information",
+    "brand": "Hero",
+    "model": "Thriller 160R 4V",
+    "category": "sports",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "std",
+    "current_variant_key": "std"
+  },
+  
+  
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926198/bikes/BAJAJ/Bajaj%20Pulsar%20N160/bajaj-pulsar-n160-right-view.webp",
+        "alt": "Hero Thriller 160R 4V - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926199/bikes/BAJAJ/Bajaj%20Pulsar%20N160/bajar-pulsar-n160-back-view.webp",
+        "alt": "Hero Thriller 160R 4V - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926200/bikes/BAJAJ/Bajaj%20Pulsar%20N160/bajar-pulsar-n160-front-view.webp",
+        "alt": "Hero Thriller 160R 4V - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926201/bikes/BAJAJ/Bajaj%20Pulsar%20N160/bajar-pulsar-n160-left-view.webp",
+        "alt": "Hero Thriller 160R 4V - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926202/bikes/BAJAJ/Bajaj%20Pulsar%20N160/bajar-pulsar-n160-showroom-view.webp",
+        "alt": "Hero Thriller 160R 4V - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "std",
+      "variant_name": "Standard",
+      "full_name": "Hero Thriller 160R 4V",
+      "price": 235000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Stealth Black", "price_adjustment": 0},
+        {"name": "Fiery Red", "price_adjustment": 0},
+        {"name": "Cyber Silver", "price_adjustment": 0}
+      ],
+      "features": ["Single Channel ABS", "LED Headlight", "Digital Display", "4-Valve Engine"],
+      "braking_system": "Single Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "50 kmpl",
+      "mileage_user": "45-48 kmpl",
+      "topspeed_company": "120 km/h",
+      "topspeed_user": "115-118 km/h"
+    }
+  ],
+  
+  
+  "quick_specs": {
+    "engine_capacity": "160.0 cc",
+    "mileage": {
+      "company": "50 kmpl",
+      "user": "45-48 kmpl",
+      "average": 46.5
+    },
+    "top_speed": {
+      "company": "120 km/h",
+      "user": "115-118 km/h",
+      "average": 116.5
+    },
+    "transmission": "5 Speed",
+    "max_power": "15.2 HP",
+    "max_torque": "14.0 Nm",
+    "fuel_tank": "12 L",
+    "kerb_weight": "145 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, SOHC, Air-Cooled, 4-Valve",
+        "displacement": "160.0 cc",
+        "max_power": "15.2 HP @ 8500 rpm",
+        "max_torque": "14.0 Nm @ 6500 rpm",
+        "bore_stroke": "60.0 mm x 56.5 mm",
+        "compression_ratio": "9.8:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Air-Cooled",
+        "valve_train": "SOHC, 4 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "6.0 seconds",
+        "acceleration_0_100": "17.5 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "12 L",
+        "reserve_fuel": "2.4 L",
+        "range_per_tank": "558 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Clutch",
+        "gearbox": "5-Speed",
+        "gear_pattern": "1-N-2-3-4-5",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "270 mm Disc Brake",
+        "rear": "130 mm Drum Brake",
+        "system": "Hydraulic Disc (Front), Drum (Rear)",
+        "abs": true,
+        "abs_type": "Single Channel ABS",
+        "abs_front": true,
+        "abs_rear": false
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2025 mm",
+        "width": "785 mm",
+        "height": "1060 mm",
+        "wheelbase": "1340 mm",
+        "ground_clearance": "170 mm",
+        "seat_height": "800 mm"
+      },
+      "chassis": {
+        "frame_type": "Diamond Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Monoshock with Nitrox",
+        "adjustable_suspension": false
+      },
+      "weight": {
+        "kerb_weight": "145 kg",
+        "dry_weight": "138 kg",
+        "payload_capacity": "150 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "90/90-17",
+        "rear": "120/80-17",
+        "type": "Tubeless",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Clock",
+          "Service Reminder"
+        ]
+      },
+      "battery": {
+        "type": "12V, 5Ah Maintenance-Free",
+        "capacity": "5Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch"
+      ]
+    }
+  },
+  
+  
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 235000,
+      "insurance": 9000,
+      "registration": 6500,
+      "road_tax": 6500,
+      "on_road_price": 257000
+    },
+    "emi": {
+      "monthly": 7200,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 47000,
+      "total_payable": 269200,
+      "processing_fee": 1500
+    },
+    "offers": [
+      {
+        "title": "Free Helmet & Gloves",
+        "description": "Get safety gear on every purchase",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Student Discount",
+        "description": "Extra ৳3,000 off for students with valid ID",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.1,
+      "total_reviews": 74,
+      "formatted": "4.1/5.0",
+      "distribution": {
+        "5_star": 32,
+        "4_star": 26,
+        "3_star": 12,
+        "2_star": 3,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.0, "formatted": "4.0/5", "count": 70},
+      "looks": {"score": 4.3, "formatted": "4.3/5", "count": 72},
+      "reliability": {"score": 4.2, "formatted": "4.2/5", "count": 65},
+      "comfort": {"score": 4.1, "formatted": "4.1/5", "count": 68},
+      "value_for_money": {"score": 4.5, "formatted": "4.5/5", "count": 73},
+      "mileage": {"score": 4.4, "formatted": "4.4/5", "count": 62}
+    },
+    "review_summary": {
+      "pros": [
+        "Excellent fuel efficiency for a 160cc sports bike",
+        "Stylish aggressive design with LED lighting",
+        "Lightweight and easy to handle in city traffic",
+        "Best-in-class pricing under 2.5 lakhs"
+      ],
+      "cons": [
+        "Only single-channel ABS (no rear disc or ABS)",
+        "Rear drum brake feels outdated",
+        "Lacks advanced features like slipper clutch"
+      ]
+    },
+    "verified_purchases": 60,
+    "user_reviews": [
+      {
+        "user_name": "Tasnim A.",
+        "rating": 4,
+        "comment": "Perfect first sports bike for students. Great mileage, sharp looks, and very affordable. Wish it had dual-channel ABS though.",
+        "date": "2026-01-26",
+        "verified": true,
+        "helpful_votes": 11
+      }
+    ]
+  },
+  
+  
+  "variant_comparison": {
+    "variants": ["std"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 76,
+    "search_keywords": [
+      "Hero Thriller 160R 4V",
+      "Thriller 160R price Bangladesh",
+      "Hero 160cc sports bike",
+      "Thriller 160R mileage",
+      "Hero naked bike"
+    ],
+    "tags": ["sports", "160cc", "Hero", "naked", "ABS", "4-valve", "commuter", "budget"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": false,
+    "is_new_launch": false,
+    "launch_date": "2022-11-05",
+    "warranty": "5 Years or 75,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi", "Mymensingh"]
+  }
+},
+
+{
+
+  "core_identity": {
+    "slug": "hero-thriller-160r-refresh-standard",
+    "bike_name": "Hero Thriller 160R Refresh",
+    "page_title": "MrBike | Hero Thriller 160R Refresh - Detailed Information",
+    "brand": "Hero",
+    "model": "Thriller 160R Refresh",
+    "category": "sports",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "std",
+    "current_variant_key": "std"
+  },
+  
+  
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926202/bikes/BAJAJ/Bajaj%20Pulsar%20NS%20125/bajaj-pulsar-ns-125-back-view.webp",
+        "alt": "Hero Thriller 160R Refresh - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926203/bikes/BAJAJ/Bajaj%20Pulsar%20NS%20125/bajaj-pulsar-ns-125-front-view.webp",
+        "alt": "Hero Thriller 160R Refresh - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926204/bikes/BAJAJ/Bajaj%20Pulsar%20NS%20125/bajaj-pulsar-ns-125-left-view.webp",
+        "alt": "Hero Thriller 160R Refresh - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926206/bikes/BAJAJ/Bajaj%20Pulsar%20NS%20125/bajaj-pulsar-ns-125-right-view.webp",
+        "alt": "Hero Thriller 160R Refresh - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926207/bikes/BAJAJ/Bajaj%20Pulsar%20NS%20125/bajaj-pulsar-ns-125-showroom-view.webp",
+        "alt": "Hero Thriller 160R Refresh - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "std",
+      "variant_name": "Standard",
+      "full_name": "Hero Thriller 160R Refresh",
+      "price": 245000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Matte Phantom Black", "price_adjustment": 0},
+        {"name": "Racing Red", "price_adjustment": 0},
+        {"name": "Metallic Steel Grey", "price_adjustment": 0}
+      ],
+      "features": ["Dual Channel ABS", "LED Headlight", "Full Digital Display", "4-Valve Engine", "Tubeless Tyres"],
+      "braking_system": "Dual Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "50 kmpl",
+      "mileage_user": "46-48 kmpl",
+      "topspeed_company": "122 km/h",
+      "topspeed_user": "117-120 km/h"
+    }
+  ],
+  
+  
+  "quick_specs": {
+    "engine_capacity": "160.0 cc",
+    "mileage": {
+      "company": "50 kmpl",
+      "user": "46-48 kmpl",
+      "average": 47
+    },
+    "top_speed": {
+      "company": "122 km/h",
+      "user": "117-120 km/h",
+      "average": 118.5
+    },
+    "transmission": "5 Speed",
+    "max_power": "15.2 HP",
+    "max_torque": "14.0 Nm",
+    "fuel_tank": "12 L",
+    "kerb_weight": "146 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, SOHC, Air-Cooled, 4-Valve",
+        "displacement": "160.0 cc",
+        "max_power": "15.2 HP @ 8500 rpm",
+        "max_torque": "14.0 Nm @ 6500 rpm",
+        "bore_stroke": "60.0 mm x 56.5 mm",
+        "compression_ratio": "9.8:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Air-Cooled",
+        "valve_train": "SOHC, 4 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "5.9 seconds",
+        "acceleration_0_100": "17.2 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "12 L",
+        "reserve_fuel": "2.4 L",
+        "range_per_tank": "564 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Clutch",
+        "gearbox": "5-Speed",
+        "gear_pattern": "1-N-2-3-4-5",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "270 mm Disc Brake",
+        "rear": "200 mm Disc Brake",
+        "system": "Hydraulic Disc (Front & Rear)",
+        "abs": true,
+        "abs_type": "Dual Channel ABS",
+        "abs_front": true,
+        "abs_rear": true
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2025 mm",
+        "width": "785 mm",
+        "height": "1060 mm",
+        "wheelbase": "1340 mm",
+        "ground_clearance": "170 mm",
+        "seat_height": "800 mm"
+      },
+      "chassis": {
+        "frame_type": "Diamond Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Monoshock with Nitrox",
+        "adjustable_suspension": false
+      },
+      "weight": {
+        "kerb_weight": "146 kg",
+        "dry_weight": "139 kg",
+        "payload_capacity": "150 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "90/90-17",
+        "rear": "120/80-17",
+        "type": "Tubeless",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Full Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Gear Position Indicator",
+          "Clock",
+          "Service Reminder"
+        ]
+      },
+      "battery": {
+        "type": "12V, 5Ah Maintenance-Free",
+        "capacity": "5Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch"
+      ]
+    }
+  },
+  
+  
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 245000,
+      "insurance": 9500,
+      "registration": 7000,
+      "road_tax": 7000,
+      "on_road_price": 268500
+    },
+    "emi": {
+      "monthly": 7500,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 49000,
+      "total_payable": 279000,
+      "processing_fee": 1600
+    },
+    "offers": [
+      {
+        "title": "Free Premium Riding Kit",
+        "description": "Includes full-face helmet and riding gloves",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Exchange Bonus",
+        "description": "Get ৳7,000 extra on exchange of any bike",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+  
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.3,
+      "total_reviews": 68,
+      "formatted": "4.3/5.0",
+      "distribution": {
+        "5_star": 36,
+        "4_star": 22,
+        "3_star": 8,
+        "2_star": 1,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.2, "formatted": "4.2/5", "count": 65},
+      "looks": {"score": 4.4, "formatted": "4.4/5", "count": 66},
+      "reliability": {"score": 4.3, "formatted": "4.3/5", "count": 60},
+      "comfort": {"score": 4.2, "formatted": "4.2/5", "count": 62},
+      "value_for_money": {"score": 4.6, "formatted": "4.6/5", "count": 67},
+      "mileage": {"score": 4.5, "formatted": "4.5/5", "count": 58}
+    },
+    "review_summary": {
+      "pros": [
+        "Now features dual-channel ABS (major upgrade over older model)",
+        "Excellent fuel efficiency for a 160cc sports bike",
+        "Modern full-digital instrument cluster",
+        "Aggressive styling with premium LED lighting"
+      ],
+      "cons": [
+        "Still uses basic telescopic forks (no USD)",
+        "Engine performance modest compared to 200cc rivals",
+        "Limited brand cachet in the sports segment"
+      ]
+    },
+    "verified_purchases": 55,
+    "user_reviews": [
+      {
+        "user_name": "Fahim R.",
+        "rating": 5,
+        "comment": "The dual-channel ABS makes this a game-changer under 2.5 lakhs. Safe, stylish, and super efficient—perfect for daily commuting.",
+        "date": "2026-02-01",
+        "verified": true,
+        "helpful_votes": 14
+      }
+    ]
+  },
+  
+  
+  "variant_comparison": {
+    "variants": ["std"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 80,
+    "search_keywords": [
+      "Hero Thriller 160R Refresh",
+      "Thriller 160R Refresh price Bangladesh",
+      "Hero 160R dual channel ABS",
+      "Thriller 160R mileage",
+      "Hero sports bike 2024"
+    ],
+    "tags": ["sports", "160cc", "Hero", "naked", "dual channel ABS", "4-valve", "commuter", "refreshed model"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": true,
+    "is_new_launch": true,
+    "launch_date": "2024-09-12",
+    "warranty": "5 Years or 75,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi", "Mymensingh"]
+  }
+},
+
+{
+
+  "core_identity": {
+    "slug": "hero-xtreme-125r-standard",
+    "bike_name": "Hero Xtreme 125R",
+    "page_title": "MrBike | Hero Xtreme 125R - Detailed Information",
+    "brand": "Hero",
+    "model": "Xtreme 125R",
+    "category": "sports",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "std",
+    "current_variant_key": "std"
+  },
+  
+  
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926208/bikes/HERO/hero-glamour/hero-glamour-back-view.webp",
+        "alt": "Hero Xtreme 125R - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926208/bikes/HERO/hero-glamour/hero-glamour-front-view.webp",
+        "alt": "Hero Xtreme 125R - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926209/bikes/HERO/hero-glamour/hero-glamour-left-view.webp",
+        "alt": "Hero Xtreme 125R - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926210/bikes/HERO/hero-glamour/hero-glamour-right-view.webp",
+        "alt": "Hero Xtreme 125R - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926211/bikes/HERO/hero-glamour/hero-glamour-showroom-view.webp",
+        "alt": "Hero Xtreme 125R - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "std",
+      "variant_name": "Standard",
+      "full_name": "Hero Xtreme 125R",
+      "price": 185000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Matte Axis Grey", "price_adjustment": 0},
+        {"name": "Sports Red", "price_adjustment": 0},
+        {"name": "Techno Blue", "price_adjustment": 0}
+      ],
+      "features": ["Single Channel ABS", "LED Headlight", "Digital Display", "Split Seat", "Tubeless Tyres"],
+      "braking_system": "Single Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "60 kmpl",
+      "mileage_user": "55-58 kmpl",
+      "topspeed_company": "105 km/h",
+      "topspeed_user": "100-103 km/h"
+    }
+  ],
+  
+  
+  "quick_specs": {
+    "engine_capacity": "124.7 cc",
+    "mileage": {
+      "company": "60 kmpl",
+      "user": "55-58 kmpl",
+      "average": 56.5
+    },
+    "top_speed": {
+      "company": "105 km/h",
+      "user": "100-103 km/h",
+      "average": 101.5
+    },
+    "transmission": "5 Speed",
+    "max_power": "11.4 HP",
+    "max_torque": "10.5 Nm",
+    "fuel_tank": "10 L",
+    "kerb_weight": "132 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, SOHC, Air-Cooled",
+        "displacement": "124.7 cc",
+        "max_power": "11.4 HP @ 7500 rpm",
+        "max_torque": "10.5 Nm @ 6000 rpm",
+        "bore_stroke": "57.0 mm x 48.8 mm",
+        "compression_ratio": "9.5:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Air-Cooled",
+        "valve_train": "SOHC, 2 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "7.8 seconds",
+        "acceleration_0_100": "22.5 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "10 L",
+        "reserve_fuel": "2.0 L",
+        "range_per_tank": "565 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Clutch",
+        "gearbox": "5-Speed",
+        "gear_pattern": "1-N-2-3-4-5",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "240 mm Disc Brake",
+        "rear": "130 mm Drum Brake",
+        "system": "Hydraulic Disc (Front), Drum (Rear)",
+        "abs": true,
+        "abs_type": "Single Channel ABS",
+        "abs_front": true,
+        "abs_rear": false
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2005 mm",
+        "width": "780 mm",
+        "height": "1055 mm",
+        "wheelbase": "1320 mm",
+        "ground_clearance": "175 mm",
+        "seat_height": "795 mm"
+      },
+      "chassis": {
+        "frame_type": "Diamond Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Monoshock with Nitrox",
+        "adjustable_suspension": false
+      },
+      "weight": {
+        "kerb_weight": "132 kg",
+        "dry_weight": "125 kg",
+        "payload_capacity": "130 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "90/90-17",
+        "rear": "110/80-17",
+        "type": "Tubeless",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Clock",
+          "Service Reminder"
+        ]
+      },
+      "battery": {
+        "type": "12V, 4Ah Maintenance-Free",
+        "capacity": "4Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch"
+      ]
+    }
+  },
+  
+  
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 185000,
+      "insurance": 7500,
+      "registration": 5500,
+      "road_tax": 5500,
+      "on_road_price": 203500
+    },
+    "emi": {
+      "monthly": 5700,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 37000,
+      "total_payable": 212200,
+      "processing_fee": 1200
+    },
+    "offers": [
+      {
+        "title": "Free Helmet for Students",
+        "description": "Valid with student ID card",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "First Service Free",
+        "description": "Complimentary first service at authorized Hero centers",
+        "valid_until": "2026-12-31"
+      }
+    ]
+  },
+  
+  
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.2,
+      "total_reviews": 92,
+      "formatted": "4.2/5.0",
+      "distribution": {
+        "5_star": 48,
+        "4_star": 28,
+        "3_star": 12,
+        "2_star": 3,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 3.9, "formatted": "3.9/5", "count": 85},
+      "looks": {"score": 4.5, "formatted": "4.5/5", "count": 90},
+      "reliability": {"score": 4.4, "formatted": "4.4/5", "count": 80},
+      "comfort": {"score": 4.3, "formatted": "4.3/5", "count": 82},
+      "value_for_money": {"score": 4.7, "formatted": "4.7/5", "count": 91},
+      "mileage": {"score": 4.6, "formatted": "4.6/5", "count": 78}
+    },
+    "review_summary": {
+      "pros": [
+        "Exceptional fuel efficiency for daily commuting",
+        "Aggressive sports styling at entry-level price",
+        "Lightweight and easy to maneuver in city traffic",
+        "Best-in-class value under 2 lakhs"
+      ],
+      "cons": [
+        "Modest performance due to small 125cc engine",
+        "Only single-channel ABS with rear drum brake",
+        "Basic suspension setup for rough roads"
+      ]
+    },
+    "verified_purchases": 76,
+    "user_reviews": [
+      {
+        "user_name": "Sakib M.",
+        "rating": 5,
+        "comment": "Perfect bike for college students! Looks like a sports bike but sips fuel like a scooter. My monthly fuel cost dropped by half.",
+        "date": "2026-01-29",
+        "verified": true,
+        "helpful_votes": 21
+      }
+    ]
+  },
+  
+  
+  "variant_comparison": {
+    "variants": ["std"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 84,
+    "search_keywords": [
+      "Hero Xtreme 125R",
+      "Xtreme 125R price Bangladesh",
+      "Hero 125cc sports bike",
+      "Xtreme 125R mileage",
+      "best 125cc bike under 2 lakh"
+    ],
+    "tags": ["sports", "125cc", "Hero", "naked", "ABS", "commuter", "budget", "fuel efficient"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": true,
+    "is_new_launch": false,
+    "launch_date": "2022-05-20",
+    "warranty": "5 Years or 75,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi", "Mymensingh", "Barishal"]
+  }
+},
+
+{
+
+  "core_identity": {
+    "slug": "suzuki-gixxer-carb-disc-standard",
+    "bike_name": "Suzuki Gixxer Carb Disc",
+    "page_title": "MrBike | Suzuki Gixxer Carb Disc - Detailed Information",
+    "brand": "Suzuki",
+    "model": "Gixxer Carb Disc",
+    "category": "sports",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "std",
+    "current_variant_key": "std"
+  },
+  
+  
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926212/bikes/HERO/HERO-HF-DELUX/hero-hf-deluxe-back-view.webp",
+        "alt": "Suzuki Gixxer Carb Disc - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926213/bikes/HERO/HERO-HF-DELUX/hero-hf-deluxe-front-view.webp",
+        "alt": "Suzuki Gixxer Carb Disc - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926214/bikes/HERO/HERO-HF-DELUX/hero-hf-deluxe-left-view.webp",
+        "alt": "Suzuki Gixxer Carb Disc - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926215/bikes/HERO/HERO-HF-DELUX/hero-hf-deluxe-right-view.webp",
+        "alt": "Suzuki Gixxer Carb Disc - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926216/bikes/HERO/HERO-HF-DELUX/hero-hf-deluxe-showroom-view.webp",
+        "alt": "Suzuki Gixxer Carb Disc - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "std",
+      "variant_name": "Standard",
+      "full_name": "Suzuki Gixxer Carb Disc",
+      "price": 195000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Metallic Triton Blue", "price_adjustment": 0},
+        {"name": "Glass Sparkle Black", "price_adjustment": 0},
+        {"name": "Pearl Mirage White", "price_adjustment": 0}
+      ],
+      "features": ["Front Disc Brake", "Halogen Headlight", "Analog-Digital Display", "Tubeless Tyres"],
+      "braking_system": "Front Disc, Rear Drum",
+      "tire_type": "Tubeless",
+      "mileage_company": "55 kmpl",
+      "mileage_user": "50-53 kmpl",
+      "topspeed_company": "115 km/h",
+      "topspeed_user": "110-113 km/h"
+    }
+  ],
+  
+  
+  "quick_specs": {
+    "engine_capacity": "154.9 cc",
+    "mileage": {
+      "company": "55 kmpl",
+      "user": "50-53 kmpl",
+      "average": 51.5
+    },
+    "top_speed": {
+      "company": "115 km/h",
+      "user": "110-113 km/h",
+      "average": 111.5
+    },
+    "transmission": "5 Speed",
+    "max_power": "13.4 HP",
+    "max_torque": "13.8 Nm",
+    "fuel_tank": "12 L",
+    "kerb_weight": "136 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, SOHC, Air-Cooled",
+        "displacement": "154.9 cc",
+        "max_power": "13.4 HP @ 8000 rpm",
+        "max_torque": "13.8 Nm @ 6000 rpm",
+        "bore_stroke": "62.0 mm x 51.4 mm",
+        "compression_ratio": "9.5:1",
+        "fuel_system": "Carburetor",
+        "starting": "Electric & Kick Start",
+        "cooling_system": "Air-Cooled",
+        "valve_train": "SOHC, 2 Valves",
+        "emission_standard": "Euro 3 Equivalent (Legacy Model)"
+      },
+      "performance": {
+        "acceleration_0_60": "7.2 seconds",
+        "acceleration_0_100": "19.5 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "12 L",
+        "reserve_fuel": "2.4 L",
+        "range_per_tank": "618 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Clutch",
+        "gearbox": "5-Speed",
+        "gear_pattern": "1-N-2-3-4-5",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "266 mm Disc Brake",
+        "rear": "130 mm Drum Brake",
+        "system": "Hydraulic Disc (Front), Drum (Rear)",
+        "abs": false,
+        "abs_type": "",
+        "abs_front": false,
+        "abs_rear": false
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2020 mm",
+        "width": "785 mm",
+        "height": "1035 mm",
+        "wheelbase": "1330 mm",
+        "ground_clearance": "165 mm",
+        "seat_height": "795 mm"
+      },
+      "chassis": {
+        "frame_type": "Diamond Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Monoshock with Nitrox",
+        "adjustable_suspension": false
+      },
+      "weight": {
+        "kerb_weight": "136 kg",
+        "dry_weight": "129 kg",
+        "payload_capacity": "130 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "90/90-17",
+        "rear": "120/80-17",
+        "type": "Tubeless",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "Halogen",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": false
+      },
+      "instrument_cluster": {
+        "type": "Analog + Digital Combo",
+        "display_items": [
+          "Speedometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Clock"
+        ]
+      },
+      "battery": {
+        "type": "12V, 4Ah Maintenance-Free",
+        "capacity": "4Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch",
+        "Kick Starter"
+      ]
+    }
+  },
+  
+  
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 195000,
+      "insurance": 8000,
+      "registration": 6000,
+      "road_tax": 6000,
+      "on_road_price": 215000
+    },
+    "emi": {
+      "monthly": 6000,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 39000,
+      "total_payable": 225000,
+      "processing_fee": 1300
+    },
+    "offers": [
+      {
+        "title": "Free Kickstart Cover Kit",
+        "description": "Stylish accessory kit included",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Loyalty Bonus",
+        "description": "Extra ৳5,000 off for existing Suzuki owners",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+  
+  "ratings_reviews": {
+    "rating": {
+      "average": 3.9,
+      "total_reviews": 64,
+      "formatted": "3.9/5.0",
+      "distribution": {
+        "5_star": 22,
+        "4_star": 24,
+        "3_star": 12,
+        "2_star": 4,
+        "1_star": 2
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 3.8, "formatted": "3.8/5", "count": 60},
+      "looks": {"score": 4.2, "formatted": "4.2/5", "count": 62},
+      "reliability": {"score": 4.3, "formatted": "4.3/5", "count": 55},
+      "comfort": {"score": 4.0, "formatted": "4.0/5", "count": 58},
+      "value_for_money": {"score": 4.4, "formatted": "4.4/5", "count": 63},
+      "mileage": {"score": 4.5, "formatted": "4.5/5", "count": 52}
+    },
+    "review_summary": {
+      "pros": [
+        "Excellent fuel efficiency for a 155cc bike",
+        "Proven reliable Suzuki engine",
+        "Dual start (electric + kick) ensures no battery worries",
+        "Affordable entry into the Gixxer family"
+      ],
+      "cons": [
+        "No ABS (major safety drawback in 2026)",
+        "Carburetor less efficient than fuel injection",
+        "Outdated halogen headlight and basic console",
+        "Emission standard not BS6/Euro 5 compliant"
+      ]
+    },
+    "verified_purchases": 50,
+    "user_reviews": [
+      {
+        "user_name": "Rafiqul I.",
+        "rating": 4,
+        "comment": "Great budget bike with classic Suzuki reliability. Mileage is fantastic, but I wish it had at least single-channel ABS for safety.",
+        "date": "2026-01-20",
+        "verified": true,
+        "helpful_votes": 13
+      }
+    ]
+  },
+  
+  
+  "variant_comparison": {
+    "variants": ["std"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 68,
+    "search_keywords": [
+      "Suzuki Gixxer Carb Disc",
+      "Gixxer 155 carburetor",
+      "Gixxer Carb price Bangladesh",
+      "Gixxer mileage",
+      "budget sports bike"
+    ],
+    "tags": ["sports", "155cc", "Suzuki", "naked", "carburetor", "disc brake", "commuter", "legacy model"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": false,
+    "is_new_launch": false,
+    "launch_date": "2015-03-10",
+    "warranty": "2 Years or 20,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "Limited Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna"]
+  }
+},
+
+{
+
+  "core_identity": {
+    "slug": "bajaj-avenger-160-abs-standard-duplicate-2",
+    "bike_name": "Bajaj Avenger 160 ABS",
+    "page_title": "MrBike | Bajaj Avenger 160 ABS - Detailed Information",
+    "brand": "Bajaj",
+    "model": "Avenger 160 ABS",
+    "category": "cruiser",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "abs",
+    "current_variant_key": "abs"
+  },
+  
+  
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926216/bikes/HERO/HERO-HF-DELUX/hero-hf-deluxe-showroom-view.webp",
+        "alt": "Bajaj Avenger 160 ABS - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926218/bikes/HERO/HERO-HUNK/hero-hunk-front-view.webp",
+        "alt": "Bajaj Avenger 160 ABS - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926218/bikes/HERO/HERO-HUNK/hero-hunk-front-view.webp",
+        "alt": "Bajaj Avenger 160 ABS - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926220/bikes/HERO/HERO-HUNK/hero-hunk-right-view.webp",
+        "alt": "Bajaj Avenger 160 ABS - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926221/bikes/HERO/HERO-HUNK/hero-hunk-showroom-view.webp",
+        "alt": "Bajaj Avenger 160 ABS - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "abs",
+      "variant_name": "ABS",
+      "full_name": "Bajaj Avenger 160 ABS",
+      "price": 285000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Aurora Black", "price_adjustment": 0},
+        {"name": "Moon White", "price_adjustment": 0},
+        {"name": "Sapphire Blue", "price_adjustment": 0}
+      ],
+      "features": ["Single Channel ABS", "LED Headlight", "Digital Display", "Cruise Pegs"],
+      "braking_system": "Single Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "50 kmpl",
+      "mileage_user": "45-48 kmpl",
+      "topspeed_company": "110 km/h",
+      "topspeed_user": "105-108 km/h"
+    }
+  ],
+  
+  
+  "quick_specs": {
+    "engine_capacity": "160.0 cc",
+    "mileage": {
+      "company": "50 kmpl",
+      "user": "45-48 kmpl",
+      "average": 46.5
+    },
+    "top_speed": {
+      "company": "110 km/h",
+      "user": "105-108 km/h",
+      "average": 106.5
+    },
+    "transmission": "5 Speed",
+    "max_power": "15.0 HP",
+    "max_torque": "13.7 Nm",
+    "fuel_tank": "13 L",
+    "kerb_weight": "155 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, SOHC, Air-Cooled",
+        "displacement": "160.0 cc",
+        "max_power": "15.0 HP @ 8500 rpm",
+        "max_torque": "13.7 Nm @ 7000 rpm",
+        "bore_stroke": "60.0 mm x 56.0 mm",
+        "compression_ratio": "9.5:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Air-Cooled",
+        "valve_train": "SOHC, 2 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "6.2 seconds",
+        "acceleration_0_100": "18.5 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "13 L",
+        "reserve_fuel": "2.5 L",
+        "range_per_tank": "605 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Clutch",
+        "gearbox": "5-Speed",
+        "gear_pattern": "1-N-2-3-4-5",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "260 mm Disc Brake",
+        "rear": "130 mm Drum Brake",
+        "system": "Hydraulic Disc (Front), Drum (Rear)",
+        "abs": true,
+        "abs_type": "Single Channel ABS",
+        "abs_front": true,
+        "abs_rear": false
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2200 mm",
+        "width": "806 mm",
+        "height": "1078 mm",
+        "wheelbase": "1490 mm",
+        "ground_clearance": "169 mm",
+        "seat_height": "737 mm"
+      },
+      "chassis": {
+        "frame_type": "Twin Spar Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Dual Shock Absorbers with Nitrox",
+        "adjustable_suspension": true
+      },
+      "weight": {
+        "kerb_weight": "155 kg",
+        "dry_weight": "147 kg",
+        "payload_capacity": "150 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "90/90-17",
+        "rear": "130/90-15",
+        "type": "Tubeless",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "15-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Clock"
+        ]
+      },
+      "battery": {
+        "type": "12V, 5Ah Maintenance-Free",
+        "capacity": "5Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Cruise Pegs"
+      ]
+    }
+  },
+  
+  
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 285000,
+      "insurance": 10000,
+      "registration": 7000,
+      "road_tax": 7000,
+      "on_road_price": 309000
+    },
+    "emi": {
+      "monthly": 8600,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 57000,
+      "total_payable": 319600,
+      "processing_fee": 1500
+    },
+    "offers": [
+      {
+        "title": "Free Helmet & Riding Jacket",
+        "description": "Get premium safety gear on purchase",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Loyalty Bonus",
+        "description": "Extra ৳5,000 off for existing Bajaj owners",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+  
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.2,
+      "total_reviews": 92,
+      "formatted": "4.2/5.0",
+      "distribution": {
+        "5_star": 42,
+        "4_star": 30,
+        "3_star": 15,
+        "2_star": 4,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.0, "formatted": "4.0/5", "count": 85},
+      "looks": {"score": 4.5, "formatted": "4.5/5", "count": 90},
+      "reliability": {"score": 4.4, "formatted": "4.4/5", "count": 80},
+      "comfort": {"score": 4.6, "formatted": "4.6/5", "count": 88},
+      "value_for_money": {"score": 4.3, "formatted": "4.3/5", "count": 90},
+      "mileage": {"score": 4.5, "formatted": "4.5/5", "count": 78}
+    },
+    "review_summary": {
+      "pros": [
+        "Best-in-class mileage for a cruiser",
+        "Extremely comfortable for long rides",
+        "Low seat height ideal for short riders",
+        "Affordable maintenance"
+      ],
+      "cons": [
+        "Underpowered for highway overtakes",
+        "Basic rear drum brake",
+        "No dual-channel ABS"
+      ]
+    },
+    "verified_purchases": 74,
+    "user_reviews": [
+      {
+        "user_name": "Farhan Kabir",
+        "rating": 4,
+        "comment": "Perfect city cruiser with amazing mileage. Not fast, but very relaxing to ride.",
+        "date": "2026-01-18",
+        "verified": true,
+        "helpful_votes": 10
+      }
+    ]
+  },
+  
+  
+  "variant_comparison": {
+    "variants": ["abs"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+ 
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 72,
+    "search_keywords": [
+      "Bajaj Avenger 160 ABS",
+      "160cc cruiser bike",
+      "Avenger 160 price Bangladesh",
+      "Bajaj cruiser",
+      "Avenger mileage"
+    ],
+    "tags": ["cruiser", "160cc", "Bajaj", "commuter", "ABS", "high mileage"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": false,
+    "is_new_launch": false,
+    "launch_date": "2022-03-15",
+    "warranty": "5 Years or 75,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi"]
+  }
+},
+
+{
+
+  "core_identity": {
+    "slug": "bajaj-pulsar-ns125-standard",
+    "bike_name": "Bajaj Pulsar NS125",
+    "page_title": "MrBike | Bajaj Pulsar NS125 - Detailed Information",
+    "brand": "Bajaj",
+    "model": "Pulsar NS125",
+    "category": "sports",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "std",
+    "current_variant_key": "std"
+  },
+  
+  
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926223/bikes/HERO/HERO-IGNITOR/her-ignitor-right-view.webp",
+        "alt": "Bajaj Pulsar NS125 - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926223/bikes/HERO/HERO-IGNITOR/hero-ignitor-back-view.webp",
+        "alt": "Bajaj Pulsar NS125 - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926224/bikes/HERO/HERO-IGNITOR/hero-ignitor-front-view.webp",
+        "alt": "Bajaj Pulsar NS125 - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926225/bikes/HERO/HERO-IGNITOR/hero-ignitor-left-view.webp",
+        "alt": "Bajaj Pulsar NS125 - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926226/bikes/HERO/HERO-IGNITOR/hero-ignitor-showroom-view.webp",
+        "alt": "Bajaj Pulsar NS125 - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "std",
+      "variant_name": "Standard",
+      "full_name": "Bajaj Pulsar NS125",
+      "price": 175000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Sparkle Black", "price_adjustment": 0},
+        {"name": "Sapphire Blue", "price_adjustment": 0},
+        {"name": "Fiery Red", "price_adjustment": 0}
+      ],
+      "features": ["Single Channel ABS", "LED Headlight", "Digital Display", "Split Seat", "Tubeless Tyres"],
+      "braking_system": "Single Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "62 kmpl",
+      "mileage_user": "58-60 kmpl",
+      "topspeed_company": "105 km/h",
+      "topspeed_user": "100-103 km/h"
+    }
+  ],
+  
+  
+  "quick_specs": {
+    "engine_capacity": "124.5 cc",
+    "mileage": {
+      "company": "62 kmpl",
+      "user": "58-60 kmpl",
+      "average": 59
+    },
+    "top_speed": {
+      "company": "105 km/h",
+      "user": "100-103 km/h",
+      "average": 101.5
+    },
+    "transmission": "5 Speed",
+    "max_power": "12.0 HP",
+    "max_torque": "11.0 Nm",
+    "fuel_tank": "12 L",
+    "kerb_weight": "144 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, SOHC, Air-Cooled",
+        "displacement": "124.5 cc",
+        "max_power": "12.0 HP @ 8500 rpm",
+        "max_torque": "11.0 Nm @ 7000 rpm",
+        "bore_stroke": "57.0 mm x 48.8 mm",
+        "compression_ratio": "9.5:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Air-Cooled",
+        "valve_train": "SOHC, 2 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "7.5 seconds",
+        "acceleration_0_100": "21.0 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "12 L",
+        "reserve_fuel": "2.4 L",
+        "range_per_tank": "708 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Clutch",
+        "gearbox": "5-Speed",
+        "gear_pattern": "1-N-2-3-4-5",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "240 mm Disc Brake",
+        "rear": "130 mm Drum Brake",
+        "system": "Hydraulic Disc (Front), Drum (Rear)",
+        "abs": true,
+        "abs_type": "Single Channel ABS",
+        "abs_front": true,
+        "abs_rear": false
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2055 mm",
+        "width": "785 mm",
+        "height": "1060 mm",
+        "wheelbase": "1320 mm",
+        "ground_clearance": "170 mm",
+        "seat_height": "805 mm"
+      },
+      "chassis": {
+        "frame_type": "Perimeter Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Nitrox Monoshock with Adjustable Preload",
+        "adjustable_suspension": true
+      },
+      "weight": {
+        "kerb_weight": "144 kg",
+        "dry_weight": "137 kg",
+        "payload_capacity": "130 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "90/90-17",
+        "rear": "110/80-17",
+        "type": "Tubeless",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Clock",
+          "Service Reminder"
+        ]
+      },
+      "battery": {
+        "type": "12V, 4Ah Maintenance-Free",
+        "capacity": "4Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch"
+      ]
+    }
+  },
+  
+  
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 175000,
+      "insurance": 7000,
+      "registration": 5500,
+      "road_tax": 5500,
+      "on_road_price": 193000
+    },
+    "emi": {
+      "monthly": 5400,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 35000,
+      "total_payable": 204400,
+      "processing_fee": 1200
+    },
+    "offers": [
+      {
+        "title": "Free Helmet for Students",
+        "description": "Valid with student ID card",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Exchange Bonus",
+        "description": "Get ৳5,000 extra on exchange of any bike",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+
+  
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.3,
+      "total_reviews": 88,
+      "formatted": "4.3/5.0",
+      "distribution": {
+        "5_star": 46,
+        "4_star": 28,
+        "3_star": 10,
+        "2_star": 3,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.1, "formatted": "4.1/5", "count": 82},
+      "looks": {"score": 4.5, "formatted": "4.5/5", "count": 85},
+      "reliability": {"score": 4.4, "formatted": "4.4/5", "count": 78},
+      "comfort": {"score": 4.2, "formatted": "4.2/5", "count": 80},
+      "value_for_money": {"score": 4.6, "formatted": "4.6/5", "count": 86},
+      "mileage": {"score": 4.7, "formatted": "4.7/5", "count": 75}
+    },
+    "review_summary": {
+      "pros": [
+        "Exceptional fuel efficiency for a sports-styled bike",
+        "Aggressive Pulsar NS design at entry-level price",
+        "Lightweight and easy to handle in city traffic",
+        "Best-in-class value under 2 lakhs"
+      ],
+      "cons": [
+        "Modest performance due to small 125cc engine",
+        "Only single-channel ABS with rear drum brake",
+        "Basic suspension setup for rough roads"
+      ]
+    },
+    "verified_purchases": 72,
+    "user_reviews": [
+      {
+        "user_name": "Tahmid H.",
+        "rating": 5,
+        "comment": "Perfect first bike for students! Looks like a proper sports bike but gives scooter-like mileage. My daily 40km commute costs almost nothing now.",
+        "date": "2026-01-27",
+        "verified": true,
+        "helpful_votes": 18
+      }
+    ]
+  },
+  
+  
+  "variant_comparison": {
+    "variants": ["std"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 86,
+    "search_keywords": [
+      "Bajaj Pulsar NS125",
+      "Pulsar NS125 price Bangladesh",
+      "Bajaj 125cc sports bike",
+      "NS125 mileage",
+      "best 125cc bike under 2 lakh"
+    ],
+    "tags": ["sports", "125cc", "Bajaj", "naked", "ABS", "commuter", "budget", "fuel efficient", "Pulsar"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": true,
+    "is_new_launch": false,
+    "launch_date": "2022-08-15",
+    "warranty": "5 Years or 75,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi", "Mymensingh", "Barishal"]
+  }
+},
+{
+
+  "core_identity": {
+    "slug": "bajaj-ct-100-es-standard",
+    "bike_name": "Bajaj CT 100 ES",
+    "page_title": "MrBike | Bajaj CT 100 ES - Detailed Information",
+    "brand": "Bajaj",
+    "model": "CT 100 ES",
+    "category": "commuter",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "es",
+    "current_variant_key": "es"
+  },
+  
+  
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926226/bikes/HERO/HERO-KARIZMA-XMR/hero-karizma-xmr-210-back-view.webp",
+        "alt": "Bajaj CT 100 ES - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926227/bikes/HERO/HERO-KARIZMA-XMR/hero-karizma-xmr-210-front-view.webp",
+        "alt": "Bajaj CT 100 ES - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926228/bikes/HERO/HERO-KARIZMA-XMR/hero-karizma-xmr-210-left-view.webp",
+        "alt": "Bajaj CT 100 ES - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926230/bikes/HERO/HERO-KARIZMA-XMR/hero-karizma-xmr-210-right-view.webp",
+        "alt": "Bajaj CT 100 ES - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926231/bikes/HERO/HERO-KARIZMA-XMR/hero-karizma-xmr-210-showroom-view.webp",
+        "alt": "Bajaj CT 100 ES - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "es",
+      "variant_name": "ES",
+      "full_name": "Bajaj CT 100 ES",
+      "price": 115000,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Volcano Black", "price_adjustment": 0},
+        {"name": "Ocean Blue", "price_adjustment": 0},
+        {"name": "Candy Red", "price_adjustment": 0}
+      ],
+      "features": ["Electric Start", "Analogue Display", "Tubeless Tyres", "Carrier Rack"],
+      "braking_system": "Drum Brakes (Front & Rear)",
+      "tire_type": "Tubeless",
+      "mileage_company": "85 kmpl",
+      "mileage_user": "75-80 kmpl",
+      "topspeed_company": "90 km/h",
+      "topspeed_user": "85-88 km/h"
+    }
+  ],
+  
+  
+  "quick_specs": {
+    "engine_capacity": "102.0 cc",
+    "mileage": {
+      "company": "85 kmpl",
+      "user": "75-80 kmpl",
+      "average": 77.5
+    },
+    "top_speed": {
+      "company": "90 km/h",
+      "user": "85-88 km/h",
+      "average": 86.5
+    },
+    "transmission": "4 Speed",
+    "max_power": "7.9 HP",
+    "max_torque": "8.3 Nm",
+    "fuel_tank": "10.5 L",
+    "kerb_weight": "118 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, SOHC, Air-Cooled",
+        "displacement": "102.0 cc",
+        "max_power": "7.9 HP @ 7500 rpm",
+        "max_torque": "8.3 Nm @ 5500 rpm",
+        "bore_stroke": "50.0 mm x 52.0 mm",
+        "compression_ratio": "9.0:1",
+        "fuel_system": "Carburetor",
+        "starting": "Electric Start Only",
+        "cooling_system": "Air-Cooled",
+        "valve_train": "SOHC, 2 Valves",
+        "emission_standard": "Euro 3 Equivalent (Legacy Model)"
+      },
+      "performance": {
+        "acceleration_0_60": "12.5 seconds",
+        "acceleration_0_100": "Not Recommended",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "10.5 L",
+        "reserve_fuel": "2.1 L",
+        "range_per_tank": "814 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Clutch",
+        "gearbox": "4-Speed",
+        "gear_pattern": "1-N-2-3-4",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "130 mm Drum Brake",
+        "rear": "110 mm Drum Brake",
+        "system": "Mechanical Drum",
+        "abs": false,
+        "abs_type": "",
+        "abs_front": false,
+        "abs_rear": false
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "1950 mm",
+        "width": "745 mm",
+        "height": "1060 mm",
+        "wheelbase": "1270 mm",
+        "ground_clearance": "170 mm",
+        "seat_height": "800 mm"
+      },
+      "chassis": {
+        "frame_type": "Double Cradle Frame",
+        "suspension_front": "Telescopic Fork",
+        "suspension_rear": "Dual Shock Absorbers with Nitrox",
+        "adjustable_suspension": false
+      },
+      "weight": {
+        "kerb_weight": "118 kg",
+        "dry_weight": "112 kg",
+        "payload_capacity": "130 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "2.75-17",
+        "rear": "3.00-17",
+        "type": "Tubeless",
+        "brand": "MRF"
+      },
+      "wheels": {
+        "front": "17-inch Spoke",
+        "rear": "17-inch Spoke",
+        "material": "Steel Spoke"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "Halogen",
+        "tail_light": "Incandescent",
+        "turn_signals": "Incandescent",
+        "daytime_running_lights": false
+      },
+      "instrument_cluster": {
+        "type": "Analogue",
+        "display_items": [
+          "Speedometer",
+          "Odometer",
+          "Fuel Gauge"
+        ]
+      },
+      "battery": {
+        "type": "12V, 3Ah Maintenance-Free",
+        "capacity": "3Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Carrier Rack",
+        "Pass Switch"
+      ]
+    }
+  },
+  
+  
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 115000,
+      "insurance": 5000,
+      "registration": 4500,
+      "road_tax": 4500,
+      "on_road_price": 129000
+    },
+    "emi": {
+      "monthly": 3600,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 23000,
+      "total_payable": 139600,
+      "processing_fee": 800
+    },
+    "offers": [
+      {
+        "title": "Free Helmet for First-Time Buyers",
+        "description": "Basic safety helmet included with purchase",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Rural Delivery Bonus",
+        "description": "Free home delivery in selected upazilas",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+  
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.0,
+      "total_reviews": 124,
+      "formatted": "4.0/5.0",
+      "distribution": {
+        "5_star": 58,
+        "4_star": 42,
+        "3_star": 18,
+        "2_star": 4,
+        "1_star": 2
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 3.6, "formatted": "3.6/5", "count": 110},
+      "looks": {"score": 3.8, "formatted": "3.8/5", "count": 115},
+      "reliability": {"score": 4.5, "formatted": "4.5/5", "count": 105},
+      "comfort": {"score": 4.1, "formatted": "4.1/5", "count": 100},
+      "value_for_money": {"score": 4.7, "formatted": "4.7/5", "count": 120},
+      "mileage": {"score": 4.8, "formatted": "4.8/5", "count": 95}
+    },
+    "review_summary": {
+      "pros": [
+        "Unbeatable fuel efficiency for daily commuting",
+        "Extremely affordable maintenance and spare parts",
+        "Lightweight and easy to handle for new riders",
+        "Proven reliability over decades"
+      ],
+      "cons": [
+        "No ABS or disc brakes (basic drum setup)",
+        "Carbureted engine lacks modern refinement",
+        "Outdated halogen lighting and analogue console",
+        "Not BS6/Euro 5 emission compliant"
+      ]
+    },
+    "verified_purchases": 98,
+    "user_reviews": [
+      {
+        "user_name": "Abdul M.",
+        "rating": 5,
+        "comment": "Best bike for village use! I ride 60km daily on rough roads—zero issues in 1 year. Mileage is close to 80 kmpl. Perfect for budget-conscious buyers.",
+        "date": "2026-01-25",
+        "verified": true,
+        "helpful_votes": 26
+      }
+    ]
+  },
+  
+  
+  "variant_comparison": {
+    "variants": ["es"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 89,
+    "search_keywords": [
+      "Bajaj CT 100 ES",
+      "CT 100 price Bangladesh",
+      "Bajaj 100cc bike",
+      "CT 100 mileage",
+      "best budget bike under 1.5 lakh"
+    ],
+    "tags": ["commuter", "100cc", "Bajaj", "naked", "electric start", "high mileage", "budget", "rural"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": false,
+    "is_new_launch": false,
+    "launch_date": "2010-06-15",
+    "warranty": "2 Years or 20,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna", "Rajshahi", "Barishal", "Rangpur", "Mymensingh"]
+  }
+},
+
+{
+
+  "core_identity": {
+    "slug": "cfmoto-250nk-standard",
+    "bike_name": "CFMOTO 250NK",
+    "page_title": "MrBike | CFMOTO 250NK - Detailed Information",
+    "brand": "CFMOTO",
+    "model": "250NK",
+    "category": "sports",
+    "subcategory": "naked",
+    "year": 2024,
+    "status": "active",
+    "default_variant_key": "std",
+    "current_variant_key": "std"
+  },
+  
+  
+  "visual_assets": {
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926231/bikes/HERO/HERO-MAESTRO-EDGE/hero-maestro-edge-back-view.webp",
+        "alt": "CFMOTO 250NK - Front View",
+        "position": 1,
+        "is_primary": true
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926232/bikes/HERO/HERO-MAESTRO-EDGE/hero-maestro-edge-front-view.webp",
+        "alt": "CFMOTO 250NK - Back View",
+        "position": 2,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926233/bikes/HERO/HERO-MAESTRO-EDGE/hero-maestro-edge-left-view.webp",
+        "alt": "CFMOTO 250NK - Right View",
+        "position": 3,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926234/bikes/HERO/HERO-MAESTRO-EDGE/hero-maestro-edge-showroom-view.webp",
+        "alt": "CFMOTO 250NK - Left View",
+        "position": 4,
+        "is_primary": false
+      },
+      {
+        "url": "https://res.cloudinary.com/dbjpqcth5/image/upload/v1753926235/bikes/HERO/HERO-MAESTRO-EDGE/herp-maestro-edge-right-view.webp",
+        "alt": "CFMOTO 250NK - Showroom View",
+        "position": 5,
+        "is_primary": false
+      }
+    ],
+    "image_counter": {
+      "current": 1,
+      "total": 5
+    },
+    "video_url": "https://...",
+    "360_view_url": "https://..."
+  },
+  
+
+  "variants": [
+    {
+      "variant_key": "std",
+      "variant_name": "Standard",
+      "full_name": "CFMOTO 250NK",
+      "price": 428500,
+      "currency": "BDT",
+      "is_default": true,
+      "color_options": [
+        {"name": "Aurora White", "price_adjustment": 0},
+        {"name": "Metallic Matte Black", "price_adjustment": 0},
+        {"name": "Racing Blue", "price_adjustment": 0}
+      ],
+      "features": ["Dual Channel ABS", "LED Headlight", "Full Digital Display", "Slipper Clutch", "Upside-Down Forks"],
+      "braking_system": "Dual Channel ABS",
+      "tire_type": "Tubeless",
+      "mileage_company": "32 kmpl",
+      "mileage_user": "30-33 kmpl",
+      "topspeed_company": "145 km/h",
+      "topspeed_user": "135-140 km/h"
+    }
+  ],
+  
+  
+  "quick_specs": {
+    "engine_capacity": "249.0 cc",
+    "mileage": {
+      "company": "32 kmpl",
+      "user": "30-33 kmpl",
+      "average": 31.5
+    },
+    "top_speed": {
+      "company": "145 km/h",
+      "user": "135-140 km/h",
+      "average": 137.5
+    },
+    "transmission": "6 Speed",
+    "max_power": "24.5 HP",
+    "max_torque": "22.0 Nm",
+    "fuel_tank": "13.5 L",
+    "kerb_weight": "152 kg",
+    "spec_type": "company"
+  },
+  
+ 
+  "detailed_specs": {
+    "engine_performance": {
+      "engine": {
+        "engine_type": "Single Cylinder, 4-Stroke, DOHC, Liquid-Cooled",
+        "displacement": "249.0 cc",
+        "max_power": "24.5 HP @ 9750 rpm",
+        "max_torque": "22.0 Nm @ 7250 rpm",
+        "bore_stroke": "72.0 mm x 61.2 mm",
+        "compression_ratio": "11.5:1",
+        "fuel_system": "Fuel Injection (FI)",
+        "starting": "Electric Start",
+        "cooling_system": "Liquid-Cooled",
+        "valve_train": "DOHC, 4 Valves",
+        "emission_standard": "Euro 5 / BS6 Equivalent"
+      },
+      "performance": {
+        "acceleration_0_60": "4.9 seconds",
+        "acceleration_0_100": "13.8 seconds",
+        "fuel_type": "Petrol",
+        "fuel_tank_capacity": "13.5 L",
+        "reserve_fuel": "2.7 L",
+        "range_per_tank": "425 km"
+      }
+    },
+    "transmission_braking": {
+      "transmission": {
+        "clutch": "Wet Multiplate Slipper Clutch",
+        "gearbox": "6-Speed",
+        "gear_pattern": "1-N-2-3-4-5-6",
+        "final_drive": "Chain Drive"
+      },
+      "brakes": {
+        "front": "300 mm Disc Brake",
+        "rear": "230 mm Disc Brake",
+        "system": "Hydraulic Disc",
+        "abs": true,
+        "abs_type": "Dual Channel ABS",
+        "abs_front": true,
+        "abs_rear": true
+      }
+    },
+    "dimensions_chassis": {
+      "dimensions": {
+        "length": "2010 mm",
+        "width": "785 mm",
+        "height": "1050 mm",
+        "wheelbase": "1350 mm",
+        "ground_clearance": "150 mm",
+        "seat_height": "800 mm"
+      },
+      "chassis": {
+        "frame_type": "Diamond Frame",
+        "suspension_front": "41mm Inverted Telescopic Fork (USD)",
+        "suspension_rear": "Monoshock with Adjustable Preload",
+        "adjustable_suspension": true
+      },
+      "weight": {
+        "kerb_weight": "152 kg",
+        "dry_weight": "145 kg",
+        "payload_capacity": "150 kg"
+      }
+    },
+    "wheels_tyres": {
+      "tyres": {
+        "front": "110/70-17",
+        "rear": "140/70-17",
+        "type": "Tubeless",
+        "brand": "Ceat"
+      },
+      "wheels": {
+        "front": "17-inch Alloy",
+        "rear": "17-inch Alloy",
+        "material": "Alloy"
+      }
+    },
+    "electrical_features": {
+      "lighting": {
+        "headlight": "LED",
+        "tail_light": "LED",
+        "turn_signals": "LED",
+        "daytime_running_lights": true
+      },
+      "instrument_cluster": {
+        "type": "Full Digital LCD",
+        "display_items": [
+          "Speedometer",
+          "Tachometer",
+          "Odometer",
+          "Trip Meter",
+          "Fuel Gauge",
+          "Gear Position Indicator",
+          "Clock",
+          "Service Reminder"
+        ]
+      },
+      "battery": {
+        "type": "12V, 6Ah Maintenance-Free",
+        "capacity": "6Ah"
+      },
+      "additional_features": [
+        "Engine Kill Switch",
+        "Side Stand Indicator",
+        "Low Fuel Warning",
+        "Pass Switch"
+      ]
+    }
+  },
+  
+  
+  "pricing_financial": {
+    "base_pricing": {
+      "currency": "BDT",
+      "location": "Dhaka",
+      "price_type": "ex-showroom"
+    },
+    "on_road_breakdown": {
+      "ex_showroom": 428500,
+      "insurance": 15500,
+      "registration": 10000,
+      "road_tax": 10000,
+      "on_road_price": 464000
+    },
+    "emi": {
+      "monthly": 12900,
+      "tenure_months": 36,
+      "interest_rate": "9%",
+      "down_payment": 86000,
+      "total_payable": 475400,
+      "processing_fee": 2400
+    },
+    "offers": [
+      {
+        "title": "Free Premium Riding Kit",
+        "description": "Includes full-face helmet and riding gloves",
+        "valid_until": "2026-03-31"
+      },
+      {
+        "title": "Extended Warranty Offer",
+        "description": "Get 2 years warranty for just ৳5,000 extra",
+        "valid_until": "2026-02-28"
+      }
+    ]
+  },
+  
+  
+  "ratings_reviews": {
+    "rating": {
+      "average": 4.4,
+      "total_reviews": 62,
+      "formatted": "4.4/5.0",
+      "distribution": {
+        "5_star": 36,
+        "4_star": 18,
+        "3_star": 6,
+        "2_star": 1,
+        "1_star": 1
+      }
+    },
+    "breakdown": {
+      "performance": {"score": 4.5, "formatted": "4.5/5", "count": 60},
+      "looks": {"score": 4.6, "formatted": "4.6/5", "count": 61},
+      "reliability": {"score": 4.2, "formatted": "4.2/5", "count": 52},
+      "comfort": {"score": 4.3, "formatted": "4.3/5", "count": 55},
+      "value_for_money": {"score": 4.3, "formatted": "4.3/5", "count": 60},
+      "mileage": {"score": 4.1, "formatted": "4.1/5", "count": 50}
+    },
+    "review_summary": {
+      "pros": [
+        "Aggressive naked streetfighter styling",
+        "Premium USD forks and dual-channel ABS",
+        "Smooth high-revving liquid-cooled engine",
+        "Lighter than most 250cc rivals"
+      ],
+      "cons": [
+        "Mileage lower than air-cooled commuters",
+        "Limited service network outside major cities",
+        "Brand recognition still growing in Bangladesh"
+      ]
+    },
+    "verified_purchases": 48,
+    "user_reviews": [
+      {
+        "user_name": "Zahid M.",
+        "rating": 5,
+        "comment": "Feels like a mini KTM Duke! The USD forks and slipper clutch make it incredibly fun to ride on twisty roads. Great value under 4.5 lakhs.",
+        "date": "2026-01-29",
+        "verified": true,
+        "helpful_votes": 15
+      }
+    ]
+  },
+  
+  
+  "variant_comparison": {
+    "variants": ["std"],
+    "comparison_attributes": [
+      "price",
+      "braking_system",
+      "tire_type",
+      "mileage_company",
+      "mileage_user",
+      "topspeed_company",
+      "topspeed_user",
+      "features"
+    ]
+  },
+  
+ 
+"similar_bikes": [
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+},
+{
+"slug": "",
+"name": "",
+"price": null,
+"currency": "",
+"specs_summary": "",
+"image": "https://...",
+"alt": "",
+"similarity_score": null,
+"similarity_reason": []
+}
+],
+
+"used_bikes": [
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+},
+{
+"listing_id": "",
+"name": "",
+"price": null,
+"currency": "",
+"condition": "",
+"year": null,
+"mileage": "",
+"owner_count": null,
+"location": "",
+"image": "https://...",
+"alt": "",
+"seller_type": "",
+"verified": null,
+"listing_date": ""
+}
+],
+  
+
+  "metadata": {
+    "popularity_score": 80,
+    "search_keywords": [
+      "CFMOTO 250NK",
+      "250NK price Bangladesh",
+      "CFMOTO 250cc naked bike",
+      "250NK mileage",
+      "CFMOTO streetfighter"
+    ],
+    "tags": ["sports", "250cc", "CFMOTO", "naked", "ABS", "slipper clutch", "USD forks", "liquid-cooled"],
+    "created_at": "2026-02-06T00:00:00Z",
+    "updated_at": "2026-02-06T00:00:00Z",
+    "is_featured": true,
+    "is_new_launch": false,
+    "launch_date": "2022-10-12",
+    "warranty": "2 Years or 20,000 km (Standard)",
+    "service_interval": "3,000 km or 3 months",
+    "availability": "In Stock",
+    "dealer_locations": ["Dhaka", "Chittagong", "Sylhet", "Khulna"]
+  }
+}
+
+
+]

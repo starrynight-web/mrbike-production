@@ -1,0 +1,782 @@
+🏗 MrBikeBD — Full Technical Stack (Page-Driven)
+
+
+---
+
+1️ Frontend Layer (Web + SEO)
+
+Framework:
+✅ Next.js (React + SSR + ISR)
+
+Hosting:
+✅ Vercel (Free → Pro later)
+
+Purpose:
+
+Entry point + SEO + Discovery.
+
+
+---
+
+Above the fold:
+
+Hero:
+
+Search bar: "Search bikes or brands"
+
+Quick category pills:
+
+Sports
+Commuter
+Naked
+Scooter
+Electric
+
+Featured slider:
+
+Top trending bikes.
+
+
+---
+
+Sections:
+
+Popular Bikes
+
+Grid:
+
+Image
+Name
+Price
+Mileage
+
+Click → Bike Detail.
+
+
+---
+
+Emotional Picks
+
+Cards:
+
+“Best mileage under ৳2L”
+“Highest resale sports bike”
+“Trending naked bikes”
+
+Driven by rule engine.
+
+
+---
+
+Used Bikes Near You
+
+Location auto-detected.
+
+3–6 cards.
+
+CTA: View All Used.
+
+
+---
+
+News
+
+Latest 3 articles.
+
+
+---
+
+Brands Grid
+
+Logo tiles.
+
+
+---
+
+SEO:
+
+Homepage schema + FAQ.
+
+
+---
+
+3. BIKE CATALOGUE PAGE
+
+URL: /bikes
+
+Purpose: Exploration.
+
+
+---
+
+Filters:
+
+Brand
+Price
+Category
+Engine CC
+
+Sorting:
+
+Price
+Popularity
+Mileage
+
+
+---
+
+Bike Card:
+
+Image
+Name
+Price
+Mileage
+Compare checkbox
+
+
+---
+
+Infinite scroll.
+
+Mobile:
+
+Filter drawer.
+
+
+---
+
+4. BIKE DETAIL PAGE (MOST IMPORTANT)
+
+URL: /bike/{slug}
+
+Example: /bike/cfmoto-300sr
+
+
+---
+
+Layout:
+
+Hero:
+
+Gallery (Cloudinary)
+
+Bike Name
+Price range
+EMI calculator
+
+EMI calculator specification:
+
+- Formula: monthly EMI = [P * r * (1+r)^n] / [(1+r)^n - 1]
+	- P = loan principal after down payment (principal = on_road_price - down_payment_amount)
+	- r = monthly interest rate (annual_rate / 12 / 100)
+	- n = total months (tenure_months)
+
+- Interest rate source:
+	- Primary: bank API (if available) returning an annual percentage rate (APR).
+	- Secondary/fallback: configurable static default in product settings (e.g., 9.0% APR).
+	- UI: allow user to override interest rate for simulation; fallback to bank API then static default.
+
+- Tenure options:
+	- Allowed presets: 12, 24, 36, 48 months.
+	- Allow custom tenures but enforce minimum 6 and maximum 84 months with validation.
+	- UI: radio presets with an "Other" numeric input for custom tenure.
+
+- Down payment handling:
+	- Accept percentage or absolute value input.
+	- Down payment reduces principal: principal = on_road_price - down_payment_amount.
+	- Default down payment: configurable percentage (e.g., 10% of on_road_price) shown in UI and adjustable.
+
+- Validation rules and errors:
+	- loan amount / on_road_price: numeric, > 0. Error: "Invalid loan amount." (400)
+	- down payment: >= 0 and < on_road_price. Error: "Down payment must be less than total price." (400)
+	- tenure: integer within allowed range. Error: "Invalid tenure." (400)
+	- interest rate: numeric, reasonable bounds (0.1%–50% APR). Error: "Invalid interest rate." (400)
+	- All validation problems should return clear messages and a numeric error code for telemetry.
+
+Implementers: use the formula above and produce both monthly EMI and total payable, amortization breakdown (optional), and input validation on client/server.
+Wishlist button
+
+
+---
+
+Tabs:
+
+Overview
+Variants
+Specs
+Reviews
+
+
+---
+
+Overview
+
+Short description.
+
+Highlight:
+
+Mileage
+Top speed
+Engine
+Resale score
+
+Resale score (algorithm):
+
+- Purpose: provide a normalized score representing expected resale value and demand.
+- Scale: 0–100 (higher is better).
+- Inputs and weights (example weights, tuneable):
+	- brand_reputation (weight 0.25): derived from historical sales + expert curation (0–100)
+	- model_popularity (weight 0.25): marketplace views and wishlist conversion (0–100)
+	- age_depreciation (weight 0.20): computed from age in years with a depreciation curve (0–100)
+	- market_demand (weight 0.20): recent sales velocity and search volume (0–100)
+	- condition_score (weight 0.10): listing condition/verified inspection (0–100)
+
+- Sample pseudo-code:
+	```
+	def calculate_resale_score(brand_reputation, model_popularity, age_years, market_demand, condition_score):
+			age_factor = max(0, 100 - age_years * 8)  # example linear depreciation
+			score = (
+					0.25 * brand_reputation +
+					0.25 * model_popularity +
+					0.20 * age_factor +
+					0.20 * market_demand +
+					0.10 * condition_score
+			)
+			return round(score, 2)
+	```
+
+- Data sources & cadence:
+	- brand_reputation: curated rank + historical transaction outcomes (weekly batch)
+	- model_popularity: pageviews, wishlists, conversions (near realtime, daily aggregation)
+	- age_depreciation: derived from manufacturing_year vs current date (realtime)
+	- market_demand: sales velocity from marketplace and external price feeds (daily)
+	- condition_score: inspection/verified flags on listing (per-listing updates)
+
+- Validation/examples: include unit tests that verify known cases (new popular model → high score, old low-demand model → low score).
+
+The `resale_score` is consumed by recommendation engines and displayed (rounded) on bike detail pages.
+
+
+---
+
+Emotional Recommendation Sections:
+
+Similar Bikes
+
+Same category.
+
+3–4 bikes.
+
+
+---
+
+Used Bikes
+
+Price ±10%.
+
+High resale prioritized.
+
+3–4 listings.
+
+
+---
+
+Variants
+
+Table.
+
+
+---
+
+Full Specifications
+
+Grouped:
+
+Engine
+Dimensions
+Electrical
+
+
+---
+
+Reviews
+
+Stars only.
+
+Submit popup.
+
+One per user.
+
+
+---
+
+SEO:
+
+Schema Product + Review + FAQ.
+
+
+---
+
+5. BIKE COMPARE
+
+Select 2–3 bikes.
+
+Table comparison.
+
+Highlight:
+
+Price
+Mileage
+Resale
+
+Sticky compare bar.
+
+
+---
+
+6. USED BIKE MARKETPLACE
+
+URL: /used
+
+
+---
+
+Filters:
+
+Brand
+Price
+Year
+Location
+
+Cards:
+
+Bike image
+Year
+KM
+Price
+Location
+
+
+---
+
+Badge:
+
+Verified
+Featured
+
+
+---
+
+7. USED BIKE DETAIL
+
+Hero image.
+
+Seller info:
+
+Masked WhatsApp.
+
+Details:
+
+Condition
+Accident history
+
+CTA:
+
+WhatsApp button.
+
+
+---
+
+Similar used bikes shown.
+
+
+---
+
+8. POST AD FLOW
+
+Protected route.
+
+Steps:
+
+1. Google login
+
+
+2. Phone OTP
+
+
+3. Form
+
+
+4. Upload images
+
+
+5. Preview
+
+
+6. Submit
+
+
+
+
+---
+
+Form:
+
+Brand
+Model
+Year
+KM
+Condition
+Price
+Location
+
+Upload images & Security (requirements):
+
+- Phone OTP:
+	- Delivery methods: SMS (primary) and WhatsApp (secondary) depending on provider availability.
+	- OTP expiry: 5 minutes (configurable 5–10 min).
+	- Max retry/attempts: limit to 5 attempts; lockout for 15 minutes after repeated failures.
+	- Rate limits: per-phone and per-IP rate limiter for OTP requests (e.g., 3/min, 100/day).
+	- Logging: record attempts and lockouts; do NOT log OTP values in plaintext.
+
+- Upload images:
+	- Whitelist file-types: JPEG, PNG only. Reject SVG or files with embedded scripts.
+	- Max file-size: configured max (e.g., 5MB). Client should compress to target size.
+	- Server-side checks: validate MIME type, file signature, and run server-side compression.
+	- Malware/AV: pass uploads through malware scan pipeline (if available) or reject unknown binary content.
+	- Strip metadata: remove EXIF that can leak PII or location data.
+
+- Masked WhatsApp behaviour:
+	- UI: show partial number (e.g., +88017XXXX123) with click-to-reveal.
+	- Reveal endpoint: server-side rate-limited endpoint that returns full number for authorized viewers (seller/verified buyer), logged for audit.
+	- Backend must enforce rate limits and record who revealed the number and when.
+
+- Rate-limiting & API protections:
+	- Global rate-limits for ad posting, login, OTP, and critical endpoints.
+	- CSRF protections for stateful endpoints and XSS sanitization for all user-provided HTML.
+	- Input validation and size limits on all fields.
+
+- Moderation & publish flow:
+	- Client uploads are stored in a quarantined bucket until moderation clears them.
+	- Auto-approval heuristics for low-risk uploads; manual review for flagged content.
+
+These security rules should be enforced by middleware and API validators (rateLimiter, csrfProtection, inputSanitizer).
+
+
+---
+
+Listing expires in 15 days.
+
+Reminder email.
+
+
+---
+
+9. AUTH SYSTEM
+
+Google OAuth only.
+
+Phone OTP required for posting.
+
+No passwords.
+
+
+---
+
+10. PROFILE CENTER
+
+Tabs:
+
+Profile
+Wishlist
+My Listings
+Reviews
+Subscription
+
+
+---
+
+Wishlist:
+
+Saved bikes.
+
+
+---
+
+My Listings:
+
+Active
+Expired
+
+Renew CTA.
+
+
+---
+
+11. NEWS SYSTEM
+
+SEO CMS.
+
+Article page:
+
+Title
+Hero image
+Body
+Author
+Date
+
+Comments require login.
+
+
+---
+
+12. CHAT SYSTEM (USED BIKE)
+
+Chat System (MVP) — Used Bike
+
+- Conversation model:
+	- Thread per buyer-seller pair per listing (buyer_id, seller_id, listing_id)
+	- Message object: {id, thread_id, sender_id, text, attachments, created_at, status}
+	- Delivery states: sent, delivered, read (timestamps optional)
+
+- Views & UX:
+	- In-app conversation/threading view per buyer with messages grouped by thread.
+	- Message composer with optional image attachments (validated by server).
+	- Conversation list shows last message, unread count, and seller/buyer name.
+
+- Notifications:
+	- Push + email on new message (user opt-in), with webhook for external integrations.
+	- Notification payload contains thread id and message meta (no PII in notifications).
+
+- Message delivery states:
+	- Sent: message accepted by server.
+	- Delivered: recipient client acknowledged receipt (if online/connected).
+	- Read: recipient opened the thread.
+
+- Spam & abuse controls:
+	- Rate limits per user (messages/min and messages/day).
+	- Report abuse workflow: user can flag messages/threads; flagged threads go to moderation queue.
+	- Automatic heuristics for spam detection (repeated messages, blacklisted links).
+
+- User controls:
+	- Block/unblock other users per account (blocks delivery and hides threads for blocker).
+
+- Data retention & deletion:
+	- Retain messages for a configurable period (e.g., 2 years); provide deletion endpoints for users.
+	- Moderation can archive or remove messages; keep audit records (redacted PII) for compliance.
+
+- Seller auto-response:
+	- Configurable auto-reply per seller (e.g., "I'll respond within 24 hours").
+	- Auto-reply is optional and rate-limited to reduce spam.
+
+- WhatsApp integration:
+	- WhatsApp remains preferred as an external channel; provide in-app fallback when WhatsApp link fails.
+	- Integration points: click-to-chat (masked number), webhook for incoming messages to sync threads.
+
+Note: MVP focuses on in-app thread view + notifications + spam controls. Integrate external WhatsApp after collecting opt-in and compliance checks.
+---
+
+13. ADMIN PANEL
+
+Roles:
+
+Admin
+Moderator
+Editor
+
+
+---
+
+Features:
+
+Approve used ads
+Approve images
+Add bikes
+Publish news
+Delete abuse
+
+Dashboard:
+
+Stats:
+
+Users
+Listings
+Traffic
+
+
+---
+
+Bike Manager:
+
+Add bikes from 300 → 305.
+
+Upload specs JSON.
+
+
+---
+
+14. DEALER PAGE (PHASE 2)
+
+Verified badge.
+
+Inventory.
+
+Subscription.
+
+
+---
+
+15. MONETIZATION UX
+
+Free:
+
+15 days listing.
+
+Premium:
+
+Featured
+Extended duration
+
+Dealer:
+
+Priority.
+
+
+---
+
+Payment via SSLCommerz.
+
+
+---
+
+16. SEO UX
+
+Every page:
+
+Meta tags
+OG tags
+Schema
+
+Internal links:
+
+Bike → Used → News.
+
+SSR Next.js.
+
+
+---
+
+17. PERFORMANCE UX
+
+Skeleton loaders.
+
+Image lazy load.
+
+Redis cache.
+
+CDN.
+
+
+---
+
+18. TRUST UX
+
+Verified badge
+Resale indicators
+Admin moderation
+Report buttons
+
+
+---
+
+19. MOBILE EXPERIENCE
+
+Bottom nav:
+
+Home
+Search
+Post
+Used
+Profile
+
+Accessibility (WCAG 2.1 AA)
+
+- Keyboard navigation:
+	- All interactive elements reachable by Tab; Enter/Space activate controls; Escape closes modals/drawers.
+
+- Screen reader support:
+	- Provide ARIA labels and roles for dynamic components (bike cards, filter drawer, compare bar, EMI calculator, carousels, modals).
+	- Announce live updates and validation errors programmatically.
+
+- Focus management:
+	- Visible focus indicators; focus trap for modals/drawers and return focus on close.
+
+- Color contrast:
+	- Ensure text meets WCAG AA contrast (4.5:1 for normal text).
+
+- Form accessibility:
+	- All inputs have labels, helper text linked via aria-describedby, and field-level error announcements.
+
+- Images and media:
+	- Alt text required for all bike images, icons and infographics; decorative images must be empty alt.
+
+Include accessibility checks in QA and CI (axe-core or similar) and document accessibility acceptance criteria for Home/Search/Post/Used/Profile views.
+
+
+---
+
+20. EDGE CASES
+
+Network & API failures:
+	- Failed image upload: show user-friendly message "Image upload failed, try again." Retry logic with exponential backoff and local caching of queued uploads.
+	- Search API timeouts: show cached results and a "Retry" CTA; emit telemetry code (e.g., ERR_SEARCH_TIMEOUT).
+	- Infinite-scroll failures: preserve scroll position, show "Unable to load more items" and a retry button.
+	- Payment gateway errors: present a clear failure state, do not create order records until payment confirmed.
+
+Third-party service failures:
+	- Cloudinary delivery down: fall back to cached/resized derivatives or placeholder images; emit alerts to ops.
+	- SMS/OTP provider downtime: switch to secondary provider or show maintenance notice with timed retry.
+	- WhatsApp link failure: show in-app messaging fallback and mark external integration as degraded.
+
+Form validation errors:
+	- Field-level messages for invalid phone, price out of bounds, missing required images.
+	- Provide inline guidance and prevent submit until client-side validation passes; server returns structured errors with codes.
+
+Browser & device constraints:
+	- Minimum supported browsers list (e.g., latest 2 versions of Chrome/Firefox/Safari, Edge).
+	- JS-disabled fallback: show basic listing & search with reduced interactions.
+	- Slow connections: show progressive image loading, skeletons and smaller payloads.
+
+Data inconsistencies:
+	- Variant unavailable: disable buy/contact CTA and show "Variant not available" with similar alternatives.
+	- Sold listing not marked: include "Report inaccurate status" flow and queue reconciliation jobs to recheck listing state.
+	- Account suspended mid-session: show locked UI and require re-authentication; preserve draft safely.
+
+User-facing states & telemetry:
+	- Provide clear messages for each edge case and emit stable error codes (ERR_IMG_UPLOAD, ERR_OTP_TIMEOUT, ERR_PAYMENT_GATEWAY, etc.).
+	- Implement retry/rollback behavior and CI/UX mitigations (local caching, exponential backoff, offline queueing).
+
+
+---
+
+21. ADS UX
+
+Max:
+
+1 banner home
+1 inline article
+
+Never inside bike specs.
+
+
+---
+
+FINAL NOTE
+
+MrBikeBD UX is built around:
+
+Discovery → Emotion → Trust → Action.
+
+Not ecommerce.
+
+Guided buying.

@@ -1,0 +1,642 @@
+📘 Product Requirements Document (PRD)
+
+Product Name
+
+MrBikeBD
+
+
+---
+
+1. Product Vision
+
+MrBikeBD aims to become Bangladesh’s #1 motorcycle ecosystem, combining:
+
+Comprehensive motorcycle information
+
+Contextual emotional recommendations
+
+Used-bike marketplace
+
+Community ratings
+
+SEO-driven news platform
+
+
+The platform helps users discover, compare, buy, sell, and learn about motorcycles from a single place.
+
+Each bike has its own dynamic detail page, and every decision flow is optimized for Bangladesh rider behavior.
+
+
+---
+
+2. Objectives
+
+Primary Objectives
+
+1. Become the most trusted motorcycle information platform in Bangladesh.
+
+
+2. Capture organic traffic through SEO-optimized bike pages and news.
+
+
+3. Enable peer-to-peer used bike selling.
+
+
+4. Monetize through seller subscriptions, featured listings, and dealer badges.
+
+
+
+Secondary Objectives
+
+Build strong resale marketplace liquidity.
+
+Establish verified dealers.
+
+Create a loyal rider community.
+
+
+
+---
+
+3. Target Users
+
+3.1 General Users
+
+Bike buyers
+
+Enthusiasts
+
+Daily commuters
+
+Students
+
+
+3.2 Sellers
+
+Individual bike owners
+
+Dealers (future)
+
+
+3.3 Internal Users
+
+Admin
+
+Content writers
+
+Moderators
+
+
+
+---
+
+4. User Roles
+
+Normal User
+
+Google login
+
+Browse bikes
+
+Wishlist bikes
+
+Review bikes (stars only)
+
+Read news
+
+Contact sellers
+
+Post used bikes after phone verification
+
+
+Seller (same account)
+
+Create used bike listings
+
+Manage listings
+
+Purchase subscriptions
+
+
+Dealer (paid)
+
+Verified badge
+
+Priority listing
+
+
+Admin
+
+Approve listings
+
+Moderate images
+
+Manage bikes
+
+Publish news
+
+Handle reports
+
+
+
+---
+
+5. Authentication
+
+Google OAuth 2.0 only
+
+Phone OTP required before posting used bikes
+
+Email captured automatically via Google
+
+WhatsApp number masked for privacy
+
+
+
+---
+
+6. Core Features
+
+
+---
+
+6.1 Bike Database
+
+Around 300 bikes from 20+ companies
+
+Imported from existing JSON
+
+Supports:
+
+Variants
+
+Specs
+
+Images
+
+Official + unofficial prices
+
+User mileage & top speed
+
+
+
+Each bike has a dynamic SEO page (e.g. /bike/cfmoto-300sr) generated from a template.
+
+Each bike page includes:
+
+Overview
+
+Image gallery
+
+Variants
+
+Quick specs
+
+Full specifications
+
+EMI calculator
+
+User ratings
+
+Similar bikes
+
+Used bikes
+
+
+
+---
+
+6.2 Contextual Emotional Recommendation Engine (Bike Page Level)
+
+Recommendations are generated dynamically on every bike detail page.
+
+Two sections appear:
+
+
+---
+
+A. Similar Bikes (3–4 bikes)
+
+Purpose: Help users compare competitive alternatives in the same category.
+
+Logic inputs:
+
+Category (sport / naked / commuter / cruiser)
+
+Price range (±10–15%)
+
+CC range
+
+Bangladesh popularity
+
+Resale value
+
+Brand demand
+
+
+Rules:
+
+Same category only
+
+Never show the same model
+
+Prefer bikes with higher resale and demand
+
+
+Example:
+
+User views CFMoto 300SR
+
+Similar bikes may include:
+
+Yamaha R15 V4
+
+KTM RC 200
+
+Suzuki Gixxer SF
+
+TVS Apache RR310
+
+
+These reflect emotional alternatives, not just spec matches.
+
+
+---
+
+B. Used Bikes Near Budget (3–4 bikes)
+
+Purpose: Trigger value-based emotional buying.
+
+Logic inputs:
+
+Current bike price
+
+User budget psychology
+
+Market resale trends
+
+
+Rules:
+
+Price ±10%
+
+Prefer higher segment bikes
+
+Prefer premium brands
+
+Prioritize verified sellers
+
+
+Example:
+
+Viewing new CFMoto 300SR (~4.6 lac)
+
+Used bikes may include:
+
+Yamaha R15 V4 (used)
+
+KTM Duke 200 (used)
+
+Yamaha MT-15 (used)
+
+
+User realizes they can upgrade brand or segment at same budget.
+
+Initial implementation is rule-based.
+Future versions may use machine learning.
+
+
+---
+
+6.3 Reviews
+
+Star rating only
+
+One review per user per bike
+
+Users can delete reviews
+
+Admin moderation
+
+
+
+---
+
+6.4 Wishlist
+
+Users can save bikes for later viewing.
+Accessible from Profile Center.
+
+
+---
+
+6.5 Used Bike Marketplace
+
+Users can post:
+
+Brand
+
+Model
+
+Year
+
+KM driven
+
+Condition
+
+Accident history
+
+Price
+
+Location
+
+Up to 5 images
+
+
+Rules:
+
+Phone verification required
+
+WhatsApp contact only
+
+Listings expire after 15 days
+
+Email reminder before expiration
+
+Admin checks images
+
+
+
+---
+
+6.6 Subscriptions & Monetization
+
+Free:
+
+Listing for 15 days
+
+
+Premium:
+
+Extended duration
+
+Featured badge
+
+Homepage placement
+
+
+Dealer Verification:
+
+Paid badge
+
+Priority display
+
+
+Buyers never pay.
+
+
+---
+
+6.7 News System
+
+SEO-focused editorial platform.
+
+Content types:
+
+Launch news
+
+Reviews
+
+Comparisons
+
+Industry updates
+
+
+7–8 articles/month.
+
+Includes:
+
+Rich content editor
+
+Meta title & description
+
+Schema markup
+
+Featured image
+
+Login-required comments
+
+
+
+---
+
+6.8 Profile Center
+
+Unified dashboard:
+
+Profile info
+
+Wishlist
+
+My Listings
+
+Reviews
+
+Subscription status
+
+
+
+---
+
+6.9 Maps
+
+Embedded Google Maps for locations.
+
+
+---
+
+6.10 Mobile App
+
+React-based mobile app with same core features:
+
+Browse bikes
+
+Used marketplace
+
+Wishlist
+
+Notifications
+
+
+Push notifications:
+
+Listing expiration
+
+New bikes
+
+Price drops
+
+
+
+---
+
+7. SEO Strategy
+
+Each bike and article page supports:
+
+Dynamic meta tags
+
+OpenGraph tags
+
+Schema.org (Product, Review, FAQ)
+
+Clean URLs
+
+Fast loading
+
+Internal linking
+
+
+SEO is the primary growth engine.
+
+
+---
+
+8. Moderation & Safety
+
+Report listings
+
+Report users
+
+Admin approval for images
+
+Remove fake or abusive content
+
+
+
+---
+
+9. Notifications
+
+Listing expiration emails
+
+Subscription reminders
+
+Mobile push notifications
+
+
+
+---
+
+10. Non-Functional Requirements
+
+Mobile-first UI
+
+High SEO performance
+
+Scalable backend
+
+Secure authentication
+
+Fast page load
+
+Image optimization
+
+GDPR-compliant data handling
+
+
+
+---
+
+11. MVP Scope
+
+Phase 1
+
+Bike database
+
+Google login
+
+Used bike posting
+
+WhatsApp contact
+
+Reviews
+
+Wishlist
+
+News CMS
+
+Basic recommendations
+
+SEO pages
+
+
+Phase 2
+
+Payments
+
+Premium listings
+
+Mobile app
+
+Dealer badges
+
+
+Phase 3
+
+Bengali language
+
+Advanced recommendations
+
+Dealer dashboards
+
+Analytics
+
+
+
+---
+
+12. Success Metrics
+
+Monthly active users
+
+Used bike listings
+
+Organic search traffic
+
+Conversion to paid listings
+
+User retention
+
+
+
+---
+
+13. Long-Term Vision
+
+MrBikeBD evolves into:
+
+National motorcycle authority
+
+Largest resale platform
+
+Dealer network
+
+Data-driven recommendation engine
+
+Full Bengali + English ecosystem
+
+
+
+---
+
+Final Note
+
+MrBikeBD is not just a marketplace.
+
+It is:
+
+✅ discovery platform
+✅ emotional buying guide
+✅ resale ecosystem
+✅ SEO content engine
