@@ -118,6 +118,30 @@ function LoginContent() {
         }
     };
 
+    const handleAdminLogin = async () => {
+        setIsLoading(true);
+        try {
+            const result = await signIn("otp", {
+                phone: "01999999999",
+                otp: "123456",
+                redirect: false,
+                callbackUrl,
+            });
+
+            if (result?.error) {
+                toast.error("Admin login failed");
+            } else {
+                toast.success("Logged in as Admin!");
+                router.push(callbackUrl);
+                router.refresh();
+            }
+        } catch (error) {
+            toast.error("An error occurred during admin login");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <Card className="w-full max-w-md">
             <CardHeader className="text-center">
@@ -160,6 +184,16 @@ function LoginContent() {
                         >
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Login as Demo User
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full border-red-500/20 hover:bg-red-500/5 text-red-600"
+                            onClick={handleAdminLogin}
+                            disabled={isLoading}
+                        >
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Login as Admin
                         </Button>
                     </form>
                 ) : (

