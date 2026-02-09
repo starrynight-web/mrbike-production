@@ -148,7 +148,8 @@ class AdminAPI {
     limit?: number;
     offset?: number;
   }) {
-    const response = await api.get<any>("/used-bikes/", { params });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.get<any>("/marketplace/listings/", { params });
     if (!response.success || !response.data) {
       return { results: [], count: 0 };
     }
@@ -182,7 +183,7 @@ class AdminAPI {
    * Get single used bike listing
    */
   async getUsedBike(id: number) {
-    const response = await api.get(`/used-bikes/${id}/`);
+    const response = await api.get(`/marketplace/listings/${id}/`);
     return response.data;
   }
 
@@ -190,7 +191,9 @@ class AdminAPI {
    * Approve used bike listing
    */
   async approveListing(id: number, reason?: string) {
-    const response = await api.post(`/used-bikes/${id}/approve/`, { reason });
+    const response = await api.post(`/marketplace/listings/${id}/approve/`, {
+      reason,
+    });
     return response.data;
   }
 
@@ -198,7 +201,9 @@ class AdminAPI {
    * Reject used bike listing
    */
   async rejectListing(id: number, reason: string) {
-    const response = await api.post(`/used-bikes/${id}/reject/`, { reason });
+    const response = await api.post(`/marketplace/listings/${id}/reject/`, {
+      reason,
+    });
     return response.data;
   }
 
@@ -206,14 +211,16 @@ class AdminAPI {
    * Delete used bike listing
    */
   async deleteUsedBike(id: number) {
-    await api.delete(`/used-bikes/${id}/`);
+    await api.delete(`/marketplace/listings/${id}/`);
   }
 
   /**
    * Mark listing as featured
    */
   async markFeatured(id: number, featured: boolean) {
-    const response = await api.patch(`/used-bikes/${id}/`, { featured });
+    const response = await api.patch(`/marketplace/listings/${id}/`, {
+      featured,
+    });
     return response.data;
   }
 
@@ -221,7 +228,9 @@ class AdminAPI {
    * Send verification email to seller
    */
   async sendVerificationEmail(id: number) {
-    const response = await api.post(`/used-bikes/${id}/send-verification/`);
+    const response = await api.post(
+      `/marketplace/listings/${id}/send-verification/`,
+    );
     return response.data;
   }
 
@@ -310,7 +319,9 @@ class AdminAPI {
    */
   async getPendingApprovalsCount(): Promise<{ count: number }> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await api.get<any>("/used-bikes/?status=pending&limit=1");
+    const response = await api.get<any>(
+      "/marketplace/listings/?status=pending&limit=1",
+    );
     if (!response.success || !response.data) {
       return { count: 0 };
     }
@@ -323,7 +334,7 @@ class AdminAPI {
   async getRecentPending(limit: number = 5): Promise<UsedBikeListing[]> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await api.get<any>(
-      "/used-bikes/?status=pending&ordering=-created_at",
+      "/marketplace/listings/?status=pending&ordering=-created_at",
       {
         params: { limit },
       },
@@ -366,7 +377,7 @@ class AdminAPI {
    * Search bikes and listings
    */
   async search(query: string, type: "bikes" | "used-bikes" = "bikes") {
-    const endpoint = type === "bikes" ? "/bikes/" : "/used-bikes/";
+    const endpoint = type === "bikes" ? "/bikes/" : "/marketplace/listings/";
     const response = await api.get(endpoint, {
       params: { search: query },
     });

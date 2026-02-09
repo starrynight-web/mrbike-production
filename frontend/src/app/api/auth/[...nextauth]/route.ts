@@ -57,6 +57,39 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/users/auth/google/`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                id_token: account.id_token,
+              }),
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+
+          if (res.ok) {
+            const data = await res.json();
+            user.accessToken = data.access;
+            user.refreshToken = data.refresh;
+            // Update user details from backend response if needed
+            if (data.user) {
+              user.id = data.user.id;
+              user.role = data.user.role || "user";
+            }
+            return true;
+          }
+          return false;
+        } catch (e) {
+          console.error("Google auth error:", e);
+          return false;
+        }
+      }
+      return true;
+    },
     async session({ session, token }) {
       if (session.user) {
         // @ts-expect-error - Adding custom properties to session user
@@ -69,20 +102,18 @@ export const authOptions: AuthOptions = {
       }
       return session;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       // Initial sign in
       if (user) {
         token.role = user.role || "user";
-        // If it's a credentials login (OTP), user object will have tokens from authorize()
+        // User object now contains tokens from either authorize() (OTP) or signIn() (Google)
         if (user.accessToken) {
           token.accessToken = user.accessToken;
           token.refreshToken = user.refreshToken;
         }
-      }
-      // If it's an OAuth login
-      if (account) {
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
+        if (user.id) {
+          token.sub = user.id;
+        }
       }
       return token;
     },

@@ -187,14 +187,33 @@ export function SellBikeWizard() {
     try {
       const formData = new FormData();
 
-      // Append text fields
-      Object.entries(_data).forEach(([key, value]) => {
-        formData.append(key, String(value));
-      });
+      // Construct Title
+      const brandName =
+        brands?.find((b: any) => b.slug === _data.brand)?.name || _data.brand;
+      const title = `${brandName} ${_data.model} (${_data.year})`;
+      formData.append("title", title);
 
-      // Append images
+      // Map fields to backend expectations
+      formData.append("price", String(_data.price));
+      formData.append("mileage", String(_data.kmDriven)); // Backend expects 'mileage'
+      formData.append("manufacturing_year", String(_data.year)); // Backend expects 'manufacturing_year'
+      formData.append("condition", _data.condition);
+      formData.append("location", _data.location);
+
+      // Handle custom brand/model
+      formData.append("custom_brand", brandName);
+      formData.append("custom_model", _data.model);
+
+      // Append description with accident history
+      let description = _data.description;
+      if (_data.accidentHistory) {
+        description += "\n\nNote: This bike has a history of accidents.";
+      }
+      formData.append("description", description);
+
+      // Append images with correct field name 'uploaded_images'
       imageFiles.forEach((file) => {
-        formData.append("images", file);
+        formData.append("uploaded_images", file);
       });
 
       await api.createUsedBike(formData);
@@ -475,7 +494,7 @@ export function SellBikeWizard() {
               <div className="border-2 border-dashed rounded-xl p-10 text-center hover:bg-muted/50 transition-colors cursor-pointer relative">
                 <Input
                   type="file"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   accept="image/*"
                   multiple
                   onChange={handleImageUpload}

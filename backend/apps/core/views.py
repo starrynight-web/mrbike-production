@@ -14,12 +14,39 @@ class AdminStatsView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
+        now = timezone.now()
+        last_month = now - timedelta(days=30)
+        
+        # Current counts
+        total_users = User.objects.count()
+        total_bikes = BikeModel.objects.count()
+        active_listings = UsedBikeListing.objects.filter(status='active').count()
+        pending_listings = UsedBikeListing.objects.filter(status='pending').count()
+        
+        # Last month counts (approximation for change calculation)
+        users_last_month = User.objects.filter(date_joined__lte=last_month).count()
+        bikes_last_month = BikeModel.objects.filter(created_at__lte=last_month).count()
+        listings_last_month = UsedBikeListing.objects.filter(created_at__lte=last_month, status='active').count()
+        
+        # Calculate percentage changes
+        def calculate_change(current, previous):
+            if previous == 0:
+                return 100 if current > 0 else 0
+            return int(((current - previous) / previous) * 100)
+
         stats = {
-            "total_users": User.objects.count(),
-            "total_bikes": BikeModel.objects.count(),
-            "total_used_bikes": UsedBikeListing.objects.count(),
-            "pending_listings": UsedBikeListing.objects.filter(status='pending').count(),
-            # Add more stats as needed by frontend
+            "total_users": total_users,
+            "total_bikes": total_bikes,
+            "active_listings": active_listings,
+            "pending_approvals": pending_listings,
+            "monthly_traffic": 15420, # Mock data for now
+            "pending_listings": pending_listings, # Keep for backward compatibility if any
+            
+            # Changes
+            "user_change": calculate_change(total_users, users_last_month),
+            "bikes_change": calculate_change(total_bikes, bikes_last_month),
+            "listings_change": calculate_change(active_listings, listings_last_month),
+            "traffic_change": 12, # Mock data
         }
         return Response(stats)
 

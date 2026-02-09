@@ -87,6 +87,8 @@ interface ApiVariant {
   id: string | number;
   variant_key?: string;
   variant_name?: string;
+  name?: string;
+  color?: string;
   price?: number | string;
   mileage_company?: string;
   mileage_user?: string;
@@ -94,11 +96,9 @@ interface ApiVariant {
   topspeed_user?: string;
   tire_type?: string;
   braking_system?: string;
+  images?: string[];
   [key: string]: unknown;
 }
-
-// Image count constant
-const IMAGE_COUNT = 5;
 
 // Quick Specs Panel Component with Company/User toggle
 function QuickSpecsPanel({
@@ -463,16 +463,23 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
 
     if (Array.isArray(apiVariants) && apiVariants.length > 0) {
       apiVariants.forEach((v: ApiVariant) => {
-        const key = v.variant_key || String(v.id) || "std";
+        const variantName = v.variant_name || v.name || v.color || "Standard";
+        const key =
+          v.variant_key ||
+          (v.id ? String(v.id) : "") ||
+          variantName.toLowerCase().replace(/\s+/g, "-");
 
         variantsMap[key] = {
           fullName:
-            `${bike.brand?.name || bike.brand_name || ""} ${bike.name} ${v.variant_name || ""}`.trim(),
-          label: v.variant_name || "Standard",
+            `${bike.brand?.name || bike.brand_name || ""} ${bike.name} ${variantName}`.trim(),
+          label: variantName,
           price: Number(v.price) || 0,
-          images: bike.images || [
-            bike.primary_image || "/placeholder-bike.png",
-          ],
+          images:
+            v.images && Array.isArray(v.images) && v.images.length > 0
+              ? v.images
+              : bike.images && bike.images.length > 0
+                ? bike.images
+                : [bike.primary_image || "/placeholder-bike.png"],
           quickSpecs: {
             engineCapacity:
               bike.detailed_specs?.displacement ||
@@ -559,6 +566,9 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
     variants[selectedVariantKey] || variants[variantKeys[0]];
 
   const defaultImage = bike?.primary_image || "/placeholder-bike.png";
+  const currentImages = currentVariant?.images?.length
+    ? currentVariant.images
+    : [defaultImage];
 
   if (isLoading) {
     return <BikeDetailSkeleton />;
@@ -708,7 +718,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                 className="w-full h-full relative"
               >
                 <Image
-                  src={defaultImage}
+                  src={currentImages[activeImageIndex] || defaultImage}
                   alt={`${bikeName} - Image ${activeImageIndex + 1}`}
                   fill
                   className="object-cover"
@@ -717,26 +727,30 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
               </motion.div>
 
               {/* Navigation Arrows */}
-              <button
-                onClick={() =>
-                  setActiveImageIndex((prev) =>
-                    prev === 0 ? IMAGE_COUNT - 1 : prev - 1,
-                  )
-                }
-                className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() =>
-                  setActiveImageIndex((prev) =>
-                    prev === IMAGE_COUNT - 1 ? 0 : prev + 1,
-                  )
-                }
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
+              {currentImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() =>
+                      setActiveImageIndex((prev) =>
+                        prev === 0 ? currentImages.length - 1 : prev - 1,
+                      )
+                    }
+                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setActiveImageIndex((prev) =>
+                        prev === currentImages.length - 1 ? 0 : prev + 1,
+                      )
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
 
               {/* Category Badge */}
               <Badge className="absolute top-3 left-3 capitalize">
@@ -745,13 +759,13 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
 
               {/* Image Counter */}
               <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-black/60 text-white text-sm font-medium">
-                {activeImageIndex + 1} / {IMAGE_COUNT}
+                {activeImageIndex + 1} / {currentImages.length}
               </div>
             </div>
 
             {/* Thumbnails */}
             <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-              {Array.from({ length: IMAGE_COUNT }).map((_, index) => (
+              {currentImages.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveImageIndex(index)}
@@ -763,7 +777,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                   )}
                 >
                   <Image
-                    src={defaultImage}
+                    src={img}
                     alt={`Thumbnail ${index + 1}`}
                     fill
                     className="object-cover"
