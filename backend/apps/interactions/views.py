@@ -2,9 +2,14 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-from .models import Review, Wishlist
-from .serializers import ReviewSerializer, WishlistSerializer
+from .models import Review, Wishlist, Inquiry
+from .serializers import ReviewSerializer, WishlistSerializer, InquirySerializer
 from apps.bikes.models import BikeModel
+
+class InquiryCreateView(generics.CreateAPIView):
+    queryset = Inquiry.objects.all()
+    serializer_class = InquirySerializer
+    permission_classes = [permissions.AllowAny]
 
 class BikeReviewListView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer

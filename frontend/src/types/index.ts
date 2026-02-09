@@ -2,346 +2,320 @@
 // CORE TYPE DEFINITIONS FOR MRBIKEBD
 // ============================================
 
+export interface Review {
+  id: string;
+  bikeId: string;
+  userId: string;
+  userName: string;
+  userImage?: string;
+  rating: number;
+  comment: string;
+  createdAt: string | Date;
+  likes: number;
+  isVerifiedOwner: boolean;
+  bike_name?: string;
+  bike_slug?: string;
+}
+
+// -------------------- COMMON TYPES --------------------
+export type QueryParams = Record<
+  string,
+  string | number | boolean | undefined | string[] | number[]
+>;
+
 // -------------------- USER TYPES --------------------
 export interface User {
-    id: string;
-    email: string;
-    name: string;
-    image?: string;
-    phone?: string;
-    location?: string;
-    phoneVerified: boolean;
-    role: UserRole;
-    createdAt: Date;
-    updatedAt: Date;
+  id: string;
+  email: string;
+  name: string;
+  image?: string;
+  phone?: string;
+  location?: string;
+  phoneVerified: boolean;
+  role: UserRole;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type UserRole = "user" | "seller" | "dealer" | "moderator" | "admin";
 
 // -------------------- BIKE TYPES --------------------
 export interface Bike {
-    id: string;
-    slug: string;
-    name: string;
-    brand: Brand;
-    category: BikeCategory;
-    variants: BikeVariant[];
-    images: string[];
-    thumbnailUrl: string;
-    description: string;
-    specs: BikeSpecs;
-    priceRange: PriceRange;
-    rating: Rating;
-    popularityScore: number;
-    resaleScore: number;
-    demandScore: number;
-    isElectric: boolean;
-    launchDate?: Date;
-    createdAt: Date;
-    updatedAt: Date;
+  id: string;
+  slug: string;
+  name: string;
+  brand: Brand;
+  category: BikeCategory;
+  variants: BikeVariant[];
+  images: string[];
+  thumbnailUrl: string;
+  description: string;
+  specs: BikeSpecs;
+  priceRange: PriceRange;
+  rating: Rating;
+  popularityScore: number;
+  resaleScore: number;
+  demandScore: number;
+  isElectric: boolean;
+  launchDate?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  // Optional fields for backward compatibility or API variations
+  primary_image?: string;
+  price?: number;
+  mileage?: number;
 }
 
 export interface BikeVariant {
-    id: string;
-    name: string;
-    price: number;
-    color: string;
-    specs?: Partial<BikeSpecs>;
+  id: string;
+  name: string;
+  price: number;
+  color: string;
+  specs?: Partial<BikeSpecs>;
 }
 
 export interface BikeSpecs {
-    // Engine
-    engineType: string;
-    displacement: number; // CC
-    maxPower: string;
-    maxTorque: string;
-    cooling: string;
-    fuelSystem: string;
-    ignition: string;
-    starting: string;
-    transmission: string;
-    clutch: string;
+  // Engine
+  engineType: string;
+  displacement: number; // CC
+  maxPower: string;
+  maxTorque: string;
+  cooling: string;
+  fuelSystem: string;
+  ignition: string;
+  starting: string;
+  transmission: string;
+  clutch: string;
 
-    // Performance
-    topSpeed: number; // kmph
-    mileage: number; // kmpl
-    fuelCapacity: number; // liters
-    acceleration?: string; // 0-60 time
+  // Performance
+  topSpeed: number; // kmph
+  mileage: number; // kmpl
+  fuelCapacity: number; // liters
+  acceleration?: string; // 0-60 time
 
-    // Dimensions
-    length: number;
-    width: number;
-    height: number;
-    wheelbase: number;
-    groundClearance: number;
-    seatHeight: number;
-    kerbWeight: number;
+  // Dimensions
+  length: number;
+  width: number;
+  height: number;
+  wheelbase: number;
+  groundClearance: number;
+  seatHeight: number;
+  kerbWeight: number;
 
-    // Brakes & Suspension
-    frontBrake: string;
-    rearBrake: string;
-    frontSuspension: string;
-    rearSuspension: string;
-    abs: "Single Channel" | "Dual Channel" | "None";
+  // Brakes & Suspension
+  frontBrake: string;
+  rearBrake: string;
+  frontSuspension: string;
+  rearSuspension: string;
+  abs: "Single Channel" | "Dual Channel" | "None";
 
-    // Wheels & Tyres
-    frontTyre: string;
-    rearTyre: string;
-    wheelType: string;
+  // Wheels & Tyres
+  frontTyre: string;
+  rearTyre: string;
+  wheelType: string;
 
-    // Electrical
-    headlight: string;
-    taillight: string;
-    battery: string;
+  // Electrical
+  headlight: string;
+  taillight: string;
+  battery: string;
 }
 
 export type BikeCategory =
-    | "sport"
-    | "naked"
-    | "commuter"
-    | "scooter"
-    | "cruiser"
-    | "adventure"
-    | "electric";
+  | "sport"
+  | "naked"
+  | "commuter"
+  | "scooter"
+  | "cruiser"
+  | "cafe-racer"
+  | "off-road"
+  | "electric";
+
+export interface Brand {
+  id: string;
+  slug: string;
+  name: string;
+  logo: string;
+  country: string;
+  bikeCount: number;
+  description?: string;
+}
 
 export interface PriceRange {
-    min: number;
-    max: number;
+  min: number;
+  max: number;
 }
 
-// -------------------- BRAND TYPES --------------------
-export interface Brand {
-    id: string;
-    slug: string;
-    name: string;
-    logo: string;
-    country: string;
-    description?: string;
-    bikeCount: number;
-}
-
-// -------------------- RATING TYPES --------------------
 export interface Rating {
-    average: number;
-    count: number;
-}
-
-export interface Review {
-    id: string;
-    bikeId: string;
-    userId: string;
-    userName: string;
-    userImage?: string;
-    rating: number; // 1-5 stars
-    comment: string;
-    isVerifiedOwner?: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-// -------------------- USED BIKE TYPES --------------------
-export interface UsedBike {
-    id: string;
-    bikeId?: string; // Reference to official bike
-    bikeName: string;
-    brandName: string;
-    sellerId: string;
-    sellerName: string;
-    sellerPhone: string; // Masked
-    images: string[];
-    thumbnailUrl: string;
-    price: number;
-    year: number;
-    kmDriven: number;
-    condition: BikeCondition;
-    accidentHistory: boolean;
-    location: Location;
-    description?: string;
-    status: ListingStatus;
-    isFeatured: boolean;
-    isVerified: boolean;
-    expiresAt: Date;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export type BikeCondition = "excellent" | "good" | "fair" | "poor";
-
-export type ListingStatus = "pending" | "active" | "expired" | "sold" | "rejected";
-
-export interface Location {
-    city: string;
-    area?: string;
-    latitude?: number;
-    longitude?: number;
-}
-
-// -------------------- WISHLIST TYPES --------------------
-export interface WishlistItem {
-    id: string;
-    userId: string;
-    bikeId: string;
-    bike: Bike;
-    addedAt: Date;
+  average: number;
+  count: number;
+  breakdown: {
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  };
 }
 
 // -------------------- NEWS TYPES --------------------
 export interface NewsArticle {
-    id: string;
-    slug: string;
-    title: string;
-    excerpt: string;
-    content: string;
-    featuredImage: string;
-    author: Author;
-    category: NewsCategory;
-    tags: string[];
-    views: number;
-    publishedAt: Date;
-    updatedAt: Date;
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  featuredImage: string;
+  author: Author;
+  category: NewsCategory;
+  tags: string[];
+  views: number;
+  publishedAt: Date;
+  updatedAt: Date;
 }
 
 export interface Author {
-    id: string;
-    name: string;
-    image?: string;
-    bio?: string;
+  id: string;
+  name: string;
+  image: string;
+  bio: string;
 }
 
 export type NewsCategory =
-    | "launch"
-    | "review"
-    | "comparison"
-    | "industry"
-    | "tips"
-    | "events";
+  | "launch"
+  | "review"
+  | "industry"
+  | "tips"
+  | "motorsport";
 
-// -------------------- SUBSCRIPTION TYPES --------------------
-export interface Subscription {
-    id: string;
-    userId: string;
-    type: SubscriptionType;
-    status: SubscriptionStatus;
-    startDate: Date;
-    endDate: Date;
-    paymentId?: string;
+// -------------------- MARKETPLACE TYPES --------------------
+export interface UsedBike {
+  id: string;
+  bikeName: string;
+  brandName: string;
+  sellerId: string;
+  sellerName: string;
+  sellerPhone: string;
+  images: string[];
+  thumbnailUrl: string;
+  price: number;
+  year: number;
+  kmDriven: number;
+  condition: BikeCondition;
+  accidentHistory: boolean;
+  location: Location;
+  status: ListingStatus;
+  description?: string;
+  isFeatured: boolean;
+  isVerified: boolean;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export type SubscriptionType = "free" | "premium" | "dealer";
+export interface ApiUsedBikeListing {
+  id: number;
+  title: string;
+  price: string;
+  mileage: number;
+  manufacturing_year: number;
+  condition: string;
+  description: string;
+  location: string;
+  status: string;
+  is_featured: boolean;
+  is_verified: boolean;
+  created_at: string;
+  image_url?: string;
+  bike_model_name?: string;
+  brand?: string;
+  seller_name?: string;
+  images?: {
+    id: number;
+    url: string;
+    is_primary: boolean;
+  }[];
+}
 
-export type SubscriptionStatus = "active" | "expired" | "cancelled";
+export type BikeCondition = "new" | "excellent" | "good" | "fair" | "poor";
+export type ListingStatus = "active" | "sold" | "expired" | "pending";
 
-// -------------------- API RESPONSE TYPES --------------------
+export interface Location {
+  city: string;
+  area: string;
+  lat?: number;
+  lng?: number;
+}
+
+// -------------------- API TYPES --------------------
 export interface ApiResponse<T> {
-    success: boolean;
-    data?: T;
-    error?: ApiError;
-    meta?: PaginationMeta;
+  success: boolean;
+  data?: T;
+  error?: ApiError;
+  meta?: PaginationMeta;
+  message?: string;
+  status?: number;
 }
 
 export interface ApiError {
-    code: string;
-    message: string;
-    details?: Record<string, string[]>;
+  message: string;
+  code?: string;
+  details?: unknown;
 }
 
 export interface PaginationMeta {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  currentPage: number;
 }
 
-// -------------------- FILTER TYPES --------------------
 export interface BikeFilters {
-    brand?: string[];
-    category?: BikeCategory[];
-    priceMin?: number;
-    priceMax?: number;
-    ccMin?: number;
-    ccMax?: number;
-    isElectric?: boolean;
-    sortBy?: BikeSortOption;
-    page?: number;
-    limit?: number;
+  [key: string]: string | number | boolean | undefined;
+  brand?: string;
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minCC?: number;
+  maxCC?: number;
+  page?: number;
+  limit?: number;
+  search?: string;
+  sort?: string;
 }
-
-export type BikeSortOption =
-    | "popularity"
-    | "price_asc"
-    | "price_desc"
-    | "mileage"
-    | "newest";
 
 export interface UsedBikeFilters {
-    brand?: string[];
-    priceMin?: number;
-    priceMax?: number;
-    yearMin?: number;
-    yearMax?: number;
-    location?: string;
-    condition?: BikeCondition[];
-    sortBy?: UsedBikeSortOption;
-    page?: number;
-    limit?: number;
+  [key: string]: string | number | boolean | undefined | string[];
+  brand?: string[];
+  condition?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  location?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+  sort?: string;
+  featured?: boolean;
 }
 
-export type UsedBikeSortOption =
-    | "newest"
-    | "price_asc"
-    | "price_desc"
-    | "km_asc"
-    | "km_desc";
+export interface WishlistItem {
+  id: string;
+  bikeId: string;
+  userId: string;
+  addedAt: Date;
+  bike: Bike;
+}
 
-// -------------------- RECOMMENDATION TYPES --------------------
 export interface BikeRecommendation {
-    bike: Bike;
-    score: number;
-    reason: string;
+  bike: Bike;
+  score: number;
+  reason: string;
 }
 
 export interface UsedBikeRecommendation {
-    usedBike: UsedBike;
-    score: number;
-    reason: string;
-}
-
-// -------------------- COMPARISON TYPES --------------------
-export interface BikeComparison {
-    bikes: Bike[];
-    highlights: ComparisonHighlight[];
-}
-
-export interface ComparisonHighlight {
-    field: string;
-    label: string;
-    winner?: string; // bike id
-    values: Record<string, string | number>;
-}
-
-// -------------------- SEO TYPES --------------------
-export interface SeoMeta {
-    title: string;
-    description: string;
-    keywords?: string[];
-    ogImage?: string;
-    canonical?: string;
-    noIndex?: boolean;
-}
-
-// -------------------- FORM TYPES --------------------
-export interface PostAdFormData {
-    brand: string;
-    model: string;
-    year: number;
-    kmDriven: number;
-    condition: BikeCondition;
-    accidentHistory: boolean;
-    price: number;
-    location: string;
-    area?: string;
-    description?: string;
-    images: File[];
+  usedBike: UsedBike;
+  score: number;
+  reason: string;
 }

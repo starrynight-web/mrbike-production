@@ -19,7 +19,7 @@ urlpatterns = [
     path('api/admin/', include('apps.core.urls')),
     path('api/users/', include('apps.users.urls')),
     path('api/bikes/', include('apps.bikes.urls')),
-    path('api/used-bikes/', include('apps.marketplace.urls')),
+    path('api/marketplace/', include('apps.marketplace.urls')),
     path('api/news/', include('apps.news.urls')),
     path('api/interactions/', include('apps.interactions.urls')),
     path('api/recommendations/', include('apps.recommendations.urls')),

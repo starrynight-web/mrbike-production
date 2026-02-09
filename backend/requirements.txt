@@ -15,4 +15,4 @@ dj-database-url
 django-filter
 djangorestframework-simplejwt
 google-auth
-
+Pillow

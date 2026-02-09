@@ -33,6 +33,21 @@ class BikeModelViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'brand__name']
     ordering_fields = ['price', 'popularity_score', 'engine_capacity']
 
+    def get_object(self):
+        """
+        Allow getting object by either ID or slug
+        """
+        # If the lookup parameter is not a number, treat it as a slug
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs.get(lookup_url_kwarg)
+
+        if lookup_value and not str(lookup_value).isdigit():
+            self.lookup_field = 'slug'
+            # The URL kwarg is still 'pk' from DefaultRouter, so we must tell DRF to look there
+            self.lookup_url_kwarg = 'pk'
+
+        return super().get_object()
+
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy', 'duplicate', 'upload_image']:
             return [IsAdminUser()]

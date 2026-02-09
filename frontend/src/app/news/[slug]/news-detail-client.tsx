@@ -14,7 +14,6 @@ import {
     ArrowLeft
 } from "lucide-react";
 import { useNewsArticle } from "@/hooks/use-news";
-import DOMPurify from "isomorphic-dompurify";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -43,8 +42,6 @@ export function NewsDetailClient({ slug }: NewsDetailClientProps) {
             });
         }
     };
-
-    const safeHtml = DOMPurify.sanitize(article.content || "");
 
     return (
         <article className="min-h-screen pb-20">
@@ -88,25 +85,14 @@ export function NewsDetailClient({ slug }: NewsDetailClientProps) {
 
                     <div className="flex items-center justify-between py-4 border-y">
                         <div className="flex items-center gap-3">
-                            {(() => {
-                                const author = article.author || {};
-                                const authorName = author?.name || '';
-                                const initials = authorName ? authorName.charAt(0) : '?';
-                                return (
-                                    <>
-                                        <Avatar className="h-10 w-10 border">
-                                            {author?.image ? (
-                                                <AvatarImage src={author.image} alt={authorName || 'Author'} />
-                                            ) : null}
-                                            <AvatarFallback>{initials}</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="text-sm font-bold">{authorName || 'Unknown Author'}</p>
-                                            <p className="text-xs text-muted-foreground">Author</p>
-                                        </div>
-                                    </>
-                                );
-                            })()}
+                            <Avatar className="h-10 w-10 border">
+                                <AvatarImage src={article.author.image} alt={article.author.name} />
+                                <AvatarFallback>{article.author.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="text-sm font-bold">{article.author.name}</p>
+                                <p className="text-xs text-muted-foreground">Author</p>
+                            </div>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -141,7 +127,7 @@ export function NewsDetailClient({ slug }: NewsDetailClientProps) {
                     [&>p]:text-lg [&>p]:leading-relaxed [&>p]:text-muted-foreground/90 [&>p]:mb-6
                     [&>h3]:text-2xl [&>h3]:font-bold [&>h3]:mt-10 [&>h3]:mb-4 [&>h3]:text-foreground
                     [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6 [&>li]:mb-2"
-                    dangerouslySetInnerHTML={{ __html: safeHtml }}
+                    dangerouslySetInnerHTML={{ __html: article.content }}
                 />
 
                 <Separator className="my-8" />
@@ -149,7 +135,7 @@ export function NewsDetailClient({ slug }: NewsDetailClientProps) {
                 {/* Footer / Tags */}
                 <div className="space-y-6">
                     <div className="flex flex-wrap gap-2">
-                        {(article.tags ?? []).map(tag => (
+                        {article.tags.map((tag: string) => (
                             <Badge key={tag} variant="secondary" className="px-3 py-1 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                                 <Hash className="h-3 w-3 mr-1" />
                                 {tag}

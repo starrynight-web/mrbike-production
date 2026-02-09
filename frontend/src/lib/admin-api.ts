@@ -3,7 +3,7 @@
  * Handles all admin operations for bikes and used bikes management
  */
 
-import { api } from './api';
+import { api } from "./api";
 
 // ==================== TYPES ====================
 
@@ -23,7 +23,8 @@ export interface Bike {
   fuel_type: string;
   transmission: string;
   braking_system: string;
-  features?: string[];
+  features: string[];
+  description?: string;
 }
 
 export interface UsedBikeListing {
@@ -37,7 +38,7 @@ export interface UsedBikeListing {
   year: number;
   mileage: number;
   condition: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   image_url: string;
   description: string;
   created_at: string;
@@ -66,34 +67,34 @@ class AdminAPI {
    */
   async getAllBikes(params?: {
     search?: string;
-    status?: 'published' | 'draft';
-    sort?: 'name' | 'price' | 'rating';
+    status?: "published" | "draft";
+    sort?: "name" | "price" | "rating";
     limit?: number;
     offset?: number;
-  }): Promise<{ results: Bike[]; count: number }> {
-    const response = await api.get<{ results: Bike[]; count: number }>('/bikes/', { params });
-    if (response.success && response.data) {
-      return response.data;
+  }) {
+    const response = await api.get<{ count: number; results: Bike[] }>(
+      "/bikes/",
+      { params },
+    );
+    if (!response.success || !response.data) {
+      return { results: [], count: 0 };
     }
-    throw new Error(response.error?.message || "Failed to fetch bikes");
+    return response.data;
   }
 
   /**
    * Get single bike by ID
    */
-  async getBike(id: number): Promise<Bike> {
-    const response = await api.get<Bike>(`/bikes/${id}/`);
-    if (response.success && response.data) {
-      return response.data;
-    }
-    throw new Error(response.error?.message || "Failed to fetch bike");
+  async getBike(id: number) {
+    const response = await api.get(`/bikes/${id}/`);
+    return response.data;
   }
 
   /**
    * Create new bike
    */
   async createBike(data: Partial<Bike>) {
-    const response = await api.post('/bikes/', data);
+    const response = await api.post("/bikes/", data);
     return response.data;
   }
 
@@ -115,8 +116,11 @@ class AdminAPI {
   /**
    * Bulk update bike status
    */
-  async bulkUpdateBikes(ids: number[], updates: { published?: boolean; featured?: boolean }) {
-    const response = await api.post('/bikes/bulk-update/', {
+  async bulkUpdateBikes(
+    ids: number[],
+    updates: { published?: boolean; featured?: boolean },
+  ) {
+    const response = await api.post("/bikes/bulk-update/", {
       ids,
       ...updates,
     });
@@ -137,18 +141,41 @@ class AdminAPI {
    * Get all used bike listings with filtering
    */
   async getAllUsedBikes(params?: {
-    status?: 'pending' | 'approved' | 'rejected';
+    status?: "pending" | "approved" | "rejected";
     search?: string;
     condition?: string;
-    sort?: 'newest' | 'price_asc' | 'price_desc';
+    sort?: "newest" | "price_asc" | "price_desc";
     limit?: number;
     offset?: number;
-  }): Promise<{ results: UsedBikeListing[]; count: number }> {
-    const response = await api.get<{ results: UsedBikeListing[]; count: number }>('/used-bikes/', { params });
-    if (response.success && response.data) {
-      return response.data;
+  }) {
+    const response = await api.get<any>("/used-bikes/", { params });
+    if (!response.success || !response.data) {
+      return { results: [], count: 0 };
     }
-    throw new Error(response.error?.message || "Failed to fetch used bikes");
+
+    // Transform API response to match UsedBikeListing interface
+    const results = (response.data.results || []).map((item: any) => ({
+      id: item.id,
+      bike_model: item.bike_model_name || item.title || "Unknown Model",
+      brand: item.brand || "Unknown Brand",
+      seller_name: item.seller_name || "Unknown Seller",
+      seller_phone: item.seller_phone || "",
+      seller_location: item.location || "",
+      price: Number(item.price) || 0,
+      year: item.manufacturing_year || new Date().getFullYear(),
+      mileage: item.mileage || 0,
+      condition: item.condition || "good",
+      status: item.status || "pending",
+      image_url: item.image_url || "",
+      description: item.description || "",
+      created_at: item.created_at || new Date().toISOString(),
+      seller_id: item.seller || 0,
+    }));
+
+    return {
+      count: response.data.count || 0,
+      results: results as UsedBikeListing[],
+    };
   }
 
   /**
@@ -198,35 +225,113 @@ class AdminAPI {
     return response.data;
   }
 
+  // ===== NEWS MANAGEMENT =====
+
+  /**
+   * Get all news articles
+   */
+  async getAllNews(params?: {
+    search?: string;
+    category?: string;
+    limit?: number;
+    offset?: number;
+    ordering?: string;
+  }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.get<any>("/news/", { params });
+    if (!response.success || !response.data) {
+      return { results: [], count: 0 };
+    }
+    return response.data;
+  }
+
+  /**
+   * Get single article
+   */
+  async getArticle(id: string | number) {
+    const response = await api.get(`/news/${id}/`);
+    return response.data;
+  }
+
+  /**
+   * Create new article
+   */
+  async createArticle(data: FormData) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.post<any>("/news/", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  }
+
+  /**
+   * Update article
+   */
+  async updateArticle(id: string | number, data: FormData) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.patch<any>(`/news/${id}/`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  }
+
+  /**
+   * Delete article
+   */
+  async deleteArticle(id: string | number) {
+    await api.delete(`/news/${id}/`);
+  }
+
   // ===== ADMIN STATISTICS =====
 
   /**
    * Get admin dashboard statistics
    */
   async getDashboardStats(): Promise<AdminStats> {
-    const response = await api.get<AdminStats>('/admin/stats/');
-    if (response.success && response.data) {
-      return response.data;
+    const response = await api.get<AdminStats>("/admin/stats/");
+    if (!response.success || !response.data) {
+      return {
+        total_users: 0,
+        total_bikes: 0,
+        active_listings: 0,
+        monthly_traffic: 0,
+        pending_approvals: 0,
+        user_change: 0,
+        bikes_change: 0,
+        listings_change: 0,
+        traffic_change: 0,
+      };
     }
-    throw new Error(response.error?.message || "Failed to fetch stats");
+    return response.data as AdminStats;
   }
 
   /**
    * Get pending approvals count
    */
   async getPendingApprovalsCount(): Promise<{ count: number }> {
-    const response = await api.get<{ count: number }>('/used-bikes/?status=pending&limit=1');
-    return { count: response.data?.count || 0 };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.get<any>("/used-bikes/?status=pending&limit=1");
+    if (!response.success || !response.data) {
+      return { count: 0 };
+    }
+    return { count: response.data.count || 0 };
   }
 
   /**
    * Get recent pending listings (for dashboard)
    */
   async getRecentPending(limit: number = 5): Promise<UsedBikeListing[]> {
-    const response = await api.get<{ results: UsedBikeListing[] }>('/used-bikes/?status=pending&ordering=-created_at', {
-      params: { limit },
-    });
-    return response.data?.results || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.get<any>(
+      "/used-bikes/?status=pending&ordering=-created_at",
+      {
+        params: { limit },
+      },
+    );
+    if (!response.success || !response.data) {
+      return [];
+    }
+    return response.data.results || [];
   }
 
   // ===== IMAGE MANAGEMENT =====
@@ -234,18 +339,18 @@ class AdminAPI {
   /**
    * Upload image with compression preview
    */
-  async uploadImage(file: File): Promise<{ url: string; size: number; originalSize: number }> {
+  async uploadImage(
+    file: File,
+  ): Promise<{ url: string; size: number; originalSize: number }> {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append("image", file);
 
-    const response = await api.post<{ url: string; size: number; originalSize: number }>('/bikes/upload-image/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.post<any>("/bikes/upload-image/", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
 
-    if (response.success && response.data) {
-      return response.data;
-    }
-    throw new Error(response.error?.message || "Failed to upload image");
+    return response.data;
   }
 
   /**
@@ -260,9 +365,9 @@ class AdminAPI {
   /**
    * Search bikes and listings
    */
-  async search(query: string, type: 'bikes' | 'used-bikes' = 'bikes'): Promise<any> {
-    const endpoint = type === 'bikes' ? '/bikes/' : '/used-bikes/';
-    const response = await api.get<any>(endpoint, {
+  async search(query: string, type: "bikes" | "used-bikes" = "bikes") {
+    const endpoint = type === "bikes" ? "/bikes/" : "/used-bikes/";
+    const response = await api.get(endpoint, {
       params: { search: query },
     });
     return response.data;
@@ -277,16 +382,9 @@ class AdminAPI {
     conditions: string[];
     fuelTypes: string[];
   }> {
-    const response = await api.get<{
-      brands: string[];
-      categories: string[];
-      conditions: string[];
-      fuelTypes: string[];
-    }>('/admin/filter-options/');
-    if (response.success && response.data) {
-      return response.data;
-    }
-    throw new Error(response.error?.message || "Failed to fetch filter options");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.get<any>("/admin/filter-options/");
+    return response.data;
   }
 
   // ===== BRANDS MANAGEMENT =====
@@ -295,7 +393,7 @@ class AdminAPI {
    * Get all brands
    */
   async getAllBrands() {
-    const response = await api.get('/brands/');
+    const response = await api.get("/brands/");
     return response.data;
   }
 
@@ -303,7 +401,7 @@ class AdminAPI {
    * Create brand
    */
   async createBrand(data: { name: string; logo_url?: string }) {
-    const response = await api.post('/brands/', data);
+    const response = await api.post("/brands/", data);
     return response.data;
   }
 
@@ -327,8 +425,8 @@ class AdminAPI {
   /**
    * Get usage analytics
    */
-  async getAnalytics(period: 'week' | 'month' | 'year' = 'month') {
-    const response = await api.get('/admin/analytics/', {
+  async getAnalytics(period: "week" | "month" | "year" = "month") {
+    const response = await api.get("/admin/analytics/", {
       params: { period },
     });
     return response.data;
@@ -345,10 +443,13 @@ class AdminAPI {
   /**
    * Export data
    */
-  async exportData(type: 'bikes' | 'listings' | 'users', format: 'csv' | 'excel' = 'csv') {
+  async exportData(
+    type: "bikes" | "listings" | "users",
+    format: "csv" | "excel" = "csv",
+  ) {
     const response = await api.get(`/admin/export-${type}/`, {
       params: { format },
-      responseType: 'blob',
+      responseType: "blob",
     });
     return response.data;
   }

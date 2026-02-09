@@ -1,26 +1,29 @@
-from django.db import models
-from rest_framework import generics, permissions, filters
-from django_filters.rest_framework import DjangoFilterBackend
-from .models import Article, NewsCategory
+from rest_framework import generics, permissions, parsers
+from .models import Article
 from .serializers import ArticleSerializer
 
-class ArticleListView(generics.ListAPIView):
-    queryset = Article.objects.filter(is_published=True)
+class ArticleListCreateView(generics.ListCreateAPIView):
+    queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = [permissions.AllowAny]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['category__slug', 'tags__slug']
-    search_fields = ['title', 'excerpt', 'content']
-    ordering_fields = ['published_at', 'views', 'created_at']
+    parser_classes = (parsers.MultiPartParser, parsers.FormParser)
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 class ArticleDetailView(generics.RetrieveAPIView):
-    queryset = Article.objects.filter(is_published=True)
+    queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
+    permission_classes = [permissions.AllowAny]
 
-    def get_object(self):
-        obj = super().get_object()
-        # Increment view count
-        Article.objects.filter(pk=obj.pk).update(views=models.F('views') + 1)
-        return obj
+class ArticleAdminUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+    permission_classes = [permissions.IsAdminUser]
+    parser_classes = (parsers.MultiPartParser, parsers.FormParser)
+    lookup_field = 'pk'
