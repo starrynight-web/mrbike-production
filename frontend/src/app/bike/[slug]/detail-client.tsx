@@ -2,42 +2,50 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Heart,
+  Share2,
   ChevronLeft,
   ChevronRight,
   Fuel,
   Gauge,
   Zap,
   Star,
-  Check,
   Calculator,
+  Check,
   X,
+  ChevronDown,
 } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatPrice, calculateEMI } from "@/lib/utils";
 import {
   useBike,
+  useSimilarBikes,
+  useUsedBikesNearBudget,
   useBikeReviews,
   useSubmitReview,
-  useSimilarBikes,
 } from "@/hooks/use-bikes";
-import { useUsedBikes } from "@/hooks/use-used-bikes";
-import {
-  useWishlistStore,
-  useCompareStore,
-  useAuthStore,
-  useHasHydrated,
-} from "@/store";
+import { useWishlistStore, useCompareStore, useAuthStore } from "@/store";
 import { EMI_CONFIG } from "@/config/constants";
-import type { Review, UsedBike, Bike } from "@/types";
+import { BikeCard } from "@/components/bikes";
+import type { Bike, Review } from "@/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -46,6 +54,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+
+// Import mock data for development
+import bikesData from "@/app/mock/bikes.json";
 
 interface BikeDetailClientProps {
   slug: string;
@@ -83,21 +94,23 @@ interface VariantData {
   cons: Record<string, string>;
 }
 
-interface ApiVariant {
-  id: string | number;
-  variant_key?: string;
-  variant_name?: string;
-  name?: string;
-  color?: string;
-  price?: number | string;
-  mileage_company?: string;
-  mileage_user?: string;
-  topspeed_company?: string;
-  topspeed_user?: string;
-  tire_type?: string;
-  braking_system?: string;
-  images?: string[];
-  [key: string]: unknown;
+interface MockBikeData {
+  id: string;
+  name: string;
+  brand: string;
+  price: number;
+  rating: number;
+  image: string;
+  categories: string[];
+  specsSummary: string;
+  variants?: Record<string, VariantData>;
+  similar?: string[];
+  used?: Array<{
+    name: string;
+    price: number;
+    condition: string;
+    image: string;
+  }>;
 }
 
 // Quick Specs Panel Component with Company/User toggle
@@ -217,7 +230,7 @@ function VariantComparison({
   type ComparisonRow = {
     label: string;
     key?: keyof VariantData;
-    render?: (v: VariantData) => React.ReactNode;
+    render?: (v: VariantData) => any;
   };
 
   const rows: ComparisonRow[] = [
@@ -302,11 +315,9 @@ function VariantComparison({
                 </td>
                 {variantKeys.map((key) => (
                   <td key={key} className="p-4 text-gray-600">
-                    {typeof row.render === "function"
+                    {typeof row.render === 'function'
                       ? row.render(variants[key])
-                      : String(
-                          variants[key][row.key as keyof VariantData] || "",
-                        )}
+                      : String(variants[key][row.key as keyof VariantData] || "")}
                   </td>
                 ))}
               </tr>
@@ -318,9 +329,22 @@ function VariantComparison({
   );
 }
 
-function SimilarNewBikes({ slug }: { slug: string }) {
-  // Fetch similar bikes from API
-  const { data: similarBikes, isLoading, error } = useSimilarBikes(slug);
+function SimilarNewBikes({
+  currentPrice,
+  currentId,
+}: {
+  currentPrice: number;
+  currentId: string;
+}) {
+  const similarBikes = useMemo(() => {
+    return (bikesData.bikes as MockBikeData[])
+      .filter(
+        (b) =>
+          b.id !== currentId &&
+          Math.abs((b.price || 0) - currentPrice) < currentPrice * 0.3,
+      ) // +/- 30% price range
+      .slice(0, 4);
+  }, [currentPrice, currentId]);
 
   return (
     <div className="bg-card border rounded-xl p-6 h-full flex flex-col shadow-sm">
@@ -331,70 +355,40 @@ function SimilarNewBikes({ slug }: { slug: string }) {
         </Button>
       </div>
 
-      {isLoading ? (
-        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-          Loading similar bikes...
-        </div>
-      ) : error ||
-        !similarBikes ||
-        (Array.isArray(similarBikes) && similarBikes.length === 0) ? (
-        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-          {error
-            ? "Cannot Fetch Similar Bikes"
-            : "No similar bikes found in this price range."}
+      {similarBikes.length > 0 ? (
+        <div className="flex flex-col gap-4">
+          {similarBikes.map((bike) => (
+            <Link
+              key={bike.id}
+              href={`/bike/${bike.id}`}
+              className="group block"
+            >
+              <div className="flex gap-4 p-3 rounded-xl border border-transparent hover:border-border hover:bg-muted/30 transition-all">
+                <div className="w-24 h-16 shrink-0 rounded-lg overflow-hidden bg-muted">
+                  <img
+                    src={bikesData.images.default}
+                    alt={bike.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
+                    {bike.name}
+                  </h4>
+                  <p className="text-primary font-bold text-sm mt-0.5">
+                    {formatPrice(bike.price || 0)}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                    {bike.specsSummary}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          {(Array.isArray(similarBikes) ? similarBikes : []).map(
-            (bike: Bike) => {
-              const bikeId = bike.id || bike.slug;
-              const bikeName = bike.name || "";
-              const bikePrice = bike.price || bike.priceRange?.min || 0;
-
-              // Handle various image structures from API
-              const bikeImage =
-                bike.thumbnailUrl ||
-                bike.primary_image ||
-                bike.images?.[0] ||
-                "/placeholder-bike.png"; // Fallback image
-
-              const bikeSpecs =
-                bike.specsSummary ||
-                `${bike.specs?.displacement || ""}cc • ${
-                  bike.specs?.maxPower || ""
-                }`;
-
-              return (
-                <Link
-                  key={bikeId}
-                  href={`/bike/${bikeId}`}
-                  className="group block"
-                >
-                  <div className="flex gap-4 p-3 rounded-xl border border-transparent hover:border-border hover:bg-muted/30 transition-all">
-                    <div className="w-24 h-16 shrink-0 rounded-lg overflow-hidden bg-muted relative">
-                      <Image
-                        src={bikeImage}
-                        alt={bikeName}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
-                        {bikeName}
-                      </h4>
-                      <p className="text-primary font-bold text-sm mt-0.5">
-                        {formatPrice(bikePrice)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                        {bikeSpecs}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              );
-            },
-          )}
+        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+          No similar bikes found in this price range.
         </div>
       )}
     </div>
@@ -403,178 +397,50 @@ function SimilarNewBikes({ slug }: { slug: string }) {
 
 export function BikeDetailClient({ slug }: BikeDetailClientProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [emiMonths, setEmiMonths] = useState<number>(
+    EMI_CONFIG.defaultTenureMonths,
+  );
   const [selectedVariantKey, setSelectedVariantKey] = useState<string>("std");
-  const [emiMonths] = useState(EMI_CONFIG.defaultTenureMonths);
-  const [specsTab, setSpecsTab] = useState("general");
+  const [specsTab, setSpecsTab] = useState("engine");
 
-  // Fetch bike data from API
+  // Get mock bike data
+  const mockBike = useMemo(() => {
+    return (bikesData.bikes as MockBikeData[]).find((b) => b.id === slug);
+  }, [slug]);
+
+  // Fetch bike data from API (fallback)
   const { data: bike, isLoading, error } = useBike(slug);
-  const { data: reviews } = useBikeReviews(bike?.id || "");
-
-  // Fetch used bikes
-  const { data: usedBikesData } = useUsedBikes({ limit: 4 });
-  const similarUsedBikes = useMemo(() => {
-    if (!usedBikesData) return [];
-
-    const rawList = Array.isArray(usedBikesData)
-      ? usedBikesData
-      : (usedBikesData as any).results || [];
-
-    return rawList.map((item: any) => ({
-      id: item.id?.toString() || "",
-      bikeName: item.bike_model_name || item.title || "Unknown Bike",
-      brandName: item.brand || "Unknown Brand",
-      sellerId: item.seller?.toString() || "",
-      sellerName: item.seller_name || "Unknown Seller",
-      sellerPhone: item.seller_phone || "",
-      images: item.images?.map((img: any) => img.url) || [],
-      thumbnailUrl: item.image_url || "/bikes/default.webp",
-      price: Number(item.price) || 0,
-      year: item.manufacturing_year || new Date().getFullYear(),
-      kmDriven: item.mileage || 0,
-      condition: item.condition || "good",
-      accidentHistory: false,
-      location: {
-        city: item.location || "Unknown",
-        area: "",
-      },
-      status: item.status || "active",
-      isFeatured: item.is_featured || false,
-      isVerified: item.is_verified || false,
-      expiresAt: new Date(),
-      createdAt: item.created_at || new Date(),
-      updatedAt: item.updated_at || new Date(),
-    }));
-  }, [usedBikesData]);
+  const { data: similarBikes } = useSimilarBikes(slug);
+  const { data: usedBikesNearBudget } = useUsedBikesNearBudget(slug);
+  const { data: reviews } = useBikeReviews(bike?.id || mockBike?.id || "");
 
   // Store hooks
-  const { isInFavorites, toggleFavorite } = useWishlistStore();
+  const { isInWishlist, toggleWishlist } = useWishlistStore();
   const { isBikeSelected, addBike, removeBike } = useCompareStore();
-  const wishlistHydrated = useHasHydrated(useWishlistStore);
-  const compareHydrated = useHasHydrated(useCompareStore);
-  const storesReady = wishlistHydrated && compareHydrated;
 
-  // Transform API data to expected frontend structure
-  const variants = useMemo(() => {
-    if (!bike) return {};
-
-    const variantsMap: Record<string, VariantData> = {};
-    const apiVariants = bike.variants || [];
-
-    if (Array.isArray(apiVariants) && apiVariants.length > 0) {
-      apiVariants.forEach((v: ApiVariant) => {
-        const variantName = v.variant_name || v.name || v.color || "Standard";
-        const key =
-          v.variant_key ||
-          (v.id ? String(v.id) : "") ||
-          variantName.toLowerCase().replace(/\s+/g, "-");
-
-        variantsMap[key] = {
-          fullName:
-            `${bike.brand?.name || bike.brand_name || ""} ${bike.name} ${variantName}`.trim(),
-          label: variantName,
-          price: Number(v.price) || 0,
-          images:
-            v.images && Array.isArray(v.images) && v.images.length > 0
-              ? v.images
-              : bike.images && bike.images.length > 0
-                ? bike.images
-                : [bike.primary_image || "/placeholder-bike.png"],
-          quickSpecs: {
-            engineCapacity:
-              bike.detailed_specs?.displacement ||
-              (bike.engine_capacity ? `${bike.engine_capacity} cc` : "N/A"),
-            transmission:
-              bike.detailed_specs?.gearbox ||
-              (bike.gears ? `${bike.gears} Speed` : "N/A"),
-            maxPower: bike.detailed_specs?.max_power || bike.max_power || "N/A",
-            maxTorque:
-              bike.detailed_specs?.max_torque || bike.max_torque || "N/A",
-            fuelTank:
-              bike.detailed_specs?.fuel_tank_capacity ||
-              (bike.fuel_capacity ? `${bike.fuel_capacity} L` : "N/A"),
-            kerbWeight:
-              bike.detailed_specs?.kerb_weight ||
-              (bike.curb_weight ? `${bike.curb_weight} kg` : "N/A"),
-            mileageCompany: v.mileage_company || "N/A",
-            mileageUser: v.mileage_user || "N/A",
-            topspeedCompany: v.topspeed_company || "N/A",
-            topspeedUser: v.topspeed_user || "N/A",
-          },
-          fuelEfficiency: v.mileage_user || v.mileage_company || "N/A",
-          frontTire: bike.detailed_specs?.tyres_front || v.tire_type || "N/A",
-          rearTire: bike.detailed_specs?.tyres_rear || v.tire_type || "N/A",
-          brakingSystem:
-            v.braking_system || bike.detailed_specs?.braking_system || "N/A",
-          headlightType: bike.detailed_specs?.lighting?.headlight || "N/A",
-          abs: (v.braking_system || "").toLowerCase().includes("abs"),
-          ledHeadlight: (bike.detailed_specs?.lighting?.headlight || "")
-            .toLowerCase()
-            .includes("led"),
-          usbPort: false,
-          pros: {},
-          cons: {},
-        };
-      });
-    } else {
-      // Create a default variant from the bike model itself if no variants exist
-      variantsMap["std"] = {
-        fullName:
-          `${bike.brand?.name || bike.brand_name || ""} ${bike.name}`.trim(),
-        label: "Standard",
-        price: Number(bike.price) || Number(bike.priceRange?.min) || 0,
-        images: bike.images || [bike.primary_image || "/placeholder-bike.png"],
-        quickSpecs: {
-          engineCapacity:
-            bike.detailed_specs?.displacement ||
-            (bike.engine_capacity ? `${bike.engine_capacity} cc` : "N/A"),
-          transmission:
-            bike.detailed_specs?.gearbox ||
-            (bike.gears ? `${bike.gears} Speed` : "N/A"),
-          maxPower: bike.detailed_specs?.max_power || bike.max_power || "N/A",
-          maxTorque:
-            bike.detailed_specs?.max_torque || bike.max_torque || "N/A",
-          fuelTank:
-            bike.detailed_specs?.fuel_tank_capacity ||
-            (bike.fuel_capacity ? `${bike.fuel_capacity} L` : "N/A"),
-          kerbWeight:
-            bike.detailed_specs?.kerb_weight ||
-            (bike.curb_weight ? `${bike.curb_weight} kg` : "N/A"),
-          mileageCompany: "N/A",
-          mileageUser: "N/A",
-          topspeedCompany: "N/A",
-          topspeedUser: "N/A",
-        },
-        fuelEfficiency: "N/A",
-        frontTire: bike.detailed_specs?.tyres_front || bike.tyre_type || "N/A",
-        rearTire: bike.detailed_specs?.tyres_rear || bike.tyre_type || "N/A",
-        brakingSystem: bike.detailed_specs?.braking_system || "N/A",
-        headlightType: bike.detailed_specs?.lighting?.headlight || "N/A",
-        abs: false,
-        ledHeadlight: false,
-        usbPort: false,
-        pros: {},
-        cons: {},
-      };
-    }
-
-    return variantsMap;
-  }, [bike]);
-
+  // Get variant data (variants live at top-level in API)
+  const variants = bike?.variants || mockBike?.variants || {};
   const variantKeys = Object.keys(variants);
   const currentVariant =
     variants[selectedVariantKey] || variants[variantKeys[0]];
+  const defaultImage = bike?.primary_image || bikesData.images.default;
 
-  const defaultImage = bike?.primary_image || "/placeholder-bike.png";
-  const currentImages = currentVariant?.images?.length
-    ? currentVariant.images
-    : [defaultImage];
+  // Similar bikes from mock data
+  const mockSimilarBikes = useMemo(() => {
+    if (!mockBike?.similar) return [];
+    return mockBike.similar
+      .map((id) => (bikesData.bikes as MockBikeData[]).find((b) => b.id === id))
+      .filter(Boolean);
+  }, [mockBike]);
 
-  if (isLoading) {
+  // Used bikes from mock data
+  const mockUsedBikes = mockBike?.used || [];
+
+  if (isLoading && !mockBike) {
     return <BikeDetailSkeleton />;
   }
 
-  if (error || !bike) {
+  if ((error || !bike) && !mockBike) {
     return (
       <div className="container py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">Bike Not Found</h1>
@@ -589,17 +455,17 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
     );
   }
 
-  // Use API data
-  const bikeName = currentVariant?.fullName || bike?.name || "";
-  const brandName = bike?.brand?.name || bike?.brand_name || "";
-  const basePrice = currentVariant?.price || bike?.priceRange?.min || 0;
-  const bikeRating = bike?.rating?.average || 4.5;
-  const bikeId = String(bike?.id ?? slug);
-  const bikeDescription = bike?.description || "";
-  const totalReviews = reviews?.length || 0;
+  // Use mock data or API data
+  const bikeName =
+    currentVariant?.fullName || mockBike?.name || bike?.name || "";
+  const brandName = mockBike?.brand || bike?.brand.name || "";
+  const basePrice =
+    currentVariant?.price || mockBike?.price || bike?.priceRange.min || 0;
+  const bikeRating = mockBike?.rating || bike?.rating.average || 4.5;
+  const bikeId = mockBike?.id || bike?.id || slug;
 
-  const isFavorited = isInFavorites(bikeId);
-  const isInCompare = bike ? isBikeSelected(String(bike.id)) : false;
+  const isWishlisted = isInWishlist(bikeId);
+  const isInCompare = bike ? isBikeSelected(bike.id) : false;
 
   const downPayment = basePrice * (EMI_CONFIG.downPaymentPercent / 100);
   const loanAmount = basePrice - downPayment;
@@ -609,19 +475,26 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
     emiMonths,
   );
 
-  const handleCompareToggle = () => {
-    if (!bike || !storesReady) return;
-    const id = String(bike.id);
-    if (isInCompare) {
-      removeBike(id);
+  const handleShare = async () => {
+    if (navigator.share) {
+      await navigator.share({
+        title: bikeName,
+        text: `Check out ${bikeName} on MrBikeBD`,
+        url: window.location.href,
+      });
     } else {
-      addBike(bike);
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard!");
     }
   };
 
-  const handleFavoriteClick = () => {
-    if (!storesReady) return;
-    toggleFavorite(bikeId);
+  const handleCompareToggle = () => {
+    if (!bike) return;
+    if (isInCompare) {
+      removeBike(bike.id);
+    } else {
+      addBike(bike);
+    }
   };
 
   const handleVariantChange = (variantKey: string) => {
@@ -642,17 +515,13 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
             <Link href="/bikes" className="hover:text-foreground">
               Bikes
             </Link>
-            {brandName && (
-              <>
-                <ChevronRight className="h-4 w-4" />
-                <Link
-                  href={`/brands/${brandName.toLowerCase()}`}
-                  className="hover:text-foreground"
-                >
-                  {brandName}
-                </Link>
-              </>
-            )}
+            <ChevronRight className="h-4 w-4" />
+            <Link
+              href={`/brands/${brandName.toLowerCase()}`}
+              className="hover:text-foreground"
+            >
+              {brandName}
+            </Link>
             <ChevronRight className="h-4 w-4" />
             <span className="text-foreground font-medium">{bikeName}</span>
           </nav>
@@ -674,28 +543,27 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                 <span className="font-semibold">{bikeRating.toFixed(1)}</span>
               </div>
               <span className="text-muted-foreground text-sm">
-                ({totalReviews} {totalReviews === 1 ? "review" : "reviews"})
+                (128 reviews)
               </span>
             </div>
           </div>
           <div className="flex gap-2">
             <Button
-              type="button"
-              variant={isFavorited ? "default" : "outline"}
+              variant={isWishlisted ? "default" : "outline"}
               size="sm"
-              onClick={handleFavoriteClick}
-              disabled={!storesReady}
+              onClick={() => toggleWishlist(bikeId)}
               className="gap-2"
             >
-              <Heart className={cn("h-4 w-4", isFavorited && "fill-current")} />
-              {isFavorited ? "Saved to Favorites" : "Add to Favorites"}
+              <Heart
+                className={cn("h-4 w-4", isWishlisted && "fill-current")}
+              />
+              {isWishlisted ? "Wishlisted" : "Add to Wishlist"}
             </Button>
             <Button
-              type="button"
               variant={isInCompare ? "default" : "outline"}
               size="sm"
               onClick={handleCompareToggle}
-              disabled={!bike || !storesReady}
+              disabled={!bike}
               className="gap-2"
             >
               <Check className={cn("h-4 w-4", !isInCompare && "opacity-0")} />
@@ -709,22 +577,16 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
           {/* Image Carousel (takes 1 column) */}
           <div className="space-y-3">
             {/* Main Image */}
-            <div className="relative h-[300px] sm:h-[400px] lg:h-[500px] w-full rounded-xl overflow-hidden bg-muted">
-              <motion.div
+            <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-muted">
+              <motion.img
                 key={activeImageIndex}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="w-full h-full relative"
-              >
-                <Image
-                  src={currentImages[activeImageIndex] || defaultImage}
-                  alt={`${bikeName} - Image ${activeImageIndex + 1}`}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </motion.div>
+                src={defaultImage}
+                alt={`${bikeName} - Image ${activeImageIndex + 1}`}
+                className="w-full h-full object-cover"
+              />
 
               {/* Navigation Arrows */}
               {currentImages.length > 1 && (
@@ -754,7 +616,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
 
               {/* Category Badge */}
               <Badge className="absolute top-3 left-3 capitalize">
-                {bike?.category || "sport"}
+                {bike?.category || mockBike?.categories?.[0] || "sport"}
               </Badge>
 
               {/* Image Counter */}
@@ -770,17 +632,16 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                   key={index}
                   onClick={() => setActiveImageIndex(index)}
                   className={cn(
-                    "relative shrink-0 w-16 h-12 md:w-20 md:h-14 rounded-lg overflow-hidden border-2 transition-all",
+                    "shrink-0 w-16 h-12 md:w-20 md:h-14 rounded-lg overflow-hidden border-2 transition-all",
                     activeImageIndex === index
                       ? "border-primary ring-2 ring-primary/20"
                       : "border-transparent opacity-60 hover:opacity-100",
                   )}
                 >
-                  <Image
-                    src={img}
+                  <img
+                    src={defaultImage}
                     alt={`Thumbnail ${index + 1}`}
-                    fill
-                    className="object-cover"
+                    className="w-full h-full object-cover"
                   />
                 </button>
               ))}
@@ -868,34 +729,32 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                 <Link href="/used-bikes">View All</Link>
               </Button>
             </div>
-            {similarUsedBikes.length > 0 ? (
+            {mockUsedBikes.length > 0 ? (
               <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
-                {similarUsedBikes.map((usedBike: UsedBike) => (
-                  <Link
-                    key={usedBike.id}
-                    href={`/used-bike/${usedBike.id}`}
-                    className="shrink-0 w-40 bg-muted/50 rounded-lg overflow-hidden border hover:shadow-md transition-shadow block"
+                {mockUsedBikes.map((usedBike, index) => (
+                  <div
+                    key={index}
+                    className="shrink-0 w-40 bg-muted/50 rounded-lg overflow-hidden border hover:shadow-md transition-shadow cursor-pointer"
                   >
-                    <div className="aspect-[4/3] bg-muted relative">
-                      <Image
-                        src={usedBike.thumbnailUrl || defaultImage}
-                        alt={usedBike.bikeName}
-                        fill
-                        className="object-cover"
+                    <div className="aspect-[4/3] bg-muted">
+                      <img
+                        src={defaultImage}
+                        alt={usedBike.name}
+                        className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="p-2.5">
                       <p className="text-xs font-medium line-clamp-1">
-                        {usedBike.bikeName}
+                        {usedBike.name}
                       </p>
                       <p className="text-primary font-semibold text-sm">
                         {formatPrice(usedBike.price)}
                       </p>
-                      <p className="text-xs text-muted-foreground capitalize">
+                      <p className="text-xs text-muted-foreground">
                         {usedBike.condition}
                       </p>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -915,7 +774,6 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
             <SimilarNewBikes
               currentPrice={currentVariant?.price || 0}
               currentId={bikeId}
-              slug={slug}
             />
           </div>
         </div>
@@ -954,7 +812,6 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
           <Tabs value={specsTab} onValueChange={setSpecsTab} className="w-full">
             <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6">
               {[
-                { id: "general", label: "General Comments" },
                 { id: "engine", label: "Engine & Performance" },
                 { id: "transmission", label: "Transmission & Brakes" },
                 { id: "dimensions", label: "Dimensions & Weight" },
@@ -969,54 +826,6 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                 </TabsTrigger>
               ))}
             </TabsList>
-
-            <TabsContent value="general" className="mt-0">
-              <div className="bg-muted/30 rounded-lg p-4">
-                <h3 className="font-semibold text-primary mb-3">
-                  General Information
-                </h3>
-                <div className="space-y-3">
-                  <SpecRow
-                    label="Description"
-                    value={
-                      bikeDescription ||
-                      "No description available for this bike."
-                    }
-                  />
-                  <SpecRow
-                    label="Registered Date"
-                    value={
-                      bike?.launchDate
-                        ? new Date(bike.launchDate).toLocaleDateString()
-                        : "N/A"
-                    }
-                  />
-                  <SpecRow label="Owner Count" value="N/A" />
-                  <SpecRow
-                    label="Color"
-                    value={
-                      currentVariant?.color ||
-                      bike?.variants?.[0]?.color ||
-                      "N/A"
-                    }
-                  />
-                  <SpecRow
-                    label="Assembly"
-                    value={brandName ? `${brandName} Factory` : "N/A"}
-                  />
-                  <SpecRow label="Body Type" value={bike?.category || "N/A"} />
-                  <SpecRow
-                    label="Fuel Type"
-                    value={currentVariant?.quickSpecs?.fuelType || "Petrol"}
-                  />
-                  <SpecRow
-                    label="Mileage"
-                    value={currentVariant?.quickSpecs?.mileageCompany || "N/A"}
-                  />
-                  <SpecRow label="Condition" value="New" />
-                </div>
-              </div>
-            </TabsContent>
 
             <TabsContent value="engine" className="mt-0">
               <div className="bg-muted/30 rounded-lg p-4 mb-4">
@@ -1235,9 +1044,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                         <span className="font-semibold capitalize">
                           {key.replace(/([A-Z])/g, " $1").trim()}:{" "}
                         </span>
-                        <span className="text-muted-foreground">
-                          {value as string}
-                        </span>
+                        <span className="text-muted-foreground">{(value as string)}</span>
                       </p>
                     </div>
                   ))}
@@ -1260,9 +1067,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                         <span className="font-semibold capitalize">
                           {key.replace(/([A-Z])/g, " $1").trim()}:{" "}
                         </span>
-                        <span className="text-muted-foreground">
-                          {value as string}
-                        </span>
+                        <span className="text-muted-foreground">{(value as string)}</span>
                       </p>
                     </div>
                   ))}
@@ -1278,75 +1083,63 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
         <div className="bg-card rounded-xl border p-6">
           <h2 className="text-2xl font-bold mb-4">{bikeName} Summary</h2>
 
-          {bikeDescription ? (
-            <>
-              <p className="text-muted-foreground mb-6 whitespace-pre-line">
-                {bikeDescription}
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="text-muted-foreground mb-6">
-                The {bikeName} is a premium{" "}
-                {currentVariant?.quickSpecs?.engineCapacity || "150cc"}{" "}
-                motorcycle that combines sporty performance with everyday
-                practicality. Positioned as a neo-sports café racer, it brings{" "}
-                {brandName}&apos;s legendary reliability to the sporty commuter
-                segment.
-              </p>
+          <p className="text-muted-foreground mb-6">
+            The {bikeName} is a premium{" "}
+            {currentVariant?.quickSpecs?.engineCapacity || "150cc"} motorcycle
+            that combines sporty performance with everyday practicality.
+            Positioned as a neo-sports café racer, it brings {brandName}&apos;s
+            legendary reliability to the sporty commuter segment.
+          </p>
 
-              {/* Key Highlights */}
-              <div className="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
-                <p className="font-semibold text-blue-700 dark:text-blue-400 mb-2">
-                  Key Highlights:
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  The {bikeName} stands out with its liquid-cooled{" "}
-                  {currentVariant?.quickSpecs?.engineCapacity || "149cc"}{" "}
-                  engine, delivering{" "}
-                  {currentVariant?.quickSpecs?.maxPower || "16.4 HP"} of power
-                  and {currentVariant?.quickSpecs?.maxTorque || "13.7 Nm"} of
-                  torque through a smooth 6-speed transmission. Its distinctive
-                  design features sharp lines, LED lighting, and a muscular
-                  stance that appeals to young riders.
-                </p>
-              </div>
+          {/* Key Highlights */}
+          <div className="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
+            <p className="font-semibold text-blue-700 dark:text-blue-400 mb-2">
+              Key Highlights:
+            </p>
+            <p className="text-sm text-muted-foreground">
+              The {bikeName} stands out with its liquid-cooled{" "}
+              {currentVariant?.quickSpecs?.engineCapacity || "149cc"} engine,
+              delivering {currentVariant?.quickSpecs?.maxPower || "16.4 HP"} of
+              power and {currentVariant?.quickSpecs?.maxTorque || "13.7 Nm"} of
+              torque through a smooth 6-speed transmission. Its distinctive
+              design features sharp lines, LED lighting, and a muscular stance
+              that appeals to young riders.
+            </p>
+          </div>
 
-              <div className="space-y-4 mb-6">
-                <p className="text-sm">
-                  <span className="font-semibold">Performance & Handling:</span>{" "}
-                  <span className="text-muted-foreground">
-                    The bike offers a balanced riding experience with responsive
-                    throttle, precise handling, and stable cornering. The
-                    suspension setup (inverted forks at front and monoshock at
-                    rear) provides good comfort for daily commuting while
-                    maintaining sporty characteristics.
-                  </span>
-                </p>
-                <p className="text-sm">
-                  <span className="font-semibold">Target Audience:</span>{" "}
-                  <span className="text-muted-foreground">
-                    Perfect for urban riders who want a stylish daily commuter
-                    with occasional weekend touring capabilities. It appeals to
-                    those who value {brandName}&apos;s reliability but want more
-                    excitement than traditional commuter bikes.
-                  </span>
-                </p>
-                <p className="text-sm">
-                  <span className="font-semibold">Verdict:</span>{" "}
-                  <span className="text-muted-foreground">
-                    The {bikeName} justifies its premium price with excellent
-                    build quality, attractive styling, and dependable
-                    performance. While the base variant offers good value, the
-                    ABS versions provide important safety features for
-                    Bangladesh&apos;s road conditions. It&apos;s an ideal choice
-                    for riders wanting a sporty-looking bike without
-                    compromising on {brandName}&apos;s renowned reliability.
-                  </span>
-                </p>
-              </div>
-            </>
-          )}
+          <div className="space-y-4 mb-6">
+            <p className="text-sm">
+              <span className="font-semibold">Performance & Handling:</span>{" "}
+              <span className="text-muted-foreground">
+                The bike offers a balanced riding experience with responsive
+                throttle, precise handling, and stable cornering. The suspension
+                setup (inverted forks at front and monoshock at rear) provides
+                good comfort for daily commuting while maintaining sporty
+                characteristics.
+              </span>
+            </p>
+            <p className="text-sm">
+              <span className="font-semibold">Target Audience:</span>{" "}
+              <span className="text-muted-foreground">
+                Perfect for urban riders who want a stylish daily commuter with
+                occasional weekend touring capabilities. It appeals to those who
+                value {brandName}&apos;s reliability but want more excitement
+                than traditional commuter bikes.
+              </span>
+            </p>
+            <p className="text-sm">
+              <span className="font-semibold">Verdict:</span>{" "}
+              <span className="text-muted-foreground">
+                The {bikeName} justifies its premium price with excellent build
+                quality, attractive styling, and dependable performance. While
+                the base variant offers good value, the ABS versions provide
+                important safety features for Bangladesh&apos;s road conditions.
+                It&apos;s an ideal choice for riders wanting a sporty-looking
+                bike without compromising on {brandName}&apos;s renowned
+                reliability.
+              </span>
+            </p>
+          </div>
 
           {/* Score Cards */}
           <div className="grid grid-cols-3 gap-4 pt-6 border-t">
@@ -1356,8 +1149,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
               </p>
               <p className="font-medium">Overall Rating</p>
               <p className="text-xs text-muted-foreground">
-                Based on {totalReviews}{" "}
-                {totalReviews === 1 ? "review" : "reviews"}
+                Based on 128 reviews
               </p>
             </div>
             <div className="text-center">
@@ -1381,7 +1173,11 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
       {/* Rate This Bike Section */}
       <section className="container py-8">
         <div className="bg-card rounded-xl border p-6">
-          <RatingSection bikeId={bikeId} reviews={reviews || []} />
+          <RatingSection
+            bikeId={bikeId}
+            bikeName={bikeName}
+            reviews={reviews || []}
+          />
         </div>
       </section>
     </div>
@@ -1430,9 +1226,11 @@ function SpecRow({
 // Rating Section Component with Category Ratings
 function RatingSection({
   bikeId,
+  bikeName,
   reviews,
 }: {
   bikeId: string;
+  bikeName: string;
   reviews: Review[];
 }) {
   const { isAuthenticated } = useAuthStore();
@@ -1446,19 +1244,6 @@ function RatingSection({
     reviews.length > 0
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
       : 4.5;
-
-  // Calculate review breakdown
-  const reviewBreakdown = {
-    5: reviews.filter((r) => r.rating === 5).length,
-    4: reviews.filter((r) => r.rating === 4).length,
-    3: reviews.filter((r) => r.rating === 3).length,
-    2: reviews.filter((r) => r.rating === 2).length,
-    1: reviews.filter((r) => r.rating === 1).length,
-  };
-
-  const totalReviews = reviews.length || 128;
-  const getPercentage = (count: number) =>
-    totalReviews > 0 ? ((count / totalReviews) * 100).toFixed(1) : "0.0";
 
   const handleSubmit = () => {
     if (!isAuthenticated) {
@@ -1585,128 +1370,74 @@ function RatingSection({
                 ))}
               </div>
               <p className="text-sm text-muted-foreground">
-                Based on {totalReviews}{" "}
-                {totalReviews === 1 ? "review" : "reviews"}
+                Based on 128 reviews
               </p>
             </div>
-
-            {/* Star Rating Breakdown */}
-            {totalReviews > 0 && (
-              <div className="mb-6">
-                <h4 className="font-semibold text-sm mb-3">Rating Breakdown</h4>
-                <div className="space-y-2">
-                  {[5, 4, 3, 2, 1].map((star) => {
-                    const count =
-                      reviewBreakdown[star as keyof typeof reviewBreakdown];
-                    const percentage = getPercentage(count);
-                    return (
-                      <div key={star} className="flex items-center gap-2">
-                        <span className="text-xs w-12">{star} Star</span>
-                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        <span className="text-xs text-muted-foreground w-16 text-right">
-                          {percentage}% ({count})
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Category Breakdown */}
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="text-center">
                 <p className="text-xs text-primary font-medium">Performance</p>
-                <p className="text-lg font-bold">
-                  {totalReviews > 0
-                    ? (
-                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-                        totalReviews
-                      ).toFixed(1)
-                    : "4.6"}
-                  /5
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  ({totalReviews} {totalReviews === 1 ? "review" : "reviews"})
-                </p>
+                <p className="text-lg font-bold">4.6/5</p>
+                <p className="text-xs text-muted-foreground">(142 reviews)</p>
               </div>
               <div className="text-center">
                 <p className="text-xs text-primary font-medium">Looks</p>
-                <p className="text-lg font-bold">
-                  {totalReviews > 0
-                    ? (
-                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-                        totalReviews
-                      ).toFixed(1)
-                    : "4.8"}
-                  /5
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  ({totalReviews} {totalReviews === 1 ? "review" : "reviews"})
-                </p>
+                <p className="text-lg font-bold">4.8/5</p>
+                <p className="text-xs text-muted-foreground">(128 reviews)</p>
               </div>
               <div className="text-center">
                 <p className="text-xs text-primary font-medium">Reliability</p>
-                <p className="text-lg font-bold">
-                  {totalReviews > 0
-                    ? (
-                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-                        totalReviews
-                      ).toFixed(1)
-                    : "4.9"}
-                  /5
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  ({totalReviews} {totalReviews === 1 ? "review" : "reviews"})
-                </p>
+                <p className="text-lg font-bold">4.9/5</p>
+                <p className="text-xs text-muted-foreground">(96 reviews)</p>
               </div>
             </div>
 
             {/* Recent Reviews */}
-            {reviews.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-sm mb-3">Recent Reviews</h4>
-                <div className="space-y-3">
-                  {reviews.slice(0, 3).map((review) => {
-                    const reviewDate = review.createdAt
-                      ? new Date(review.createdAt).toLocaleDateString()
-                      : "Recently";
-                    return (
-                      <div key={review.id}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="flex">
-                            {[1, 2, 3, 4, 5].map((s) => (
-                              <Star
-                                key={s}
-                                className={cn(
-                                  "h-3 w-3",
-                                  s <= review.rating
-                                    ? "fill-yellow-400 text-yellow-400"
-                                    : "text-muted-foreground/30",
-                                )}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            by {review.userName || "Anonymous"} • {reviewDate}
-                          </span>
-                        </div>
-                        {review.comment && (
-                          <p className="text-xs text-muted-foreground italic">
-                            &quot;{review.comment}&quot;
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
+            <div>
+              <h4 className="font-semibold text-sm mb-3">Recent Reviews</h4>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="flex">
+                      {[1, 2, 3, 4].map((s) => (
+                        <Star
+                          key={s}
+                          className="h-3 w-3 fill-yellow-400 text-yellow-400"
+                        />
+                      ))}
+                      <Star className="h-3 w-3 text-muted-foreground/30" />
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      by Rider123 • 2 days ago
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground italic">
+                    &quot;Excellent performance for city commuting. Very
+                    reliable!&quot;
+                  </p>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star
+                          key={s}
+                          className="h-3 w-3 fill-yellow-400 text-yellow-400"
+                        />
+                      ))}
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      by SpeedDemon • 1 week ago
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground italic">
+                    &quot;Best looking bike in its segment. Turns heads
+                    everywhere!&quot;
+                  </p>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

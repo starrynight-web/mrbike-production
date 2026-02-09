@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useBrands } from "@/hooks/use-brands";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight, Bike } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 export function BrandsClient() {
     const { brands, isLoading } = useBrands();
@@ -28,17 +28,13 @@ export function BrandsClient() {
                     <Link key={brand.id} href={`/brands/${brand.slug}`} className="group outline-none">
                         <Card className="h-full border-2 border-transparent hover:border-primary/10 hover:shadow-lg transition-all duration-300 bg-card/50 hover:bg-card">
                             <CardContent className="p-6 flex flex-col items-center justify-center h-full gap-4 min-h-[180px]">
-                                <div className="relative w-32 h-20 md:w-40 md:h-24 grayscale group-hover:grayscale-0 transition-all duration-300 flex items-center justify-center">
-                                    {brand.logo ? (
-                                        <Image
-                                            src={brand.logo}
-                                            alt={`${brand.name} logo`}
-                                            fill
-                                            className="object-contain" // Logos need contain
-                                        />
-                                    ) : (
-                                        <Bike className="w-12 h-12 text-muted-foreground/30" />
-                                    )}
+                                <div className="relative w-32 h-20 md:w-40 md:h-24 grayscale group-hover:grayscale-0 transition-all duration-300">
+                                    <Image
+                                        src={brand.logo}
+                                        alt={`${brand.name} logo`}
+                                        fill
+                                        className="object-contain" // Logos need contain
+                                    />
                                 </div>
                                 <div className="text-center space-y-1">
                                     <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{brand.name}</h3>
@@ -53,7 +49,7 @@ export function BrandsClient() {
             </div>
 
             <div className="mt-20 p-8 md:p-12 rounded-2xl bg-muted/30 text-center space-y-6">
-                <h3 className="text-2xl font-bold">Can&apos;t decide which brand?</h3>
+                <h3 className="text-2xl font-bold">Can't decide which brand?</h3>
                 <p className="text-muted-foreground max-w-lg mx-auto">
                     Compare bikes from different brands side by side to find the perfect match for your needs and budget.
                 </p>

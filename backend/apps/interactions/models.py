@@ -28,29 +28,3 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Wishlist"
-
-class Inquiry(models.Model):
-    INQUIRY_TYPES = [
-        ('general', 'General Inquiry'),
-        ('support', 'Technical Support'),
-        ('sales', 'Sales & Advertising'),
-        ('feedback', 'Feedback'),
-        ('other', 'Other'),
-        ('advertise', 'Advertising Request'),
-    ]
-    
-    name = models.CharField(max_length=255)
-    email = models.EmailField()
-    company = models.CharField(max_length=255, blank=True, null=True)
-    subject = models.CharField(max_length=50, choices=INQUIRY_TYPES, default='general')
-    message = models.TextField()
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_resolved = models.BooleanField(default=False)
-    
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name_plural = 'Inquiries'
-        
-    def __str__(self):
-        return f"{self.subject} - {self.email}"

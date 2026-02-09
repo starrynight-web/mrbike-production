@@ -35,7 +35,7 @@ class Article(models.Model):
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     excerpt = models.TextField()
     content = models.TextField()
-    featured_image = models.ImageField(upload_to='news/images/', blank=True, null=True)
+    featured_image = models.URLField(max_length=500, blank=True, null=True)
     
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, 

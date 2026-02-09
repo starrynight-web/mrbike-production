@@ -16,7 +16,6 @@ import {
     ArrowDownRight,
     Loader
 } from "lucide-react";
-import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,9 +23,7 @@ import { toast } from "sonner";
 import { adminAPI } from "@/lib/admin-api";
 
 export default function AdminDashboard() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [stats, setStats] = useState<any[]>([]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [approvingId, setApprovingId] = useState<number | null>(null);
@@ -184,15 +181,9 @@ export default function AdminDashboard() {
                                 {pendingApprovals.map((item) => (
                                     <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-muted/40 border-none transition-colors hover:bg-muted/60">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded bg-background flex items-center justify-center border relative overflow-hidden">
+                                            <div className="h-12 w-12 rounded bg-background flex items-center justify-center border">
                                                 {item.image_url ? (
-                                                    <Image 
-                                                        src={item.image_url} 
-                                                        alt={item.bike_model} 
-                                                        fill
-                                                        className="object-cover"
-                                                        unoptimized
-                                                    />
+                                                    <img src={item.image_url} alt={item.bike_model} className="h-12 w-12 rounded object-cover" />
                                                 ) : (
                                                     <Bike className="h-6 w-6 text-muted-foreground" />
                                                 )}

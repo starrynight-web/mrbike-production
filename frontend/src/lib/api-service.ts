@@ -1,145 +1,135 @@
-import axios, { InternalAxiosRequestConfig } from "axios";
-import { getSession } from "next-auth/react";
-import { QueryParams } from "@/types";
+import axios from 'axios';
+import { getSession } from 'next-auth/react';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
-declare module "next-auth" {
-  interface Session {
-    accessToken?: string;
-    refreshToken?: string;
-  }
+declare module 'next-auth' {
+    interface Session {
+        accessToken?: string;
+        refreshToken?: string;
+    }
 }
 
 class ApiService {
-  public client;
+    public client;
 
-  constructor() {
-    this.client = axios.create({
-      baseURL: API_BASE,
-      timeout: 10000,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    constructor() {
+        this.client = axios.create({
+            baseURL: API_BASE,
+            timeout: 10000,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-    // Request interceptor to add the JWT token
-    this.client.interceptors.request.use(
-      async (config: InternalAxiosRequestConfig) => {
-        try {
-          const session = await getSession();
-          if (session && session.accessToken) {
-            config.headers.Authorization = `Bearer ${session.accessToken}`;
-          }
-        } catch (error) {
-          console.error("Error fetching session:", error);
-        }
-        return config;
-      },
-    );
-  }
+        // Request interceptor to add the JWT token
+        this.client.interceptors.request.use(async (config: any) => {
+            try {
+                const session = await getSession();
+                if (session && (session as any).accessToken) {
+                    config.headers.Authorization = `Bearer ${(session as any).accessToken}`;
+                }
+            } catch (error) {
+                console.error('Error fetching session:', error);
+            }
+            return config;
+        });
+    }
 
-  // Auth APIs
-  async loginWithGoogle(idToken: string) {
-    return this.client.post("/users/auth/google/", { id_token: idToken });
-  }
+    // Auth APIs
+    async loginWithGoogle(idToken: string) {
+        return this.client.post('/users/auth/google/', { id_token: idToken });
+    }
 
-  async sendOtp(phone: string) {
-    return this.client.post("/users/auth/otp/send/", { phone });
-  }
+    async sendOtp(phone: string) {
+        return this.client.post('/users/auth/otp/send/', { phone });
+    }
 
-  async verifyPhone(phone: string, otp: string) {
-    return this.client.post("/users/auth/verify-phone/", { phone, otp });
-  }
+    async verifyPhone(phone: string, otp: string) {
+        return this.client.post('/users/auth/verify-phone/', { phone, otp });
+    }
 
-  // Bike APIs
-  async getBikes(params: QueryParams = {}) {
-    return this.client.get("/bikes/", { params });
-  }
+    // Bike APIs
+    async getBikes(params = {}) {
+        return this.client.get('/bikes/', { params });
+    }
 
-  async getBikeBySlug(slug: string) {
-    return this.client.get(`/bikes/${slug}/`);
-  }
+    async getBikeBySlug(slug: string) {
+        return this.client.get(`/bikes/${slug}/`);
+    }
 
-  async getBrands() {
-    return this.client.get("/bikes/brands/");
-  }
+    async getBrands() {
+        return this.client.get('/bikes/brands/');
+    }
 
-  // Recommendation APIs
-  async getSimilarBikes(slug: string) {
-    return this.client.get(`/recommendations/similar/${slug}/`);
-  }
+    // Recommendation APIs
+    async getSimilarBikes(slug: string) {
+        return this.client.get(`/recommendations/similar/${slug}/`);
+    }
 
-  // News APIs
-  async getNews(params: QueryParams = {}) {
-    return this.client.get("/news/", { params });
-  }
+    async getUsedBikesNearBudget(budget: number | string) {
+        return this.client.get('/recommendations/budget/', { params: { budget } });
+    }
 
-  async getArticleBySlug(slug: string) {
-    return this.client.get(`/news/${slug}/`);
-  }
+    // News APIs
+    async getNews(params = {}) {
+        return this.client.get('/news/', { params });
+    }
 
-  // Marketplace APIs
-  async getUsedBikes(params: QueryParams = {}) {
-    return this.client.get("/marketplace/listings/", { params });
-  }
+    async getArticleBySlug(slug: string) {
+        return this.client.get(`/news/${slug}/`);
+    }
 
-  async getUsedBike(id: string) {
-    return this.client.get(`/marketplace/listings/${id}/`);
-  }
+    // Marketplace APIs
+    async getUsedBikes(params = {}) {
+        return this.client.get('/used-bikes/', { params });
+    }
 
-  async createUsedBike(data: FormData) {
-    return this.client.post("/marketplace/listings/", data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-  }
+    async getUsedBike(id: string) {
+        return this.client.get(`/used-bikes/${id}/`);
+    }
 
-  async getMyListings() {
-    return this.client.get("/marketplace/listings/my_listings/");
-  }
+    async createUsedBike(data: FormData) {
+        return this.client.post('/used-bikes/', data, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    }
 
-  // Interaction APIs
-  async getWishlist() {
-    return this.client.get("/interactions/wishlist/");
-  }
+    async getMyListings() {
+        return this.client.get('/used-bikes/my_listings/');
+    }
 
-  async toggleWishlist(bikeId: string | number) {
-    return this.client.post(`/interactions/wishlist/toggle/${bikeId}/`);
-  }
+    // Interaction APIs
+    async getWishlist() {
+        return this.client.get('/interactions/wishlist/');
+    }
 
-  async getBikeReviews(bikeId: string | number) {
-    return this.client.get(`/interactions/bikes/${bikeId}/reviews/`);
-  }
+    async toggleWishlist(bikeId: string | number) {
+        return this.client.post(`/interactions/wishlist/toggle/${bikeId}/`);
+    }
 
-  async submitReview(bikeId: string | number, rating: number, comment: string) {
-    return this.client.post(`/interactions/bikes/${bikeId}/reviews/`, {
-      rating,
-      comment,
-    });
-  }
+    async getBikeReviews(bikeId: string | number) {
+        return this.client.get(`/interactions/bikes/${bikeId}/reviews/`);
+    }
 
-  async getUserReviews() {
-    return this.client.get("/interactions/me/reviews/");
-  }
+    async submitReview(bikeId: string | number, rating: number, comment: string) {
+        return this.client.post(`/interactions/bikes/${bikeId}/reviews/`, { rating, comment });
+    }
 
-  async sendInquiry(data: Record<string, unknown>) {
-    return this.client.post("/interactions/inquiries/", data);
-  }
+    async getUserReviews() {
+        return this.client.get('/interactions/me/reviews/');
+    }
 
-  // User Profile APIs
-  async getUserStats() {
-    return this.client.get("/users/me/stats/");
-  }
+    // User Profile APIs
+    async getUserStats() {
+        return this.client.get('/users/me/stats/');
+    }
 
-  async getProfile() {
-    return this.client.get("/users/profile/");
-  }
-
-  async getNotifications() {
-    return this.client.get("/users/notifications/");
-  }
+    async getProfile() {
+        return this.client.get('/users/profile/');
+    }
 }
 
 export const api = new ApiService();

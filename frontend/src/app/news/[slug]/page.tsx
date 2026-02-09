@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { SEO_DEFAULTS } from "@/config/constants";
 import { NewsDetailClient } from "./news-detail-client";
 import { Skeleton } from "@/components/ui/skeleton";

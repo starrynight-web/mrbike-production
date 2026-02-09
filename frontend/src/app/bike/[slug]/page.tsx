@@ -10,45 +10,51 @@ interface BikePageProps {
 // Generate metadata for SEO
 export async function generateMetadata({ params }: BikePageProps): Promise<Metadata> {
     const { slug } = await params;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-    // In production, fetch bike data here
-    // const bike = await getBikeBySlug(slug);
+    try {
+        const response = await fetch(`${apiUrl}/bikes/${slug}/`, { next: { revalidate: 3600 } });
+        if (!response.ok) throw new Error("Bike not found");
+        const bike = await response.json();
 
-    // For now, use placeholder
-    const bikeName = slug
-        .split("-")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
+        const title = `${bike.brand_name} ${bike.name} Price in Bangladesh, Specs & Review`;
+        const engineCapacityText = bike.engine_capacity ? `${bike.engine_capacity}cc` : "N/A";
+        const description = `${bike.brand_name} ${bike.name} price in Bangladesh is ৳${(bike.price || 0).toLocaleString()}. Check ${engineCapacityText} engine specs, mileage, images, and user reviews on MrBikeBD.`;
 
-    return {
-        title: `${bikeName} - Price, Specs, Mileage & Review`,
-        description: `${bikeName} price in Bangladesh starts from ৳X Lac. Check specifications, mileage, images, reviews, and compare with similar bikes. EMI calculator available.`,
-        keywords: [
-            bikeName,
-            `${bikeName} price`,
-            `${bikeName} specs`,
-            `${bikeName} mileage`,
-            `${bikeName} review`,
-            "motorcycle Bangladesh",
-        ],
-        openGraph: {
-            title: `${bikeName} - Price, Specs & Review${SEO_DEFAULTS.titleSuffix}`,
-            description: `${bikeName} price in Bangladesh. Check full specifications, mileage, images, and expert reviews.`,
-            url: `${APP_CONFIG.url}/bike/${slug}`,
-            type: "website",
-            images: [
-                {
-                    url: `/bikes/${slug}.webp`, // Dynamic OG image
-                    width: 1200,
-                    height: 630,
-                    alt: bikeName,
-                },
+        return {
+            title,
+            description,
+            keywords: [
+                bike.name,
+                `${bike.brand_name} ${bike.name}`,
+                `${bike.name} price BD`,
+                `${bike.name} specifications`,
+                "motorcycle price in Bangladesh",
             ],
-        },
-        alternates: {
-            canonical: `${APP_CONFIG.url}/bike/${slug}`,
-        },
-    };
+            openGraph: {
+                title: `${bike.brand_name} ${bike.name} - Official Price & Full Specs${SEO_DEFAULTS.titleSuffix}`,
+                description,
+                url: `${APP_CONFIG.url}/bike/${slug}`,
+                type: "website",
+                images: [
+                    {
+                        url: bike.primary_image || SEO_DEFAULTS.defaultOgImage,
+                        width: 1200,
+                        height: 630,
+                        alt: `${bike.brand_name} ${bike.name}`,
+                    },
+                ],
+            },
+            alternates: {
+                canonical: `${APP_CONFIG.url}/bike/${slug}`,
+            },
+        };
+    } catch (error) {
+        return {
+            title: `Bike Details${SEO_DEFAULTS.titleSuffix}`,
+            description: "View detailed motorcycle specifications, pricing, and reviews on MrBikeBD.",
+        };
+    }
 }
 
 // Generate static params for popular bikes (ISR)

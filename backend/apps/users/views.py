@@ -16,10 +16,9 @@ import logging
 import google.oauth2.id_token
 import google.auth.transport.requests
 
-from .serializers import GoogleAuthSerializer, UserSerializer, NotificationSerializer
+from .serializers import GoogleAuthSerializer, UserSerializer
 from apps.marketplace.models import UsedBikeListing
 from apps.interactions.models import Review, Wishlist
-from .models import Notification
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -249,16 +248,3 @@ class UserDashboardStatsView(APIView):
             "member_since": user.date_joined.strftime("%b %Y"),
         })
 
-class NotificationListView(generics.ListAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = NotificationSerializer
-    
-    def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user)
-
-class UserProfileView(generics.RetrieveUpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = UserSerializer
-
-    def get_object(self):
-        return self.request.user
