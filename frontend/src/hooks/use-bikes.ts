@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-service";
-import type { BikeFilters } from "@/types";
+import { API_ENDPOINTS } from "@/config/constants";
+import { mapBike } from "@/lib/data-utils";
+import type { BikeFilters, Bike, Brand, Review } from "@/types";
 
 // ============================================
 // QUERY KEYS - Centralized for cache management
@@ -39,15 +41,17 @@ export function useBikes(filters?: BikeFilters) {
     queryKey: queryKeys.bikes.list(filters),
     queryFn: async () => {
       const response = await api.getBikes(filters);
-      const results = response.data.results || response.data || [];
-      const totalItems =
-        response.data.count || (Array.isArray(results) ? results.length : 0);
+      if (!response.success) throw new Error(response.error?.message || "Failed to fetch bikes");
+
+      const rawBikes = (response.data as any[]) || [];
       return {
-        bikes: results,
+        bikes: rawBikes.map(mapBike),
         meta: {
-          totalItems,
-          totalPages: Math.ceil(totalItems / (filters?.limit || 12)),
+          totalItems: response.meta?.total || 0,
+          totalPages: response.meta?.totalPages || 1,
           currentPage: filters?.page || 1,
+          hasNextPage: response.meta?.hasNextPage || false,
+          hasPrevPage: response.meta?.hasPrevPage || false,
         },
       };
     },
@@ -63,7 +67,8 @@ export function useBike(slug: string) {
     queryKey: queryKeys.bikes.detail(slug),
     queryFn: async () => {
       const response = await api.getBikeBySlug(slug);
-      return response.data;
+      if (!response.success) throw new Error(response.error?.message || "Failed to fetch bike");
+      return mapBike(response.data);
     },
     staleTime: 10 * 60 * 1000, // 10 minutes
     enabled: !!slug,
@@ -78,7 +83,8 @@ export function useSimilarBikes(slug: string) {
     queryKey: queryKeys.bikes.similar(slug),
     queryFn: async () => {
       const response = await api.getSimilarBikes(slug);
-      return response.data;
+      if (!response.success) throw new Error(response.error?.message || "Failed to fetch similar bikes");
+      return response.data as Bike[];
     },
     staleTime: 30 * 60 * 1000, // 30 minutes
     enabled: !!slug,
@@ -92,8 +98,9 @@ export function useUsedBikesNearBudget(slug: string) {
   return useQuery({
     queryKey: queryKeys.bikes.usedNearBudget(slug),
     queryFn: async () => {
-      const response = await api.getUsedBikes({ budget_near: slug });
-      return response.data.results || response.data;
+      const response = await api.getUsedBikesNearBudget(parseInt(slug));
+      if (!response.success) throw new Error(response.error?.message || "Failed to fetch recommendations");
+      return (response.data as any).results || response.data;
     },
     staleTime: 30 * 60 * 1000,
     enabled: !!slug,
@@ -112,7 +119,8 @@ export function useBrands() {
     queryKey: queryKeys.brands.all,
     queryFn: async () => {
       const response = await api.getBrands();
-      return response.data.results || response.data;
+      if (!response.success) throw new Error(response.error?.message || "Failed to fetch brands");
+      return response.data as Brand[];
     },
     staleTime: 60 * 60 * 1000, // 1 hour - brands rarely change
   });
@@ -129,8 +137,9 @@ export function useBikeReviews(bikeId: string) {
   return useQuery({
     queryKey: queryKeys.reviews.byBike(bikeId),
     queryFn: async () => {
-      const response = await api.client.get(`/bikes/models/${bikeId}/reviews/`);
-      return response.data.results || response.data;
+      const response = await api.getBikeReviews(bikeId);
+      if (!response.success) throw new Error(response.error?.message || "Failed to fetch reviews");
+      return (response.data as Review[]) || [];
     },
     enabled: !!bikeId,
   });
@@ -152,10 +161,8 @@ export function useSubmitReview() {
       rating: number;
       comment: string;
     }) => {
-      const response = await api.client.post(
-        `/bikes/models/${bikeId}/reviews/`,
-        { rating, comment },
-      );
+      const response = await api.submitReview(bikeId, rating, comment);
+      if (!response.success) throw new Error(response.error?.message || "Failed to submit review");
       return response.data;
     },
     onSuccess: (_data, variables) => {
@@ -175,7 +182,8 @@ export function useDeleteReview() {
 
   return useMutation({
     mutationFn: async ({ reviewId }: { reviewId: string; bikeId: string }) => {
-      const response = await api.client.delete(`/bikes/reviews/${reviewId}/`);
+      const response = await api.delete(API_ENDPOINTS.REVIEW_DELETE(reviewId));
+      if (!response.success) throw new Error(response.error?.message || "Failed to delete review");
       return response.data;
     },
     onSuccess: (_data, variables) => {

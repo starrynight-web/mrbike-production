@@ -16,10 +16,18 @@ import logging
 import google.oauth2.id_token
 import google.auth.transport.requests
 
-from .serializers import GoogleAuthSerializer, UserSerializer, NotificationSerializer
+from .serializers import (
+    GoogleAuthSerializer, UserSerializer, NotificationSerializer,
+    PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
+    RegisterSerializer
+)
 from apps.marketplace.models import UsedBikeListing
 from apps.interactions.models import Review, Wishlist
 from .models import Notification
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -255,6 +263,72 @@ class NotificationListView(generics.ListAPIView):
     
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user)
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [AllowAny]
+    serializer_class = RegisterSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': UserSerializer(user).data,
+        }, status=status.HTTP_201_CREATED)
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = PasswordResetRequestSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        user = User.objects.filter(email=email).first()
+        
+        if user:
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            # In production, this would be a link to your frontend reset page
+            reset_url = f"{settings.ALLOWED_HOSTS[0]}/reset-password/{uid}/{token}/"
+            
+            send_mail(
+                'Password Reset Request',
+                f'Click the link to reset your password: {reset_url}',
+                settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@mrbikebd.com',
+                [email],
+                fail_silently=False,
+            )
+            
+        return Response({"message": "If an account exists with this email, a reset link has been sent."}, status=status.HTTP_200_OK)
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = PasswordResetConfirmSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        uidb64 = serializer.validated_data['uid']
+        token = serializer.validated_data['token']
+        password = serializer.validated_data['new_password']
+        
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            user.set_password(password)
+            user.save()
+            return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Invalid or expired reset link."}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]

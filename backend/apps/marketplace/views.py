@@ -18,8 +18,15 @@ class IsSellerOrReadOnly(permissions.BasePermission):
             return True
         return obj.seller == request.user
 
+from rest_framework.throttling import UserRateThrottle
+
+class ImageUploadThrottle(UserRateThrottle):
+    scope = 'image_upload'
+    rate = '10/hour'
+
 class UsedBikeListingViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    throttle_classes = [ImageUploadThrottle]
     filterset_fields = ['bike_model__brand', 'condition', 'location', 'status']
     search_fields = ['title', 'description', 'location']
     ordering_fields = ['price', 'created_at', 'mileage']

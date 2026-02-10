@@ -3,7 +3,7 @@
  * Handles all admin operations for bikes and used bikes management
  */
 
-import { api } from "./api";
+import { api } from "./api-service";
 
 // ==================== TYPES ====================
 

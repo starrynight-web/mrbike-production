@@ -79,9 +79,9 @@ export default function DealersPage() {
     const fetchBrands = async () => {
       try {
         const response = await api.getBrands();
-        if (response.data && Array.isArray(response.data)) {
+        if (response.success && response.data) {
           // Extract brand names assuming API returns objects with 'name' property
-          const brandNames = response.data.map((b: { name: string }) => b.name);
+          const brandNames = (response.data as any[]).map((b: { name: string }) => b.name);
           setBrands(brandNames);
         }
       } catch (error) {

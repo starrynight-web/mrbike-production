@@ -62,8 +62,18 @@ export interface Bike {
   updatedAt: Date;
   // Optional fields for backward compatibility or API variations
   primary_image?: string;
+  brand_name?: string;
   price?: number;
   mileage?: number;
+  specsSummary?: string;
+  detailed_specs?: any;
+  engine_capacity?: number | string;
+  gears?: number | string;
+  max_power?: string;
+  max_torque?: string;
+  fuel_capacity?: number | string;
+  curb_weight?: number | string;
+  tyre_type?: string;
 }
 
 export interface BikeVariant {
@@ -72,6 +82,10 @@ export interface BikeVariant {
   price: number;
   color: string;
   specs?: Partial<BikeSpecs>;
+  // API compatibility fields
+  variant_key?: string;
+  variant_name?: string;
+  [key: string]: unknown;
 }
 
 export interface BikeSpecs {

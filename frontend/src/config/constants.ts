@@ -21,58 +21,63 @@ export const APP_CONFIG = {
 // -------------------- API ENDPOINTS --------------------
 export const API_ENDPOINTS = {
     // Auth
-    AUTH_GOOGLE: "/api/auth/google",
-    AUTH_OTP_SEND: "/api/auth/otp/send",
-    AUTH_OTP_VERIFY: "/api/auth/verify-phone",
-    AUTH_SESSION: "/api/auth/session",
-    AUTH_LOGOUT: "/api/auth/logout",
+    AUTH_GOOGLE: "/users/auth/google/",
+    AUTH_OTP_SEND: "/users/auth/otp/send/",
+    AUTH_OTP_VERIFY: "/users/auth/verify-phone/",
+    AUTH_SESSION: "/users/auth/session/",
+    AUTH_LOGOUT: "/users/auth/logout/",
+    AUTH_REGISTER: "/users/auth/register/",
+    AUTH_PASSWORD_RESET: "/users/auth/password-reset/",
+    AUTH_PASSWORD_RESET_CONFIRM: "/users/auth/password-reset-confirm/",
+    AUTH_REFRESH: "/users/auth/refresh/",
 
     // Bikes
-    BIKES: "/api/bikes",
-    BIKE_DETAIL: (slug: string) => `/api/bikes/${slug}`,
-    BIKE_SIMILAR: (slug: string) => `/api/bikes/${slug}/similar`,
-    BIKE_USED: (slug: string) => `/api/bikes/${slug}/used`,
-    BRANDS: "/api/brands",
-    BRAND_BIKES: (slug: string) => `/api/brands/${slug}/bikes`,
+    BIKES: "/bikes/",
+    BIKE_DETAIL: (slug: string) => `/bikes/${slug}/`,
+    BIKE_SIMILAR: (slug: string) => `/recommendations/similar/${slug}/`,
+    BIKE_USED: (slug: string) => `/recommendations/budget/`, // Adjusted to match backend views.py
+    BRANDS: "/bikes/brands/",
+    BRAND_BIKES: (slug: string) => `/bikes/brands/${slug}/bikes/`,
 
-    // Used Bikes
-    USED_BIKES: "/api/used-bikes",
-    USED_BIKE_DETAIL: (id: string) => `/api/used-bikes/${id}`,
-    USED_BIKE_CREATE: "/api/used-bikes",
-    USED_BIKE_UPDATE: (id: string) => `/api/used-bikes/${id}`,
-    USED_BIKE_DELETE: (id: string) => `/api/used-bikes/${id}`,
+    // Used Bikes (Marketplace)
+    USED_BIKES: "/marketplace/listings/",
+    USED_BIKE_DETAIL: (id: string) => `/marketplace/listings/${id}/`,
+    USED_BIKE_CREATE: "/marketplace/listings/",
+    USED_BIKE_UPDATE: (id: string) => `/marketplace/listings/${id}/`,
+    USED_BIKE_DELETE: (id: string) => `/marketplace/listings/${id}/`,
 
-    // Reviews
-    REVIEWS: "/api/reviews",
-    BIKE_REVIEWS: (bikeId: string) => `/api/bikes/${bikeId}/reviews`,
-    REVIEW_CREATE: "/api/reviews",
-    REVIEW_DELETE: (id: string) => `/api/reviews/${id}`,
+    // Interactions (Reviews, Wishlist, Inquiries)
+    REVIEWS: "/interactions/me/reviews/",
+    BIKE_REVIEWS: (bikeId: string | number) => `/interactions/bikes/${bikeId}/reviews/`,
+    REVIEW_CREATE: (bikeId: string | number) => `/interactions/bikes/${bikeId}/reviews/`,
+    REVIEW_DELETE: (id: string) => `/interactions/reviews/${id}/`,
 
-    // Wishlist
-    WISHLIST: "/api/wishlist",
-    WISHLIST_ADD: "/api/wishlist",
-    WISHLIST_REMOVE: (bikeId: string) => `/api/wishlist/${bikeId}`,
+    WISHLIST: "/interactions/wishlist/",
+    WISHLIST_TOGGLE: (bikeId: string | number) => `/interactions/wishlist/toggle/${bikeId}/`,
+
+    INQUIRIES: "/interactions/inquiries/",
 
     // News
-    NEWS: "/api/news",
-    NEWS_DETAIL: (slug: string) => `/api/news/${slug}`,
+    NEWS: "/news/",
+    NEWS_DETAIL: (slug: string) => `/news/${slug}/`,
 
-    // User
-    USER_PROFILE: "/api/user/profile",
-    USER_LISTINGS: "/api/user/listings",
-    USER_REVIEWS: "/api/user/reviews",
+    // User Profile
+    USER_PROFILE: "/users/profile/",
+    USER_STATS: "/users/me/stats/",
+    USER_NOTIFICATIONS: "/users/notifications/",
+    USER_LISTINGS: "/marketplace/listings/my_listings/",
+    USER_REVIEWS: "/interactions/me/reviews/",
 
-    // Compare
-    COMPARE: "/api/compare",
-
-    // Recommendations
-    RECOMMENDATIONS: "/api/recommendations",
+    // Admin Tools
+    ADMIN_STATS: "/admin/stats/",
+    ADMIN_FILTERS: "/admin/filter-options/",
+    ADMIN_ANALYTICS: "/admin/analytics/",
 
     // Upload
-    UPLOAD_IMAGE: "/api/upload",
+    UPLOAD_IMAGE: "/bikes/upload-image/",
 
     // Search
-    SEARCH: "/api/search",
+    SEARCH: "/search/",
 } as const;
 
 // -------------------- BIKE CATEGORIES --------------------

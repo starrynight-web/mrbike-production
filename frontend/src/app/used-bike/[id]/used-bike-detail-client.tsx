@@ -21,67 +21,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUsedBike, useUsedBikes } from "@/hooks/use-used-bikes";
-import { cn, formatPrice, formatRelativeTime } from "@/lib/utils";
+import { cn, formatPrice, formatRelativeTime, calculateEMI } from "@/lib/utils";
 import { useWishlistStore } from "@/store";
 import { UsedBike } from "@/types";
+import { mapUsedBike } from "@/lib/data-utils";
 
 interface UsedBikeDetailClientProps {
   id: string;
 }
 
-// Helper to transform API response to UsedBike interface
-const transformBike = (item: any): UsedBike => ({
-  id: item.id?.toString() || "",
-  bikeName: item.bike_model_name || item.title || "Unknown Bike",
-  brandName: item.brand || "Unknown Brand",
-  sellerId: item.seller?.toString() || "",
-  sellerName: item.seller_name || "Unknown Seller",
-  sellerPhone: item.seller_phone || "",
-  images: item.images?.map((img: any) => img.url) || [],
-  thumbnailUrl: item.image_url || "/bikes/default.webp",
-  price: Number(item.price) || 0,
-  year: item.manufacturing_year || new Date().getFullYear(),
-  kmDriven: item.mileage || 0,
-  condition: item.condition || "good",
-  accidentHistory: false,
-  location: {
-    city: item.location || "Unknown",
-    area: "",
-  },
-  status: item.status || "active",
-  isFeatured: item.is_featured || false,
-  isVerified: item.is_verified || false,
-  expiresAt: new Date(),
-  createdAt: item.created_at || new Date(),
-  updatedAt: item.updated_at || new Date(),
-});
-
 export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const { data: rawBike, isLoading, error } = useUsedBike(id);
-  
-  const bike = useMemo(() => rawBike ? transformBike(rawBike) : null, [rawBike]);
-  
+  const { data: bike, isLoading, error } = useUsedBike(id);
+
   const { isInWishlist, toggleWishlist } = useWishlistStore();
 
   // Determine if wishlisted
   const isWishlisted = bike ? isInWishlist(bike.id) : false;
 
   // Fetch similar bikes (using a simple limit for now)
-  const { data: similarBikesData } = useUsedBikes({ limit: 4 });
+  const { data: usedBikesResponse } = useUsedBikes({ limit: 4 });
   const similarBikes = useMemo(() => {
-    if (!similarBikesData) return [];
-    // Handle DRF pagination structure or direct array
-    const list = Array.isArray(similarBikesData)
-      ? similarBikesData
-      : (similarBikesData as unknown as { results: any[] }).results || [];
+    if (!usedBikesResponse?.usedBikes) return [];
 
-    // Filter out current bike and transform
-    return list
-      .map(transformBike)
+    // Filter out current bike
+    return usedBikesResponse.usedBikes
       .filter((b: UsedBike) => b.id !== id)
       .slice(0, 4);
-  }, [similarBikesData, id]);
+  }, [usedBikesResponse, id]);
 
   if (isLoading) {
     return <DetailSkeleton />;

@@ -64,7 +64,6 @@ export const authOptions: AuthOptions = {
         session.accessToken = token.accessToken as string;
         // refreshToken may not always be present; copy if available
         session.refreshToken = token.refreshToken as string | undefined;
-        // @ts-expect-error - Adding custom properties to session user
         session.user.role = token.role || "user";
       }
       return session;

@@ -24,41 +24,10 @@ function UsedBikesContent() {
   };
 
   const { data, isLoading, error } = useUsedBikes(filters);
-  
-  const rawBikes = data?.results || [];
-  const usedBikes: UsedBike[] = rawBikes.map((item: any) => ({
-      id: item.id.toString(),
-      bikeName: item.bike_model_name || item.title || "Unknown Bike",
-      brandName: item.brand || "Unknown Brand",
-      sellerId: item.seller?.toString() || "", 
-      sellerName: item.seller_name || "Unknown Seller",
-      sellerPhone: item.seller_phone || "",
-      images: item.images?.map((img: any) => img.url) || [],
-      thumbnailUrl: item.image_url || "/bikes/default.webp",
-      price: Number(item.price) || 0,
-      year: item.manufacturing_year || new Date().getFullYear(),
-      kmDriven: item.mileage || 0,
-      condition: item.condition || "good",
-      accidentHistory: false,
-      location: {
-        city: item.location || "Unknown",
-        area: "",
-      },
-      status: item.status || "active",
-      isFeatured: item.is_featured || false,
-      isVerified: item.is_verified || false,
-      expiresAt: new Date(), 
-      createdAt: item.created_at || new Date(),
-      updatedAt: item.updated_at || new Date(),
-  }));
 
-  const meta = {
-    total: data?.count || 0,
-    totalPages: Math.ceil((data?.count || 0) / 12),
-    currentPage: filters.page,
-    hasPrevPage: !!data?.previous,
-    hasNextPage: !!data?.next,
-  };
+  const usedBikes = data?.usedBikes || [];
+
+  const meta = data?.meta;
 
   if (isLoading) {
     return <UsedBikesListSkeleton />;

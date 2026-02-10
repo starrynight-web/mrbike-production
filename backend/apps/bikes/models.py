@@ -1,10 +1,11 @@
 from django.db import models
 from django.utils.text import slugify
+from cloudinary.models import CloudinaryField
 
 class Brand(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=120, unique=True, blank=True)
-    logo = models.URLField(max_length=500, blank=True, null=True)
+    logo = CloudinaryField('image', folder='mrbikebd/brands/', blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     origin_country = models.CharField(max_length=100, blank=True, null=True)
     is_popular = models.BooleanField(default=False)
@@ -62,7 +63,7 @@ class BikeModel(models.Model):
     is_available = models.BooleanField(default=True)
     
     # Media & Social
-    primary_image = models.URLField(max_length=500, blank=True, null=True)
+    primary_image = CloudinaryField('image', folder='mrbikebd/official-bikes/', blank=True, null=True)
     popularity_score = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-service";
-import type { UsedBikeFilters } from "@/types";
+import { mapUsedBike } from "@/lib/data-utils";
+import type { UsedBikeFilters, UsedBike } from "@/types";
 
 // ============================================
 // QUERY KEYS
@@ -23,7 +24,19 @@ export function useUsedBikes(filters?: UsedBikeFilters) {
     queryKey: usedBikeQueryKeys.list(filters),
     queryFn: async () => {
       const response = await api.getUsedBikes(filters);
-      return response.data;
+      if (!response.success) throw new Error(response.error?.message || "Failed to fetch used bikes");
+
+      const rawBikes = (response.data as any[]) || [];
+      return {
+        usedBikes: rawBikes.map(mapUsedBike),
+        meta: {
+          totalItems: response.meta?.total || 0,
+          totalPages: response.meta?.totalPages || 1,
+          currentPage: filters?.page || 1,
+          hasNextPage: response.meta?.hasNextPage || false,
+          hasPrevPage: response.meta?.hasPrevPage || false,
+        },
+      };
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -37,7 +50,8 @@ export function useUsedBike(id: string) {
     queryKey: usedBikeQueryKeys.detail(id),
     queryFn: async () => {
       const response = await api.getUsedBike(id);
-      return response.data;
+      if (!response.success) throw new Error(response.error?.message || "Failed to fetch used bike");
+      return mapUsedBike(response.data);
     },
     staleTime: 5 * 60 * 1000,
     enabled: !!id,

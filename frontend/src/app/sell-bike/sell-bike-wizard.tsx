@@ -570,7 +570,6 @@ export function SellBikeWizard() {
                       width={112}
                       height={80}
                       className="h-20 w-28 object-cover rounded border"
-                      alt={`Bike image preview ${i + 1}`}
                     />
                   ))}
                 </div>

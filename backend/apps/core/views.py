@@ -18,8 +18,13 @@ class AdminStatsView(APIView):
             "total_users": User.objects.count(),
             "total_bikes": BikeModel.objects.count(),
             "total_used_bikes": UsedBikeListing.objects.count(),
-            "pending_listings": UsedBikeListing.objects.filter(status='pending').count(),
-            # Add more stats as needed by frontend
+            "active_listings": UsedBikeListing.objects.filter(status='active').count(),
+            "pending_approvals": UsedBikeListing.objects.filter(status='pending').count(),
+            "monthly_traffic": 1250, # Mocked for now
+            "user_change": 12.5,     # Mocked percentage
+            "bikes_change": 5.2,
+            "listings_change": -2.1,
+            "traffic_change": 8.4,
         }
         return Response(stats)
 

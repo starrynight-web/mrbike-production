@@ -69,6 +69,9 @@ interface Article {
   tags?: string;
   image?: string;
   created_at?: string;
+  publishedAt?: string;
+  views?: number;
+  status?: string;
   [key: string]: unknown;
 }
 
@@ -85,7 +88,7 @@ export default function AdminNewsPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
 
   const { data: articlesData = [], refetch } = useNews(
-    categoryFilter !== "all" ? categoryFilter : undefined,
+    categoryFilter !== "all" ? { category: categoryFilter } : undefined,
   );
 
   // Handle different API response structures
@@ -437,7 +440,7 @@ export default function AdminNewsPage() {
                     <TableCell>
                       <div className="h-12 w-16 rounded overflow-hidden bg-muted relative">
                         <Image
-                          src={article.image}
+                          src={article.image || "/default-image.webp"}
                           alt={article.title}
                           fill
                           className="object-cover"
@@ -450,7 +453,7 @@ export default function AdminNewsPage() {
                       </div>
                       <div className="text-xs text-muted-foreground flex items-center gap-2">
                         <Eye className="h-3 w-3" />{" "}
-                        {article.views.toLocaleString()} views
+                        {(article.views ?? 0).toLocaleString()} views
                       </div>
                     </TableCell>
                     <TableCell>
@@ -463,7 +466,7 @@ export default function AdminNewsPage() {
                         <div className="h-6 w-6 rounded-full bg-accent flex items-center justify-center">
                           <UserIcon className="h-3 w-3" />
                         </div>
-                        <span className="text-sm">{article.author}</span>
+                        <span className="text-sm">{typeof article.author === 'object' ? article.author?.name : article.author}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -479,7 +482,7 @@ export default function AdminNewsPage() {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                       <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" /> {article.publishedAt}
+                        <Calendar className="h-3 w-3" /> {article.publishedAt || '-'}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">

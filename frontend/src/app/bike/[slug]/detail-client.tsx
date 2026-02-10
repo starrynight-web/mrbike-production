@@ -63,6 +63,7 @@ interface VariantQuickSpecs {
   mileageUser: string;
   topspeedCompany: string;
   topspeedUser: string;
+  fuelType: string;
 }
 
 interface VariantData {
@@ -81,6 +82,7 @@ interface VariantData {
   usbPort: boolean;
   pros: Record<string, string>;
   cons: Record<string, string>;
+  color?: string;
 }
 
 interface ApiVariant {
@@ -305,8 +307,8 @@ function VariantComparison({
                     {typeof row.render === "function"
                       ? row.render(variants[key])
                       : String(
-                          variants[key][row.key as keyof VariantData] || "",
-                        )}
+                        variants[key][row.key as keyof VariantData] || "",
+                      )}
                   </td>
                 ))}
               </tr>
@@ -360,8 +362,7 @@ function SimilarNewBikes({ slug }: { slug: string }) {
 
               const bikeSpecs =
                 bike.specsSummary ||
-                `${bike.specs?.displacement || ""}cc • ${
-                  bike.specs?.maxPower || ""
+                `${bike.specs?.displacement || ""}cc • ${bike.specs?.maxPower || ""
                 }`;
 
               return (
@@ -414,37 +415,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
   // Fetch used bikes
   const { data: usedBikesData } = useUsedBikes({ limit: 4 });
   const similarUsedBikes = useMemo(() => {
-    if (!usedBikesData) return [];
-
-    const rawList = Array.isArray(usedBikesData)
-      ? usedBikesData
-      : (usedBikesData as any).results || [];
-
-    return rawList.map((item: any) => ({
-      id: item.id?.toString() || "",
-      bikeName: item.bike_model_name || item.title || "Unknown Bike",
-      brandName: item.brand || "Unknown Brand",
-      sellerId: item.seller?.toString() || "",
-      sellerName: item.seller_name || "Unknown Seller",
-      sellerPhone: item.seller_phone || "",
-      images: item.images?.map((img: any) => img.url) || [],
-      thumbnailUrl: item.image_url || "/bikes/default.webp",
-      price: Number(item.price) || 0,
-      year: item.manufacturing_year || new Date().getFullYear(),
-      kmDriven: item.mileage || 0,
-      condition: item.condition || "good",
-      accidentHistory: false,
-      location: {
-        city: item.location || "Unknown",
-        area: "",
-      },
-      status: item.status || "active",
-      isFeatured: item.is_featured || false,
-      isVerified: item.is_verified || false,
-      expiresAt: new Date(),
-      createdAt: item.created_at || new Date(),
-      updatedAt: item.updated_at || new Date(),
-    }));
+    return usedBikesData?.usedBikes || [];
   }, [usedBikesData]);
 
   // Store hooks
@@ -462,7 +433,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
     const apiVariants = bike.variants || [];
 
     if (Array.isArray(apiVariants) && apiVariants.length > 0) {
-      apiVariants.forEach((v: ApiVariant) => {
+      apiVariants.forEach((v: any) => {
         const key = v.variant_key || String(v.id) || "std";
 
         variantsMap[key] = {
@@ -493,6 +464,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
             mileageUser: v.mileage_user || "N/A",
             topspeedCompany: v.topspeed_company || "N/A",
             topspeedUser: v.topspeed_user || "N/A",
+            fuelType: bike.detailed_specs?.fuel_system || "Petrol",
           },
           fuelEfficiency: v.mileage_user || v.mileage_company || "N/A",
           frontTire: bike.detailed_specs?.tyres_front || v.tire_type || "N/A",
@@ -537,6 +509,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
           mileageUser: "N/A",
           topspeedCompany: "N/A",
           topspeedUser: "N/A",
+          fuelType: bike.detailed_specs?.fuel_system || "Petrol",
         },
         fuelEfficiency: "N/A",
         frontTire: bike.detailed_specs?.tyres_front || bike.tyre_type || "N/A",
@@ -899,8 +872,6 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
           </div>
           <div className="lg:col-span-1">
             <SimilarNewBikes
-              currentPrice={currentVariant?.price || 0}
-              currentId={bikeId}
               slug={slug}
             />
           </div>
@@ -1611,9 +1582,9 @@ function RatingSection({
                 <p className="text-lg font-bold">
                   {totalReviews > 0
                     ? (
-                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-                        totalReviews
-                      ).toFixed(1)
+                      reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                      totalReviews
+                    ).toFixed(1)
                     : "4.6"}
                   /5
                 </p>
@@ -1626,9 +1597,9 @@ function RatingSection({
                 <p className="text-lg font-bold">
                   {totalReviews > 0
                     ? (
-                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-                        totalReviews
-                      ).toFixed(1)
+                      reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                      totalReviews
+                    ).toFixed(1)
                     : "4.8"}
                   /5
                 </p>
@@ -1641,9 +1612,9 @@ function RatingSection({
                 <p className="text-lg font-bold">
                   {totalReviews > 0
                     ? (
-                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-                        totalReviews
-                      ).toFixed(1)
+                      reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                      totalReviews
+                    ).toFixed(1)
                     : "4.9"}
                   /5
                 </p>

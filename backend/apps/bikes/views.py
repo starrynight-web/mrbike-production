@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters, status
+from rest_framework import viewsets, filters, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
@@ -14,16 +14,27 @@ from PIL import Image, UnidentifiedImageError
 
 logger = logging.getLogger(__name__)
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
 class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all().order_by('name')
     serializer_class = BrandSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'origin']
     
+    @method_decorator(cache_page(60 * 15)) # 15 minutes
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @method_decorator(cache_page(60 * 15))
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminUser()]
-        return []
+        return [permissions.AllowAny()]
 
 class BikeModelViewSet(viewsets.ModelViewSet):
     queryset = BikeModel.objects.all().order_by('-popularity_score', 'name')
@@ -32,6 +43,14 @@ class BikeModelViewSet(viewsets.ModelViewSet):
     filterset_fields = ['category', 'brand', 'engine_capacity']
     search_fields = ['name', 'brand__name']
     ordering_fields = ['price', 'popularity_score', 'engine_capacity']
+
+    @method_decorator(cache_page(60 * 10)) # 10 minutes
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @method_decorator(cache_page(60 * 10))
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
     def get_object(self):
         """
@@ -48,10 +67,12 @@ class BikeModelViewSet(viewsets.ModelViewSet):
 
         return super().get_object()
 
+    permission_classes = [permissions.AllowAny] # Fallback for read actions
+    
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy', 'duplicate', 'upload_image']:
             return [IsAdminUser()]
-        return []
+        return [permissions.AllowAny()]
 
     @action(detail=True, methods=['post'])
     def duplicate(self, request, pk=None):
@@ -92,46 +113,24 @@ class BikeModelViewSet(viewsets.ModelViewSet):
             return Response({"error": "Invalid image file"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            # Use ImageProcessingService from marketplace if possible, 
-            # or just save and return URL.
-            # For simplicity and consistency, let's try to use the same service.
-            from apps.marketplace.image_processor import ImageProcessingService
-            from django.core.files.storage import default_storage
-            from django.core.files.base import ContentFile
-            import os
+            import cloudinary.uploader
             
-            # Process image
-            processed = ImageProcessingService.compress_and_convert(image_file)
+            # Upload to Cloudinary
+            result = cloudinary.uploader.upload(
+                image_file,
+                folder='mrbikebd/uploads/',
+                resource_type='image'
+            )
             
-            # Save the primary processed version (WebP) or original
-            best_file = processed.get('webp') or processed.get('compressed')
+            return Response({
+                "url": result.get('secure_url'),
+                "size": result.get('bytes'),
+                "originalSize": image_file.size
+            }, status=status.HTTP_200_OK)
 
-            # sanitize filename to avoid path traversal and invalid chars
-            original_name = image_file.name
-            base_name = os.path.basename(original_name)
-            safe_name = get_valid_filename(base_name)
-            prefixed = f"{uuid.uuid4().hex[:8]}_{safe_name}"
-
-            if best_file:
-                path = default_storage.save(
-                    f"bikes/uploads/{prefixed}",
-                    best_file['content']
-                )
-                url = default_storage.url(path)
-                return Response({
-                    "url": url,
-                    "size": best_file['content'].size,
-                    "originalSize": image_file.size
-                }, status=status.HTTP_200_OK)
-            else:
-                # Fallback to saving original (sanitized name)
-                path = default_storage.save(f"bikes/uploads/{prefixed}", image_file)
-                url = default_storage.url(path)
-                return Response({
-                    "url": url,
-                    "size": image_file.size,
-                    "originalSize": image_file.size
-                }, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.exception("Error while uploading image to Cloudinary: %s", e)
+            return Response({"error": "Internal server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         except Exception as e:
             logger.exception("Error while uploading image: %s", e)

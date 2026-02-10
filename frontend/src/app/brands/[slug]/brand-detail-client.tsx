@@ -14,8 +14,8 @@ interface BrandDetailClientProps {
 }
 
 export function BrandDetailClient({ slug }: BrandDetailClientProps) {
-  const { brand, isLoading: isBrandLoading } = useBrand(slug);
-  const { bikes, isLoading: isBikesLoading } = useBrandBikes(slug);
+  const { data: brand, isLoading: isBrandLoading } = useBrand(slug);
+  const { data: bikes = [], isLoading: isBikesLoading } = useBrandBikes(slug);
 
   if (isBrandLoading || isBikesLoading) {
     return <BrandDetailLoading />;

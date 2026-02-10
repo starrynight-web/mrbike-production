@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronRight, Bike } from "lucide-react";
 
 export function BrandsClient() {
-    const { brands, isLoading } = useBrands();
+    const { data: brands = [], isLoading } = useBrands();
 
     if (isLoading) {
         return <BrandsLoadingSkeleton />;

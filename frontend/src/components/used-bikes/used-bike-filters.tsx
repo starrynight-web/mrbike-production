@@ -41,7 +41,7 @@ import { cn, formatPrice } from "@/lib/utils";
 export function UsedBikeFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: brands } = useBrands();
+  const { data: brands = [] } = useBrands();
 
   // -- State from URL --
   const selectedBrands = searchParams.getAll("brand");

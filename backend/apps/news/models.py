@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
+from cloudinary.models import CloudinaryField
 
 class NewsCategory(models.Model):
     name = models.CharField(max_length=100)
@@ -35,7 +36,7 @@ class Article(models.Model):
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     excerpt = models.TextField()
     content = models.TextField()
-    featured_image = models.ImageField(upload_to='news/images/', blank=True, null=True)
+    featured_image = CloudinaryField('image', folder='mrbikebd/news/', blank=True, null=True)
     
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, 

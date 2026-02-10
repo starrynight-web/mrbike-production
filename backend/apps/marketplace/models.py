@@ -7,7 +7,7 @@ from django.db import models
 from django.conf import settings
 from apps.bikes.models import BikeModel
 from .image_processor import ImageProcessingService
-
+from cloudinary.models import CloudinaryField
 
 class UsedBikeListing(models.Model):
     CONDITION_CHOICES = [
@@ -80,21 +80,24 @@ class ListingImage(models.Model):
     )
     
     # Original image (user uploaded)
-    original_image = models.ImageField(
-        upload_to='used-bikes/originals/%Y/%m/%d/',
+    original_image = CloudinaryField(
+        'image',
+        folder='mrbikebd/used-bikes/originals/',
         help_text="Original user-uploaded image"
     )
     
     # Processed versions
-    webp_image = models.ImageField(
-        upload_to='used-bikes/webp/%Y/%m/%d/',
+    webp_image = CloudinaryField(
+        'image',
+        folder='mrbikebd/used-bikes/webp/',
         null=True,
         blank=True,
         help_text="WebP version (modern browsers, smallest size)"
     )
     
-    compressed_image = models.ImageField(
-        upload_to='used-bikes/compressed/%Y/%m/%d/',
+    compressed_image = CloudinaryField(
+        'image',
+        folder='mrbikebd/used-bikes/compressed/',
         null=True,
         blank=True,
         help_text="Compressed JPEG (fallback, older browsers)"
@@ -144,34 +147,15 @@ class ListingImage(models.Model):
                     self.original_image
                 )
                 
-                # Save WebP version
+                # Save WebP and Compressed versions to Cloudinary
+                # Note: CloudinaryField expects the actual file or a URL
                 if processed.get('webp'):
-                    webp_file = processed['webp']
-                    self.webp_image.save(
-                        webp_file['name'],
-                        webp_file['content'],
-                        save=False
-                    )
+                    self.webp_image = processed['webp']['content']
                 
-                # Save compressed JPEG version
                 if processed.get('compressed'):
-                    jpg_file = processed['compressed']
-                    self.compressed_image.save(
-                        jpg_file['name'],
-                        jpg_file['content'],
-                        save=False
-                    )
-                
-                # Store file sizes for analytics
-                if self.original_image:
-                    self.file_size_original = self.original_image.size
-                if self.webp_image:
-                    self.file_size_webp = self.webp_image.size
-                if self.compressed_image:
-                    self.file_size_compressed = self.compressed_image.size
+                    self.compressed_image = processed['compressed']['content']
                     
             except Exception as e:
-                # Log error but don't fail - keep original
                 import logging
                 logger = logging.getLogger(__name__)
                 logger.error("Image processing failed for %s: %s", getattr(self.listing, 'id', 'unknown'), e)

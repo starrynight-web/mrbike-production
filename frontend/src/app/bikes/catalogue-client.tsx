@@ -22,6 +22,7 @@ export function BikeCataloguePage() {
     priceMin: priceRange[0] > 0 ? priceRange[0] : undefined,
     priceMax: priceRange[1] < 10000000 ? priceRange[1] : undefined,
     sortBy: sortBy,
+    search: searchParams.get("search") || undefined,
     page: parseInt(searchParams.get("page") || "1"),
     limit: 12,
   };
@@ -143,11 +144,10 @@ export function BikeCataloguePage() {
                         <a
                           key={page}
                           href={`/bikes?page=${page}`}
-                          className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                            isActive
+                          className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium transition-colors ${isActive
                               ? "bg-primary text-primary-foreground"
                               : "hover:bg-muted"
-                          }`}
+                            }`}
                         >
                           {page}
                         </a>

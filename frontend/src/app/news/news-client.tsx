@@ -21,9 +21,11 @@ const CATEGORIES = [
 
 export function NewsClient() {
   const [activeCategory, setActiveCategory] = useState("all");
-  const { data: news = [], isLoading } = useNews(
-    activeCategory === "all" ? undefined : activeCategory,
-  );
+  const { data: newsData, isLoading } = useNews({
+    category: activeCategory === "all" ? undefined : activeCategory,
+  });
+
+  const news = newsData?.articles || [];
 
   const featuredNews = news.length > 0 ? news[0] : null;
   const recentNews = news.length > 0 ? news.slice(1) : [];
