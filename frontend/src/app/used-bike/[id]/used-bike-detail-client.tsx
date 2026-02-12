@@ -14,6 +14,12 @@ import {
   Clock,
   Share2,
   Heart,
+  Calendar,
+  Gauge,
+  ShieldCheck,
+  Zap,
+  Info,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,10 +27,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUsedBike, useUsedBikes } from "@/hooks/use-used-bikes";
-import { cn, formatPrice, formatRelativeTime, calculateEMI } from "@/lib/utils";
+import { cn, formatPrice, formatRelativeTime } from "@/lib/utils";
 import { useWishlistStore } from "@/store";
 import { UsedBike } from "@/types";
-import { mapUsedBike } from "@/lib/data-utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface UsedBikeDetailClientProps {
   id: string;
@@ -39,12 +45,10 @@ export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
   // Determine if wishlisted
   const isWishlisted = bike ? isInWishlist(bike.id) : false;
 
-  // Fetch similar bikes (using a simple limit for now)
+  // Fetch similar bikes
   const { data: usedBikesResponse } = useUsedBikes({ limit: 4 });
   const similarBikes = useMemo(() => {
     if (!usedBikesResponse?.usedBikes) return [];
-
-    // Filter out current bike
     return usedBikesResponse.usedBikes
       .filter((b: UsedBike) => b.id !== id)
       .slice(0, 4);
@@ -83,90 +87,148 @@ export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
     }
   };
 
+  const safetyTips = [
+    {
+      icon: MapPin,
+      text: "Meet in a safe, public place like a police station or mall.",
+    },
+    {
+      icon: ShieldCheck,
+      text: "Verify the bike's original registration and BRTC documents.",
+    },
+    {
+      icon: AlertTriangle,
+      text: "Never send money or advance payments before seeing the bike.",
+    },
+    {
+      icon: Zap,
+      text: "Bring a mechanic to check the engine and overall condition.",
+    },
+    {
+      icon: Info,
+      text: "Always take a test ride in a controlled, safe environment.",
+    },
+  ];
+
   return (
-    <div className="min-h-screen pb-20">
-      {/* Breadcrumb */}
-      <div className="bg-muted/50 border-b">
-        <div className="container py-3">
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground whitespace-nowrap overflow-x-auto">
-            <Link href="/" className="hover:text-foreground">
+    <div className="min-h-screen bg-muted/30 pb-20">
+      {/* Top Bar / Breadcrumb */}
+      <div className="bg-background border-b sticky top-[64px] z-30 backdrop-blur-md bg-background/80">
+        <div className="container py-3 flex items-center justify-between">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Link href="/" className="hover:text-primary transition-colors">
               Home
             </Link>
-            <ChevronRight className="h-4 w-4 shrink-0" />
-            <Link href="/used-bikes" className="hover:text-foreground">
+            <ChevronRight className="h-4 w-4" />
+            <Link
+              href="/used-bikes"
+              className="hover:text-primary transition-colors"
+            >
               Used Bikes
             </Link>
-            <ChevronRight className="h-4 w-4 shrink-0" />
-            <span className="text-foreground font-medium truncate">
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-foreground font-medium hidden md:inline truncate max-w-[200px]">
               {bike.bikeName}
             </span>
           </nav>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={handleShare}>
+              <Share2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => toggleWishlist(bike.id)}
+            >
+              <Heart
+                className={cn(
+                  "h-4 w-4",
+                  isWishlisted && "fill-primary text-primary",
+                )}
+              />
+            </Button>
+          </div>
         </div>
       </div>
 
-      <section className="container py-6 md:py-8">
-        <div className="grid lg:grid-cols-[1fr_380px] gap-8">
-          {/* Main Content */}
+      <div className="container py-6 md:py-10">
+        <div className="grid lg:grid-cols-[1fr_400px] gap-8 items-start">
+          {/* Main Content Area */}
           <div className="space-y-8">
-            {/* Image Gallery */}
+            {/* Gallery Section */}
             <div className="space-y-4">
-              <div className="relative aspect-[4/3] md:aspect-video bg-black rounded-xl overflow-hidden group">
-                <Image
-                  src={bike.images[activeImageIndex] || bike.thumbnailUrl}
-                  alt={`${bike.bikeName} - Image ${activeImageIndex + 1}`}
-                  fill
-                  className="object-contain"
-                  priority
-                />
+              <div className="relative aspect-video bg-zinc-950 rounded-2xl overflow-hidden shadow-2xl group">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeImageIndex}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative w-full h-full"
+                  >
+                    <Image
+                      src={bike.images[activeImageIndex] || bike.thumbnailUrl}
+                      alt={bike.bikeName}
+                      fill
+                      className="object-contain"
+                      priority
+                    />
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Verified Badge */}
+                {bike.isVerified && (
+                  <div className="absolute top-6 left-6 z-10">
+                    <Badge className="bg-green-500/90 backdrop-blur-md hover:bg-green-600 px-3 py-1.5 text-sm gap-1.5 shadow-lg border-none">
+                      <ShieldCheck className="h-4 w-4" /> Verified Listing
+                    </Badge>
+                  </div>
+                )}
 
                 {/* Navigation Arrows */}
                 {bike.images.length > 1 && (
-                  <>
-                    <button
+                  <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="rounded-full shadow-xl pointer-events-auto h-12 w-12"
                       onClick={() =>
                         setActiveImageIndex((prev) =>
                           prev === 0 ? bike.images.length - 1 : prev - 1,
                         )
                       }
-                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 z-10"
                     >
-                      <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <button
+                      <ChevronLeft className="h-6 w-6" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="rounded-full shadow-xl pointer-events-auto h-12 w-12"
                       onClick={() =>
                         setActiveImageIndex((prev) =>
                           prev === bike.images.length - 1 ? 0 : prev + 1,
                         )
                       }
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 z-10"
                     >
-                      <ChevronRight className="h-5 w-5" />
-                    </button>
-                  </>
+                      <ChevronRight className="h-6 w-6" />
+                    </Button>
+                  </div>
                 )}
-
-                {/* Badges */}
-                <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-                  {bike.isVerified && (
-                    <Badge className="bg-green-500 hover:bg-green-600 gap-1">
-                      <CheckCircle className="h-3 w-3" /> Verified Listing
-                    </Badge>
-                  )}
-                </div>
               </div>
 
               {/* Thumbnails */}
               {bike.images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto py-1">
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                   {bike.images.map((img: string, index: number) => (
                     <button
                       key={index}
                       onClick={() => setActiveImageIndex(index)}
                       className={cn(
-                        "shrink-0 w-20 h-16 rounded-lg overflow-hidden border-2 transition-all relative",
+                        "relative shrink-0 w-24 h-16 rounded-xl overflow-hidden border-2 transition-all",
                         activeImageIndex === index
-                          ? "border-primary"
-                          : "border-transparent opacity-70 hover:opacity-100",
+                          ? "border-primary shadow-md"
+                          : "border-transparent opacity-60 hover:opacity-100",
                       )}
                     >
                       <Image
@@ -181,231 +243,213 @@ export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
               )}
             </div>
 
-            {/* Title & Key Specs (Mobile Only) */}
-            <div className="lg:hidden space-y-4">
-              <div>
-                <h1 className="text-2xl font-bold mb-1">{bike.bikeName}</h1>
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <MapPin className="h-4 w-4" /> {bike.location.city} •{" "}
-                  {formatRelativeTime(bike.createdAt)}
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-primary">
-                {formatPrice(bike.price)}
-              </div>
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                      Year
+                    </p>
+                    <p className="font-bold text-lg">{bike.year}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <Gauge className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                      Mileage
+                    </p>
+                    <p className="font-bold text-lg">
+                      {bike.kmDriven.toLocaleString()} km
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                      Condition
+                    </p>
+                    <p className="font-bold text-lg capitalize">
+                      {bike.condition}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <ShieldCheck className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                      History
+                    </p>
+                    <p className="font-bold text-lg">
+                      {bike.accidentHistory ? "Accident" : "Clean"}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Details Grid */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Bike Details</CardTitle>
+            {/* Description Card */}
+            <Card className="border-none shadow-sm overflow-hidden">
+              <CardHeader className="bg-background border-b">
+                <CardTitle className="text-xl">
+                  Seller&apos;s Description
+                </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Brand</p>
-                  <p className="font-medium">{bike.brandName}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Model Year
-                  </p>
-                  <p className="font-medium">{bike.year}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Kilometers Run
-                  </p>
-                  <p className="font-medium">
-                    {bike.kmDriven.toLocaleString()} km
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Condition
-                  </p>
-                  <Badge variant="outline" className="capitalize">
-                    {bike.condition}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Accident History
-                  </p>
-                  <p className="font-medium">
-                    {bike.accidentHistory ? "Yes" : "No"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Location</p>
-                  <p className="font-medium">{bike.location.city}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Description */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Description</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose max-w-none text-muted-foreground whitespace-pre-line">
+              <CardContent className="p-6 bg-background">
+                <div className="prose max-w-none text-muted-foreground leading-relaxed whitespace-pre-line text-lg">
                   {bike.description || "No description provided by the seller."}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Safety Tips (Static) */}
-            <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 flex gap-4">
-              <Flag className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
-              <div className="text-sm">
-                <h4 className="font-bold text-yellow-800 dark:text-yellow-500 mb-1">
-                  Safety Tips
-                </h4>
-                <ul className="list-disc pl-4 space-y-1 text-yellow-700 dark:text-yellow-600">
-                  <li>Meet in a safe, public place.</li>
-                  <li>Check the bike documents properly before buying.</li>
-                  <li>
-                    Don&apos;t make any payments without checking the bike
-                    first.
-                  </li>
-                </ul>
+            {/* Similar Ads */}
+            {similarBikes.length > 0 && (
+              <div className="space-y-6 pt-6">
+                <h2 className="text-2xl font-bold">Similar Used Bikes</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {similarBikes.map((b) => (
+                    <Link
+                      key={b.id}
+                      href={`/used-bike/${b.id}`}
+                      className="group bg-background rounded-2xl overflow-hidden border border-transparent hover:border-primary transition-all shadow-sm hover:shadow-xl"
+                    >
+                      <div className="aspect-[4/3] relative overflow-hidden">
+                        <Image
+                          src={b.thumbnailUrl}
+                          alt={b.bikeName}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-bold text-sm truncate group-hover:text-primary transition-colors">
+                          {b.bikeName}
+                        </h3>
+                        <p className="text-primary font-black mt-1">
+                          {formatPrice(b.price)}
+                        </p>
+                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-2 font-medium">
+                          <MapPin className="h-3 w-3" /> {b.location.city}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Sidebar / Seller Info */}
-          <div className="space-y-6">
-            {/* Price Card (Desktop) */}
-            <Card className="hidden lg:block">
-              <CardContent className="p-6">
-                <h1 className="text-2xl font-bold mb-2">{bike.bikeName}</h1>
-                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-4">
-                  <MapPin className="h-4 w-4" /> {bike.location.city} •{" "}
-                  <Clock className="h-3 w-3" />{" "}
-                  {formatRelativeTime(bike.createdAt)}
+          {/* Sidebar Area */}
+          <div className="space-y-6 lg:sticky lg:top-24">
+            {/* Price & Contact Card */}
+            <Card className="border-none shadow-xl bg-background overflow-hidden">
+              <div className="p-6 space-y-6">
+                <div>
+                  <h1 className="text-2xl font-black mb-2">{bike.bikeName}</h1>
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                    <MapPin className="h-4 w-4" /> {bike.location.city}
+                    <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                    <Clock className="h-4 w-4" />{" "}
+                    {formatRelativeTime(bike.createdAt)}
+                  </div>
                 </div>
-                <div className="text-3xl font-bold text-primary mb-6">
+
+                <div className="text-4xl font-black text-primary tracking-tight">
                   {formatPrice(bike.price)}
                 </div>
-                <div className="space-y-3">
+
+                <div className="space-y-3 pt-2">
                   <Button
                     size="lg"
-                    className="w-full gap-2 text-lg font-bold bg-[#25D366] hover:bg-[#128C7E] text-white"
+                    className="w-full h-14 gap-3 text-lg font-bold bg-[#25D366] hover:bg-[#128C7E] text-white shadow-lg shadow-green-500/20 rounded-xl"
                   >
-                    <MessageCircle className="h-5 w-5" />
+                    <MessageCircle className="h-6 w-6" />
                     WhatsApp Seller
                   </Button>
-                  <Button size="lg" variant="outline" className="w-full gap-2">
-                    <Phone className="h-4 w-4" />
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full h-14 gap-3 text-lg font-bold rounded-xl border-2"
+                  >
+                    <Phone className="h-5 w-5" />
                     {bike.sellerPhone}
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* Seller Card */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Seller Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-bold text-xl text-muted-foreground">
+              {/* Seller Info Section */}
+              <div className="bg-muted/50 p-6 border-t border-muted">
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center font-black text-2xl text-primary shadow-inner">
                     {bike.sellerName.charAt(0)}
                   </div>
                   <div>
-                    <p className="font-bold">{bike.sellerName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Verified Seller
-                    </p>
+                    <p className="font-bold text-lg">{bike.sellerName}</p>
+                    <div className="flex items-center gap-1 text-xs text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full w-fit mt-1">
+                      <CheckCircle className="h-3 w-3" /> Verified Seller
+                    </div>
                   </div>
                 </div>
+              </div>
+            </Card>
 
-                <Separator className="my-4" />
-
-                <div className="lg:hidden space-y-3">
+            {/* Safety Tips Card - HIGHLIGHTED */}
+            <Card className="border-2 border-primary/20 bg-primary/5 shadow-lg overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-3 opacity-10">
+                <ShieldCheck className="h-20 w-20 text-primary" />
+              </div>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2 text-primary font-black">
+                  <ShieldCheck className="h-6 w-6" />
+                  Safety First Tips
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {safetyTips.map((tip, idx) => (
+                  <div key={idx} className="flex gap-3 items-start group">
+                    <div className="mt-1 p-1.5 rounded-lg bg-background shadow-sm border border-primary/10 group-hover:scale-110 transition-transform">
+                      <tip.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-sm font-medium leading-snug text-muted-foreground group-hover:text-foreground transition-colors">
+                      {tip.text}
+                    </p>
+                  </div>
+                ))}
+                <div className="mt-4 pt-4 border-t border-primary/10">
                   <Button
-                    size="lg"
-                    className="w-full gap-2 text-lg font-bold bg-[#25D366] hover:bg-[#128C7E] text-white"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-primary font-bold hover:bg-primary/10"
+                    asChild
                   >
-                    <MessageCircle className="h-5 w-5" />
-                    WhatsApp Seller
-                  </Button>
-                  <Button size="lg" variant="outline" className="w-full gap-2">
-                    <Phone className="h-4 w-4" />
-                    {bike.sellerPhone}
+                    <Link href="/safety-guide">Read Full Safety Guide</Link>
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Actions */}
-            <div className="flex gap-2">
-              <Button
-                variant={isWishlisted ? "default" : "outline"}
-                className="flex-1 gap-2"
-                onClick={() => toggleWishlist(bike.id)}
-              >
-                <Heart
-                  className={cn("h-4 w-4", isWishlisted && "fill-current")}
-                />
-                {isWishlisted ? "Saved" : "Save to Wishlist"}
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={handleShare}
-              >
-                <Share2 className="h-4 w-4 mr-2" /> Share
-              </Button>
+            {/* Report Listing */}
+            <div className="flex justify-center">
               <Button
                 variant="ghost"
-                className="flex-1 text-destructive hover:bg-destructive/10"
+                size="sm"
+                className="text-destructive hover:text-destructive hover:bg-destructive/5 font-medium"
               >
-                <Flag className="h-4 w-4 mr-2" /> Report
+                <Flag className="h-4 w-4 mr-2" /> Report this listing
               </Button>
             </div>
           </div>
         </div>
-
-        {/* Similar ads */}
-        {similarBikes.length > 0 && (
-          <div className="mt-12 pt-8 border-t">
-            <h2 className="text-xl font-semibold mb-4">Similar ads</h2>
-            <div className="flex gap-4 overflow-x-auto pb-2">
-              {similarBikes
-                .filter((b) => b.id !== bike.id)
-                .map((b) => (
-                  <Link
-                    key={b.id}
-                    href={`/used-bike/${b.id}`}
-                    className="shrink-0 w-48 rounded-lg overflow-hidden border bg-card hover:shadow-md transition-shadow block"
-                  >
-                    <div className="aspect-[4/3] bg-muted relative">
-                      <Image
-                        src={b.thumbnailUrl}
-                        alt={b.bikeName}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="p-3">
-                      <p className="font-medium text-sm line-clamp-1">
-                        {b.bikeName}
-                      </p>
-                      <p className="text-primary font-semibold text-sm mt-0.5">
-                        {formatPrice(b.price)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {b.kmDriven.toLocaleString()} km • {b.location.city}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-            </div>
-          </div>
-        )}
-      </section>
+      </div>
     </div>
   );
 }
