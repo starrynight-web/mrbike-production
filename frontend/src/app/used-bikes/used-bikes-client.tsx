@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, History } from "lucide-react";
 import { useUsedBikes } from "@/hooks/use-used-bikes";
 import { UsedBikeCard } from "@/components/used-bikes/used-bike-card";
 import { UsedBikeFilters } from "@/components/used-bikes/used-bike-filters";
@@ -128,27 +128,38 @@ function UsedBikesListSkeleton() {
 
 export function UsedBikesClient() {
   return (
-    <div className="container py-8 md:py-12">
-      <h1 className="text-3xl font-bold tracking-tight mb-2">
-        Used Bikes Marketplace
-      </h1>
-      <p className="text-muted-foreground mb-8">
-        Buy and sell verified used motorcycles in Bangladesh. Find the best
-        deals near you.
-      </p>
+    <div className="min-h-screen">
+      {/* Page Header */}
+      <div className="bg-muted/50 border-b relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mt-20 -mr-20 opacity-5 pointer-events-none">
+          <History size={400} />
+        </div>
+        <div className="w-full px-4 md:px-8 py-8 relative z-10">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">
+            Used Bikes <span className="text-primary">Marketplace</span>
+          </h1>
+          <p className="text-muted-foreground">
+            Buy and sell verified used motorcycles in Bangladesh. Find the best
+            deals near you.
+          </p>
+        </div>
+      </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Filters */}
-        <aside className="w-full lg:w-64 shrink-0">
-          <Suspense fallback={<Skeleton className="h-[500px] w-full" />}>
+      {/* Main Content */}
+      <div className="w-full px-4 md:px-8 py-6 md:py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Filters */}
+          <Suspense
+            fallback={<Skeleton className="w-full lg:w-64 h-[500px]" />}
+          >
             <UsedBikeFilters />
           </Suspense>
-        </aside>
 
-        {/* Listing Grid */}
-        <Suspense fallback={<UsedBikesListSkeleton />}>
-          <UsedBikesContent />
-        </Suspense>
+          {/* Listing Grid */}
+          <Suspense fallback={<UsedBikesListSkeleton />}>
+            <UsedBikesContent />
+          </Suspense>
+        </div>
       </div>
     </div>
   );

@@ -35,212 +35,222 @@ export function NewsClient() {
   }
 
   return (
-    <div className="container py-10 md:py-16 space-y-12 max-w-7xl mx-auto">
+    <div className="min-h-screen">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b pb-8">
-        <div className="space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-            Bike News & Insights
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl">
-            Unbiased reviews, latest launches, market analysis, and everything
-            else you need to know about the two-wheeler world in Bangladesh.
-          </p>
+      <div className="bg-muted/50 border-b relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mt-20 -mr-20 opacity-5 pointer-events-none">
+          <Newspaper size={400} />
         </div>
+        <div className="w-full px-4 md:px-8 py-8 relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+                Bike <span className="text-primary">News & Insights</span>
+              </h1>
+              <p className="text-muted-foreground">
+                Unbiased reviews, latest launches, market analysis, and
+                everything else you need to know about the two-wheeler world in
+                Bangladesh.
+              </p>
+            </div>
 
-        {/* Category Filter */}
-        <Tabs
-          value={activeCategory}
-          onValueChange={setActiveCategory}
-          className="w-full md:w-auto"
-        >
-          <TabsList className="h-auto p-1 bg-muted/50 rounded-full flex-wrap justify-start">
-            {CATEGORIES.map((cat) => (
-              <TabsTrigger
-                key={cat.id}
-                value={cat.id}
-                className="rounded-full px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                {cat.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+            {/* Category Filter */}
+            <Tabs
+              value={activeCategory}
+              onValueChange={setActiveCategory}
+              className="w-full md:w-auto overflow-x-auto"
+            >
+              <TabsList className="h-auto p-1 bg-background/50 rounded-full flex gap-2 justify-start border border-muted-foreground/10">
+                {CATEGORIES.map((cat) => (
+                  <TabsTrigger
+                    key={cat.id}
+                    value={cat.id}
+                    className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary transition-all whitespace-nowrap"
+                  >
+                    {cat.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
       </div>
 
-      {/* Featured Post (Hero) */}
-      {activeCategory === "all" && featuredNews && (
-        <section className="relative group overflow-hidden rounded-2xl border bg-card">
-          <div className="grid lg:grid-cols-2 gap-0">
-            <div className="relative h-100 lg:h-125 overflow-hidden bg-muted">
-              {featuredNews.featuredImage ? (
-                <Image
-                  src={featuredNews.featuredImage}
-                  alt={featuredNews.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  priority
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Newspaper className="h-24 w-24 text-muted-foreground/30" />
-                </div>
-              )}
-              <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent lg:hidden" />
-            </div>
-            <div className="p-8 lg:p-12 flex flex-col justify-center space-y-6">
-              <div className="flex items-center gap-3">
-                <Badge
-                  variant="secondary"
-                  className="capitalize text-sm px-3 py-1"
-                >
-                  {featuredNews.category}
-                </Badge>
-                <span className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" />
-                  {new Date(featuredNews.publishedAt).toLocaleDateString(
-                    "en-US",
-                    { month: "short", day: "numeric", year: "numeric" },
-                  )}
-                </span>
+      <div className="container py-8 md:py-12 space-y-12">
+        {/* Featured Post (Hero) */}
+        {activeCategory === "all" && featuredNews && (
+          <section className="relative group overflow-hidden rounded-2xl border bg-card">
+            <div className="grid lg:grid-cols-2 gap-0">
+              <div className="relative h-80 lg:h-auto overflow-hidden bg-muted">
+                {featuredNews.featuredImage ? (
+                  <Image
+                    src={featuredNews.featuredImage}
+                    alt={featuredNews.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Newspaper className="h-24 w-24 text-muted-foreground/30" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent lg:hidden" />
               </div>
-
-              <Link
-                href={`/news/${featuredNews.slug}`}
-                className="group-hover:text-primary transition-colors"
-              >
-                <h2 className="text-3xl md:text-4xl font-extrabold leading-tight">
-                  {featuredNews.title}
-                </h2>
-              </Link>
-
-              <p className="text-lg text-muted-foreground line-clamp-3">
-                {featuredNews.excerpt}
-              </p>
-
-              <div className="flex items-center justify-between pt-4">
+              <div className="p-6 md:p-8 lg:p-12 flex flex-col justify-center space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-muted overflow-hidden">
-                    <Image
-                      src={
-                        featuredNews.author.image || "/placeholder-avatar.png"
-                      }
-                      alt={featuredNews.author.name}
-                      width={40}
-                      height={40}
-                    />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm">
-                      {featuredNews.author.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {featuredNews.views.toLocaleString()} reads
-                    </p>
-                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="capitalize text-sm px-3 py-1"
+                  >
+                    {featuredNews.category}
+                  </Badge>
+                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    {new Date(featuredNews.publishedAt).toLocaleDateString(
+                      "en-US",
+                      { month: "short", day: "numeric", year: "numeric" },
+                    )}
+                  </span>
                 </div>
-                <Button asChild variant="outline" className="rounded-full">
-                  <Link href={`/news/${featuredNews.slug}`}>
-                    Read Article <ChevronRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+
+                <Link
+                  href={`/news/${featuredNews.slug}`}
+                  className="group-hover:text-primary transition-colors"
+                >
+                  <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold leading-tight">
+                    {featuredNews.title}
+                  </h2>
+                </Link>
+
+                <p className="text-lg text-muted-foreground line-clamp-3">
+                  {featuredNews.excerpt}
+                </p>
+
+                <div className="flex items-center justify-between pt-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-muted overflow-hidden">
+                      <Image
+                        src={
+                          featuredNews.author.image || "/placeholder-avatar.png"
+                        }
+                        alt={featuredNews.author.name}
+                        width={40}
+                        height={40}
+                      />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">
+                        {featuredNews.author.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {featuredNews.views.toLocaleString()} reads
+                      </p>
+                    </div>
+                  </div>
+                  <Button asChild variant="outline" className="rounded-full">
+                    <Link href={`/news/${featuredNews.slug}`}>
+                      Read Article <ChevronRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
-
-      {/* Recent News Grid */}
-      <section>
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-2xl font-bold">
-            {activeCategory === "all"
-              ? "More Latest Stories"
-              : `Latest in ${CATEGORIES.find((c) => c.id === activeCategory)?.label}`}
-          </h3>
-        </div>
-
-        {(activeCategory === "all" ? recentNews : news).length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {(activeCategory === "all" ? recentNews : news).map(
-              (article: NewsArticle) => (
-                <Card
-                  key={article.id}
-                  className="group overflow-hidden border-none shadow-none bg-transparent hover:bg-card transition-colors duration-300"
-                >
-                  <div className="aspect-video relative rounded-xl overflow-hidden mb-4 bg-muted flex items-center justify-center">
-                    <Link
-                      href={`/news/${article.slug}`}
-                      className="w-full h-full relative block"
-                    >
-                      {article.featuredImage ? (
-                        <Image
-                          src={article.featuredImage}
-                          alt={article.title}
-                          fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Newspaper className="h-12 w-12 text-muted-foreground/30" />
-                        </div>
-                      )}
-                    </Link>
-                    <Badge className="absolute top-3 left-3 capitalize bg-background/80 hover:bg-background/90 text-foreground backdrop-blur-sm z-10">
-                      {article.category}
-                    </Badge>
-                  </div>
-                  <CardContent className="p-0 space-y-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {new Date(article.publishedAt).toLocaleDateString(
-                          "en-US",
-                          { month: "short", day: "numeric", year: "numeric" },
-                        )}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        {article.views.toLocaleString()}
-                      </span>
-                    </div>
-                    <Link href={`/news/${article.slug}`}>
-                      <h4 className="text-xl font-bold leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                        {article.title}
-                      </h4>
-                    </Link>
-                    <p className="text-muted-foreground text-sm line-clamp-2">
-                      {article.excerpt}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="p-0 mt-4">
-                    <div className="flex flex-wrap gap-2">
-                      {article.tags.map((tag: string) => (
-                        <span
-                          key={tag}
-                          className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md flex items-center gap-1"
-                        >
-                          <Hash className="h-2.5 w-2.5" /> {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </CardFooter>
-                </Card>
-              ),
-            )}
-          </div>
-        ) : (
-          <div className="py-20 text-center bg-muted/20 rounded-2xl border-2 border-dashed">
-            <p className="text-muted-foreground">
-              No articles found in this category.
-            </p>
-            <Button variant="link" onClick={() => setActiveCategory("all")}>
-              View all news
-            </Button>
-          </div>
+          </section>
         )}
-      </section>
+
+        {/* Recent News Grid */}
+        <section>
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-bold">
+              {activeCategory === "all"
+                ? "More Latest Stories"
+                : `Latest in ${CATEGORIES.find((c) => c.id === activeCategory)?.label}`}
+            </h3>
+          </div>
+
+          {(activeCategory === "all" ? recentNews : news).length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {(activeCategory === "all" ? recentNews : news).map(
+                (article: NewsArticle) => (
+                  <Card
+                    key={article.id}
+                    className="group overflow-hidden border-none shadow-none bg-transparent hover:bg-card transition-colors duration-300 rounded-xl"
+                  >
+                    <div className="aspect-video relative rounded-xl overflow-hidden mb-4 bg-muted flex items-center justify-center">
+                      <Link
+                        href={`/news/${article.slug}`}
+                        className="w-full h-full relative block"
+                      >
+                        {article.featuredImage ? (
+                          <Image
+                            src={article.featuredImage}
+                            alt={article.title}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Newspaper className="h-12 w-12 text-muted-foreground/30" />
+                          </div>
+                        )}
+                      </Link>
+                      <Badge className="absolute top-3 left-3 capitalize bg-background/80 hover:bg-background/90 text-foreground backdrop-blur-sm z-10">
+                        {article.category}
+                      </Badge>
+                    </div>
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(article.publishedAt).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "numeric", year: "numeric" },
+                          )}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Eye className="h-3 w-3" />
+                          {article.views.toLocaleString()}
+                        </span>
+                      </div>
+                      <Link href={`/news/${article.slug}`}>
+                        <h4 className="text-xl font-bold leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                          {article.title}
+                        </h4>
+                      </Link>
+                      <p className="text-muted-foreground text-sm line-clamp-2">
+                        {article.excerpt}
+                      </p>
+                    </CardContent>
+                    <CardFooter className="p-4 pt-0">
+                      <div className="flex flex-wrap gap-2">
+                        {article.tags.map((tag: string) => (
+                          <span
+                            key={tag}
+                            className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md flex items-center gap-1"
+                          >
+                            <Hash className="h-2.5 w-2.5" /> {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </CardFooter>
+                  </Card>
+                ),
+              )}
+            </div>
+          ) : (
+            <div className="py-20 text-center bg-muted/20 rounded-2xl border-2 border-dashed">
+              <p className="text-muted-foreground">
+                No articles found in this category.
+              </p>
+              <Button variant="link" onClick={() => setActiveCategory("all")}>
+                View all news
+              </Button>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

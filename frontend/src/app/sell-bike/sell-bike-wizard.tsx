@@ -330,7 +330,12 @@ export function SellBikeWizard() {
                 {/* Year */}
                 <div className="space-y-2">
                   <Label htmlFor="year">Year of Manufacture</Label>
-                  <Input id="year" type="number" {...form.register("year")} />
+                  <Input
+                    id="year"
+                    type="number"
+                    {...form.register("year")}
+                    onFocus={(e) => e.target.select()}
+                  />
                   {form.formState.errors.year && (
                     <p className="text-red-500 text-sm">
                       {form.formState.errors.year.message}
@@ -347,6 +352,12 @@ export function SellBikeWizard() {
                       type="number"
                       {...form.register("kmDriven")}
                       className="pr-10"
+                      onFocus={(e) => {
+                        if (e.target.value === "0") {
+                          form.setValue("kmDriven", "" as any);
+                        }
+                        e.target.select();
+                      }}
                     />
                     <span className="absolute right-3 top-2.5 text-muted-foreground text-sm">
                       km
@@ -371,6 +382,12 @@ export function SellBikeWizard() {
                       type="number"
                       {...form.register("price")}
                       className="pl-8"
+                      onFocus={(e) => {
+                        if (e.target.value === "0") {
+                          form.setValue("price", "" as any);
+                        }
+                        e.target.select();
+                      }}
                     />
                   </div>
                   {form.formState.errors.price && (
@@ -472,15 +489,15 @@ export function SellBikeWizard() {
 
           {currentStep === 3 && (
             <div className="space-y-6">
-              <div className="border-2 border-dashed rounded-xl p-10 text-center hover:bg-muted/50 transition-colors cursor-pointer relative">
+              <div className="border-2 border-dashed rounded-xl p-10 text-center hover:bg-muted/50 transition-colors cursor-pointer relative min-h-[200px] flex items-center justify-center">
                 <Input
                   type="file"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   accept="image/*"
                   multiple
                   onChange={handleImageUpload}
                 />
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center gap-2 relative z-0">
                   <div className="bg-primary/10 p-4 rounded-full">
                     <Camera className="h-8 w-8 text-primary" />
                   </div>

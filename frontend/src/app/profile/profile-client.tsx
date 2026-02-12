@@ -97,7 +97,7 @@ export function ProfileClient() {
       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-card p-6 rounded-lg border shadow-sm">
         <div className="flex items-center gap-4">
           <Avatar className="h-24 w-24 border-4 border-background shadow-md">
-            <AvatarImage src={user.image} alt={user.name} />
+            <AvatarImage src={user.image || undefined} alt={user.name} />
             <AvatarFallback className="text-xl">
               {user.name?.charAt(0)}
             </AvatarFallback>

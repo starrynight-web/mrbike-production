@@ -1,54 +1,27 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Search,
   ChevronRight,
-  Fuel,
-  Star,
-  TrendingUp,
-  ArrowRight,
-  Sparkles,
   Zap,
-  MapPin,
+  Wind,
+  Building2,
+  CircleDot,
+  Compass,
+  Mountain,
+  Plug,
+  Bike,
 } from "lucide-react";
 import { BIKE_CATEGORIES } from "@/config/constants";
 import type { Bike, UsedBike } from "@/types";
 import { api } from "@/lib/api-service";
 import { sanitizeImageUrl, mapBike, mapUsedBike } from "@/lib/data-utils";
 import { HeroSearch } from "@/components/layout/hero-search";
-import { BikeCard } from "@/components/bikes/bike-card";
-import { UsedBikeCard } from "@/components/used-bikes/used-bike-card";
-
-
-// Emotional picks and brands remain static for now as they are design elements
-
-const emotionalPicks = [
-  {
-    title: "Best Mileage Under ৳2 Lac",
-    description: "Fuel-efficient commuters for daily rides",
-    icon: Fuel,
-    gradient: "from-green-500 to-emerald-600",
-    href: "/bikes?priceMax=200000&sortBy=mileage",
-  },
-  {
-    title: "Top Resale Sports Bikes",
-    description: "High value retention when you upgrade",
-    icon: TrendingUp,
-    gradient: "from-blue-500 to-indigo-600",
-    href: "/bikes?category=sport&sortBy=resale",
-  },
-  {
-    title: "Trending Naked Bikes",
-    description: "Most popular street fighters this month",
-    icon: Sparkles,
-    gradient: "from-orange-500 to-red-600",
-    href: "/bikes?category=naked&sortBy=popularity",
-  },
-];
+import { PopularBikesCarousel } from "@/components/bikes/popular-bikes-carousel";
+import { CompareYourChoiceSection } from "@/components/bikes/compare-your-choice-section";
+import { UsedBikesCarousel } from "@/components/used-bikes/used-bikes-carousel";
 
 const popularBrands = [
   { name: "Yamaha", logo: "/brands/yamaha.svg", slug: "yamaha" },
@@ -68,7 +41,7 @@ export default async function HomePage() {
 
   try {
     const [bikesResponse, usedBikesResponse] = await Promise.all([
-      api.getBikes({ limit: 4 }),
+      api.getBikes({ limit: 8 }),
       api.getUsedBikes({ limit: 4 }),
     ]);
 
@@ -105,16 +78,24 @@ export default async function HomePage() {
       {/* ==================== HERO SECTION ==================== */}
       <section className="relative overflow-hidden bg-linear-to-br from-background via-background to-accent py-16 md:py-24">
         {/* Background decoration */}
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-5" />
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/hero.webp"
+            alt="Hero Background"
+            fill
+            className="object-cover opacity-20"
+            priority
+          />
+        </div>
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
 
-        <div className="container relative">
+        <div className="w-full px-4 md:px-8 relative">
           <div className="max-w-3xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-4">
+            {/* <Badge variant="secondary" className="mb-4">
               <Zap className="w-3 h-3 mr-1" />
               Bangladesh&apos;s #1 Motorcycle Platform
-            </Badge>
+            </Badge> */}
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
               Find Your Perfect{" "}
@@ -122,8 +103,8 @@ export default async function HomePage() {
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Discover, compare, and buy motorcycles. Explore 300+ bikes, read
-              reviews, and find the best deals in Bangladesh.
+              Discover, compare, and buy used motorcycles. Explore 300+ bikes,
+              read reviews, and find the best deals in Bangladesh.
             </p>
 
             {/* Search Bar */}
@@ -131,19 +112,32 @@ export default async function HomePage() {
 
             {/* Category Pills */}
             <div className="flex flex-wrap justify-center gap-2">
-              {BIKE_CATEGORIES.map((category) => (
-                <Link
-                  key={category.value}
-                  href={`/bikes?category=${category.value}`}
-                >
-                  <Badge
-                    variant="outline"
-                    className="px-4 py-2 text-sm cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+              {BIKE_CATEGORIES.map((category) => {
+                const Icon =
+                  {
+                    sport: Zap,
+                    naked: Wind,
+                    commuter: Building2,
+                    scooter: CircleDot,
+                    cruiser: Compass,
+                    adventure: Mountain,
+                    electric: Plug,
+                  }[category.value] || Bike;
+
+                return (
+                  <Link
+                    key={category.value}
+                    href={`/bikes?category=${category.value}`}
                   >
-                    {category.icon} {category.label}
-                  </Badge>
-                </Link>
-              ))}
+                    <Badge
+                      variant="outline"
+                      className="px-4 py-2 text-sm cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors flex items-center gap-2"
+                    >
+                      <Icon className="h-4 w-4" /> {category.label}
+                    </Badge>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -151,123 +145,27 @@ export default async function HomePage() {
 
       {/* ==================== POPULAR BIKES ==================== */}
       <section className="py-12 md:py-16">
-        <div className="container">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold">Popular Bikes</h2>
-              <p className="text-muted-foreground mt-1">
-                Most searched motorcycles this month
-              </p>
-            </div>
-            <Button variant="ghost" asChild className="hidden sm:flex">
-              <Link href="/bikes">
-                View All <ChevronRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-
-          {fetchError && featuredBikes.length === 0 ? (
-            <div className="flex items-center justify-center py-12 text-muted-foreground">
-              <p>
-                Unable to load featured bikes right now. Showing popular picks
-                later.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {featuredBikes.map((bike: Bike) => (
-                <BikeCard key={bike.id} bike={bike} showCompare={false} />
-              ))}
-            </div>
-          )}
-
-          <div className="mt-6 text-center sm:hidden">
-            <Button variant="outline" asChild>
-              <Link href="/bikes">
-                View All Bikes <ChevronRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
+        <div className="w-full px-4 md:px-8">
+          <PopularBikesCarousel
+            bikes={featuredBikes}
+            fetchError={fetchError && featuredBikes.length === 0}
+          />
         </div>
       </section>
 
-      {/* ==================== EMOTIONAL PICKS ==================== */}
-      <section className="py-12 md:py-16 bg-muted/50">
-        <div className="container">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">
-              Discover Your Ride
-            </h2>
-            <p className="text-muted-foreground">
-              Curated picks based on what Bangladeshi riders love
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {emotionalPicks.map((pick, index) => (
-              <Link key={index} href={pick.href}>
-                <Card className="group relative overflow-hidden h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0">
-                  <div
-                    className={`absolute inset-0 bg-linear-to-br ${pick.gradient} opacity-90`}
-                  />
-                  <CardContent className="relative p-6 md:p-8 text-white">
-                    <pick.icon className="h-10 w-10 mb-4 opacity-80" />
-                    <h3 className="text-xl font-bold mb-2">{pick.title}</h3>
-                    <p className="text-white/80 mb-4">{pick.description}</p>
-                    <div className="flex items-center text-sm font-medium">
-                      Explore
-                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ==================== COMPARE YOUR CHOICE ==================== */}
+      <CompareYourChoiceSection />
 
       {/* ==================== USED BIKES SECTION ==================== */}
       <section className="py-12 md:py-16">
-        <div className="container">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold">Used Bikes</h2>
-              <p className="text-muted-foreground mt-1">
-                Quality pre-owned motorcycles near you
-              </p>
-            </div>
-            <Button variant="ghost" asChild>
-              <Link href="/used-bikes">
-                View All <ChevronRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {usedBikes.length > 0
-              ? usedBikes.map((bike) => (
-                <UsedBikeCard key={bike.id} bike={bike} />
-              ))
-              : [1, 2, 3, 4].map((i) => (
-                <Card key={i} className="overflow-hidden">
-                  <div className="aspect-4/3 bg-muted animate-pulse" />
-                  <CardContent className="p-4">
-                    <div className="h-4 bg-muted rounded animate-pulse mb-2" />
-                    <div className="h-6 bg-muted rounded animate-pulse w-2/3 mb-3" />
-                    <div className="flex justify-between">
-                      <div className="h-4 bg-muted rounded animate-pulse w-1/3" />
-                      <div className="h-4 bg-muted rounded animate-pulse w-1/4" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-          </div>
+        <div className="w-full px-4 md:px-8">
+          <UsedBikesCarousel bikes={usedBikes} />
         </div>
       </section>
 
       {/* ==================== BRANDS SECTION ==================== */}
       <section className="py-12 md:py-16 bg-muted/50">
-        <div className="container">
+        <div className="w-full px-4 md:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold mb-2">
               Popular Brands
@@ -305,7 +203,7 @@ export default async function HomePage() {
 
       {/* ==================== CTA SECTION ==================== */}
       <section className="py-16 md:py-24">
-        <div className="container">
+        <div className="w-full px-4 md:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-primary to-orange-600 p-8 md:p-12 lg:p-16">
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
@@ -330,7 +228,7 @@ export default async function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="rounded-full px-8 text-white border-white/30 hover:bg-white/10"
+                  className="rounded-full px-8 text-white border-white/30 bg-transparent hover:bg-transparent hover:border-white transition-colors"
                   asChild
                 >
                   <Link href="/about">Learn More</Link>

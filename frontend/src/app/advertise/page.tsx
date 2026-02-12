@@ -120,7 +120,7 @@ export default function AdvertisePage() {
         <div className="absolute top-0 right-0 -mt-20 -mr-20 opacity-5 pointer-events-none">
           <TrendingUp size={400} />
         </div>
-        <div className="container py-20 relative z-10">
+        <div className="w-full px-4 md:px-8 py-20 relative z-10">
           <div className="max-w-2xl mx-auto text-center space-y-4">
             <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-primary/20">
               Grow Your Business
@@ -150,7 +150,7 @@ export default function AdvertisePage() {
       </div>
 
       {/* Stats Section (Reference: About Page Values) */}
-      <div className="container py-20">
+      <div className="w-full px-4 md:px-8 py-20">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
             <div key={index} className="space-y-4 text-center">
@@ -170,7 +170,7 @@ export default function AdvertisePage() {
 
       {/* Pricing Section (Reference: Expense Calculator Cards) */}
       <div className="bg-muted/30 py-20">
-        <div className="container">
+        <div className="w-full px-4 md:px-8">
           <div className="text-center mb-12 space-y-4">
             <h2 className="text-3xl font-bold tracking-tight">
               Simple, Transparent Pricing
@@ -238,7 +238,7 @@ export default function AdvertisePage() {
       </div>
 
       {/* Contact Form Section (Reference: Expense Calculator Form) */}
-      <div id="contact-form" className="container py-20">
+      <div id="contact-form" className="w-full px-4 md:px-8 py-20">
         <div className="max-w-4xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">

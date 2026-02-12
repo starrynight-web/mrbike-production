@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Menu,
   Search,
   Heart,
   User,
@@ -15,9 +14,9 @@ import {
   Store,
   Bell,
   Shield,
+  PlusCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +35,7 @@ const navLinks = [
   { href: "/news", label: "News", icon: Newspaper },
   { href: "/compare", label: "Compare", icon: LayoutGrid },
   { href: "/brands", label: "Brands", icon: LayoutGrid },
+  { href: "/dealers", label: "Dealers", icon: Store },
 ];
 
 export function Header() {
@@ -49,15 +49,17 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="w-full px-4 md:px-8 flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <Bike className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="hidden font-bold text-xl sm:inline-block">
-              MrBike<span className="text-primary">BD</span>
-            </span>
+            <Image
+              src="/images/full_logo_dark.png"
+              alt="MrBikeBD"
+              width={160}
+              height={40}
+              className="h-20 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -91,18 +93,29 @@ export function Header() {
               <span className="sr-only">Search</span>
             </Button>
 
-            {/* Wishlist */}
-            <Link href="/profile?tab=wishlist">
-              <Button variant="ghost" size="icon" className="relative">
-                <Heart className="h-5 w-5" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                    {wishlistCount > 9 ? "9+" : wishlistCount}
+            {/* Post your bike */}
+            <Button
+              className="hidden sm:flex group overflow-hidden transition-all duration-300 ease-in-out hover:w-[140px] w-[90px] justify-start px-3 relative"
+              asChild
+            >
+              <Link href="/sell-bike" className="flex items-center gap-2">
+                <PlusCircle className="h-5 w-5 shrink-0" />
+                <span className="relative inline-block text-left">
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-0 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75 pointer-events-none"
+                  >
+                    Sell your bike
                   </span>
-                )}
-                <span className="sr-only">Wishlist</span>
-              </Button>
-            </Link>
+                  <span
+                    aria-hidden
+                    className="whitespace-nowrap opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none"
+                  >
+                    Sell
+                  </span>
+                </span>
+              </Link>
+            </Button>
 
             {/* Notifications */}
             {isAuthenticated && (
@@ -242,95 +255,79 @@ export function Header() {
               </Button>
             )}
 
-            {/* Mobile Menu Trigger */}
-            <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden">
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">Menu</span>
+            {/* Quick nav card menu (mobile/tablet) — toggleable card, not sidebar */}
+            <DropdownMenu
+              open={isMobileMenuOpen}
+              onOpenChange={setMobileMenuOpen}
+            >
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="lg:hidden h-9 w-9 rounded-lg border bg-muted/50 hover:bg-muted shadow-sm"
+                >
+                  <LayoutGrid className="h-5 w-5" />
+                  <span className="sr-only">Quick navigation</span>
                 </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-80">
-                <nav className="flex flex-col gap-4 mt-8">
-                  <Link
-                    href="/"
-                    className="flex items-center gap-2 mb-4"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                      <Bike className="h-5 w-5 text-primary-foreground" />
-                    </div>
-                    <span className="font-bold text-xl">
-                      MrBike<span className="text-primary">BD</span>
-                    </span>
-                  </Link>
-
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                sideOffset={8}
+                className="w-[320px] rounded-xl border bg-card p-4 shadow-lg"
+              >
+                <div className="grid grid-cols-3 gap-2">
                   {navLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
-                        pathname === link.href
-                          ? "bg-primary text-primary-foreground"
-                          : "hover:bg-accent",
-                      )}
-                    >
-                      <link.icon className="h-5 w-5" />
-                      {link.label}
-                    </Link>
-                  ))}
-
-                  <hr className="my-2" />
-
-                  <Link
-                    href="/profile"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent"
-                  >
-                    <User className="h-5 w-5" />
-                    Profile
-                  </Link>
-
-                  <Link
-                    href="/profile?tab=wishlist"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent"
-                  >
-                    <Heart className="h-5 w-5" />
-                    Wishlist
-                    {wishlistCount > 0 && (
-                      <span className="ml-auto bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
-                        {wishlistCount}
-                      </span>
-                    )}
-                  </Link>
-
-                  {user?.role === "admin" && (
-                    <>
-                      <hr className="my-2" />
+                    <DropdownMenuItem key={link.href} asChild>
                       <Link
-                        href="/admin"
+                        href={link.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent font-bold text-primary"
+                        className={cn(
+                          "flex flex-col items-center gap-2 rounded-lg p-4 transition-colors hover:bg-accent focus:bg-accent",
+                          pathname === link.href ||
+                            pathname.startsWith(link.href + "/")
+                            ? "bg-accent text-accent-foreground"
+                            : "",
+                        )}
                       >
-                        <Shield className="h-5 w-5" />
-                        Admin Panel
+                        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                          <link.icon className="h-5 w-5 text-muted-foreground" />
+                        </span>
+                        <span className="text-xs font-medium text-center">
+                          {link.label}
+                        </span>
                       </Link>
-                    </>
-                  )}
-
-                  <hr className="my-2" />
-
-                  {!isAuthenticated && (
-                    <Button asChild className="mx-4">
-                      <Link href="/login">Sign In with Google</Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/sell-bike"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex flex-col items-center gap-2 rounded-lg p-4 transition-colors hover:bg-accent focus:bg-accent"
+                    >
+                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+                        <PlusCircle className="h-5 w-5 text-primary-foreground" />
+                      </span>
+                      <span className="text-xs font-medium text-center">
+                        Post your bike
+                      </span>
+                    </Link>
+                  </DropdownMenuItem>
+                </div>
+                {!isAuthenticated && (
+                  <>
+                    <DropdownMenuSeparator className="my-3" />
+                    <Button asChild className="w-full" size="sm">
+                      <Link
+                        href="/login"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Sign In
+                      </Link>
                     </Button>
-                  )}
-                </nav>
-              </SheetContent>
-            </Sheet>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>

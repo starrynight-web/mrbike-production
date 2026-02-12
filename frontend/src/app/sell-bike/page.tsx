@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function SellBikePage() {
     return (
-        <main className="container min-h-screen">
+        <main className="w-full px-4 md:px-8 min-h-screen">
             <SellBikeWizard />
         </main>
     );

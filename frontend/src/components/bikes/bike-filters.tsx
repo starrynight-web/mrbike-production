@@ -2,7 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { X, SlidersHorizontal } from "lucide-react";
+import {
+  X,
+  SlidersHorizontal,
+  Zap,
+  Wind,
+  Building2,
+  CircleDot,
+  Compass,
+  Mountain,
+  Plug,
+  Bike,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -59,18 +70,31 @@ function FilterContent({
       <div>
         <h4 className="font-medium mb-3">Category</h4>
         <div className="flex flex-wrap gap-2">
-          {BIKE_CATEGORIES.map((cat) => (
-            <Badge
-              key={cat.value}
-              variant={
-                selectedCategories.includes(cat.value) ? "default" : "outline"
-              }
-              className="cursor-pointer transition-colors"
-              onClick={() => toggleCategory(cat.value)}
-            >
-              {cat.icon} {cat.label}
-            </Badge>
-          ))}
+          {BIKE_CATEGORIES.map((cat) => {
+            const Icon =
+              {
+                sport: Zap,
+                naked: Wind,
+                commuter: Building2,
+                scooter: CircleDot,
+                cruiser: Compass,
+                adventure: Mountain,
+                electric: Plug,
+              }[cat.value] || Bike;
+
+            return (
+              <Badge
+                key={cat.value}
+                variant={
+                  selectedCategories.includes(cat.value) ? "default" : "outline"
+                }
+                className="cursor-pointer transition-colors gap-1.5"
+                onClick={() => toggleCategory(cat.value)}
+              >
+                <Icon className="h-3.5 w-3.5" /> {cat.label}
+              </Badge>
+            );
+          })}
         </div>
       </div>
 
@@ -332,11 +356,11 @@ export function BikeFilters({ brands, totalCount }: BikeFiltersProps) {
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-80">
-            <SheetHeader>
+          <SheetContent side="right" className="w-80 p-0 flex flex-col">
+            <SheetHeader className="px-6 py-4 border-b text-left">
               <SheetTitle>Filters</SheetTitle>
             </SheetHeader>
-            <ScrollArea className="h-[calc(100vh-10rem)] mt-4">
+            <ScrollArea className="flex-1 px-6 py-6">
               <FilterContent
                 brands={brands}
                 selectedCategories={selectedCategories}
@@ -349,7 +373,7 @@ export function BikeFilters({ brands, totalCount }: BikeFiltersProps) {
                 setCcRange={setCcRange}
               />
             </ScrollArea>
-            <div className="flex gap-2 mt-4">
+            <div className="p-6 border-t mt-auto flex gap-2">
               <Button
                 variant="outline"
                 onClick={handleReset}
@@ -423,7 +447,7 @@ export function BikeFiltersSidebar({ brands }: { brands: Brand[] }) {
 
   return (
     <aside className="hidden lg:block w-64 shrink-0">
-      <div className="sticky top-20">
+      <div className="sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto pr-2 pb-10 scrollbar-none hover:scrollbar-thin">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold">Filters</h3>
           <Button variant="ghost" size="sm" onClick={resetFilters}>
@@ -436,22 +460,36 @@ export function BikeFiltersSidebar({ brands }: { brands: Brand[] }) {
           <div>
             <h4 className="text-sm font-medium mb-3">Category</h4>
             <div className="space-y-2">
-              {BIKE_CATEGORIES.map((cat) => (
-                <label
-                  key={cat.value}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedCategories.includes(cat.value)}
-                    onChange={() => toggleCategory(cat.value)}
-                    className="rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <span className="text-sm">
-                    {cat.icon} {cat.label}
-                  </span>
-                </label>
-              ))}
+              {BIKE_CATEGORIES.map((cat) => {
+                const Icon =
+                  {
+                    sport: Zap,
+                    naked: Wind,
+                    commuter: Building2,
+                    scooter: CircleDot,
+                    cruiser: Compass,
+                    adventure: Mountain,
+                    electric: Plug,
+                  }[cat.value] || Bike;
+
+                return (
+                  <label
+                    key={cat.value}
+                    className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1.5 rounded transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(cat.value)}
+                      onChange={() => toggleCategory(cat.value)}
+                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <div className="flex items-center gap-2 text-sm">
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                      <span>{cat.label}</span>
+                    </div>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
@@ -487,27 +525,25 @@ export function BikeFiltersSidebar({ brands }: { brands: Brand[] }) {
           {/* Brands */}
           <div>
             <h4 className="text-sm font-medium mb-3">Brand</h4>
-            <ScrollArea className="h-40">
-              <div className="space-y-1 pr-4">
-                {brands.map((brand) => (
-                  <label
-                    key={brand.id}
-                    className="flex items-center gap-2 cursor-pointer hover:bg-muted px-1 py-1 rounded"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedBrands.includes(brand.slug)}
-                      onChange={() => toggleBrand(brand.slug)}
-                      className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5"
-                    />
-                    <span className="text-sm flex-1">{brand.name}</span>
-                    <span className="text-[10px] text-muted-foreground">
-                      ({brand.bikeCount})
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </ScrollArea>
+            <div className="space-y-1">
+              {brands.map((brand) => (
+                <label
+                  key={brand.id}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-muted px-1.5 py-1 rounded transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedBrands.includes(brand.slug)}
+                    onChange={() => toggleBrand(brand.slug)}
+                    className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5"
+                  />
+                  <span className="text-sm flex-1">{brand.name}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    ({brand.bikeCount})
+                  </span>
+                </label>
+              ))}
+            </div>
           </div>
         </div>
       </div>

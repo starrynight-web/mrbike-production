@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
-import { Header, Footer, MobileNav } from "@/components/layout";
+import { Header, Footer } from "@/components/layout";
 import { CompareBar } from "@/components/bikes";
 import { APP_CONFIG, SEO_DEFAULTS } from "@/config/constants";
 
@@ -96,9 +96,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png" />
+        <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+        <link rel="manifest" href="/favicon/site.webmanifest" />
         <meta name="theme-color" content="#F97316" />
       </head>
       <body
@@ -106,9 +108,8 @@ export default function RootLayout({
       >
         <Providers>
           <Header />
-          <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+          <main className="flex-1">{children}</main>
           <Footer />
-          <MobileNav />
           <CompareBar />
         </Providers>
       </body>

@@ -197,9 +197,9 @@ export default function AdminDashboard() {
                                                     <Bike className="h-6 w-6 text-muted-foreground" />
                                                 )}
                                             </div>
-                                            <div>
-                                                <p className="font-semibold leading-none">{item.bike_model} ({item.year})</p>
-                                                <p className="text-sm text-muted-foreground mt-1">by {item.seller_name} • ৳{item.price.toLocaleString()}</p>
+                                            <div className="min-w-0">
+                                                <p className="font-semibold leading-none truncate">{item.bike_model} ({item.year})</p>
+                                                <p className="text-sm text-muted-foreground mt-1 truncate">by {item.seller_name} • ৳{item.price.toLocaleString()}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3 self-end sm:self-center">

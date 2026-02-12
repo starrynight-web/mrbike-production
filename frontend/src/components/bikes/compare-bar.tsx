@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 import {
   X,
   ArrowRight,
@@ -13,13 +14,15 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useCompareStore } from "@/store";
+import { useCompareStore, useUIStore } from "@/store";
 
 export function CompareBar() {
+  const pathname = usePathname();
   const { bikes, removeBike, clearAll, maxBikes } = useCompareStore();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const { setSearchOpen } = useUIStore();
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  if (bikes.length === 0) return null;
+  if (bikes.length === 0 || pathname === "/compare") return null;
 
   return (
     <AnimatePresence>
@@ -27,7 +30,7 @@ export function CompareBar() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-20 lg:bottom-4 left-4 right-4 z-50 pointer-events-none flex justify-center"
+        className="fixed bottom-20 lg:bottom-4 left-4 right-4 z-30 pointer-events-none flex justify-center"
       >
         <div className="bg-card border shadow-xl rounded-xl overflow-hidden pointer-events-auto w-full max-w-4xl">
           {/* Header / Toggle Bar */}
@@ -90,12 +93,13 @@ export function CompareBar() {
                     {/* Empty slots */}
                     {Array.from({ length: maxBikes - bikes.length }).map(
                       (_, i) => (
-                        <div
+                        <button
                           key={`empty-${i}`}
-                          className="flex items-center justify-center w-24 h-10 border-2 border-dashed rounded-lg text-xs text-muted-foreground shrink-0"
+                          onClick={() => setSearchOpen(true)}
+                          className="flex items-center justify-center w-24 h-10 border-2 border-dashed rounded-lg text-xs text-muted-foreground shrink-0 hover:bg-muted hover:border-primary/50 hover:text-primary transition-colors cursor-pointer"
                         >
                           + Add
-                        </div>
+                        </button>
                       ),
                     )}
                   </div>

@@ -274,14 +274,14 @@ export default function AdminBikesPage() {
               </DialogHeader>
 
               <Tabs defaultValue="basic" className="mt-6">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto">
                   <TabsTrigger value="basic">Basic Info</TabsTrigger>
                   <TabsTrigger value="engine">Engine & Performance</TabsTrigger>
                   <TabsTrigger value="image">Image</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="basic" className="space-y-4 pt-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Bike Name *</Label>
                       <Input
@@ -307,7 +307,7 @@ export default function AdminBikesPage() {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="category">Category *</Label>
                       <Select
@@ -360,7 +360,7 @@ export default function AdminBikesPage() {
                 </TabsContent>
 
                 <TabsContent value="engine" className="space-y-4 pt-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="engine_cc">Engine (CC)</Label>
                       <Input
@@ -395,7 +395,7 @@ export default function AdminBikesPage() {
                       </Select>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="transmission">Transmission</Label>
                       <Select
@@ -573,7 +573,7 @@ export default function AdminBikesPage() {
               <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <div className="rounded-md border overflow-hidden">
+            <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

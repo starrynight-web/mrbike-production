@@ -81,7 +81,9 @@ export default function DealersPage() {
         const response = await api.getBrands();
         if (response.success && response.data) {
           // Extract brand names assuming API returns objects with 'name' property
-          const brandNames = (response.data as any[]).map((b: { name: string }) => b.name);
+          const brandNames = (response.data as any[]).map(
+            (b: { name: string }) => b.name,
+          );
           setBrands(brandNames);
         }
       } catch (error) {
@@ -104,34 +106,30 @@ export default function DealersPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Hero Section (Reference: About Page) */}
-      <div className="bg-muted/30 border-b overflow-hidden relative">
+      {/* Hero Section */}
+      <div className="bg-muted/50 border-b relative overflow-hidden">
         <div className="absolute top-0 right-0 -mt-20 -mr-20 opacity-5 pointer-events-none">
           <Store size={400} />
         </div>
-        <div className="container py-20 relative z-10">
-          <div className="max-w-2xl mx-auto text-center space-y-4">
-            <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-primary/20">
-              Dealer Locator
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+        <div className="container py-8 relative z-10">
+          <div className="max-w-3xl space-y-4">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
               Authorized <span className="text-primary">Dealers</span>
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+            <p className="text-muted-foreground max-w-2xl">
               Find authorized dealers for the world&apos;s top motorcycle brands
-              in your area.
+              in your area. Verified information, updated 24/7.
             </p>
-            <div className="pt-4">
+            <div className="pt-2">
               <Button
-                size="lg"
-                className="h-12 px-8"
+                variant="outline"
                 onClick={() => {
                   document
                     .getElementById("search-section")
                     ?.scrollIntoView({ behavior: "smooth" });
                 }}
               >
-                <Search className="mr-2 h-5 w-5" /> Find Dealers
+                <Search className="mr-2 h-4 w-4" /> Find Dealers
               </Button>
             </div>
           </div>

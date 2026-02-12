@@ -16,35 +16,44 @@ import { Calculator, Fuel } from "lucide-react";
 
 export default function ExpenseCalculatorPage() {
   return (
-    <div className="container py-10 max-w-4xl mx-auto space-y-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">
-          Bike Expense Calculator
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Quickly estimate your bike-related expenses including monthly EMI and
-          your fuel cost per trip.
-        </p>
+    <div className="min-h-screen bg-background pb-20">
+      <div className="bg-muted/50 border-b relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mt-20 -mr-20 opacity-5 pointer-events-none">
+          <Calculator size={400} />
+        </div>
+        <div className="container py-12 relative z-10">
+          <div className="max-w-3xl space-y-4">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+              Expense <span className="text-primary">Calculator</span>
+            </h1>
+            <p className="text-muted-foreground max-w-2xl text-lg">
+              Quickly estimate your bike-related expenses including monthly EMI
+              and your fuel cost per trip.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <Tabs defaultValue="emi" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="emi" className="flex items-center gap-2">
-            <Calculator className="h-4 w-4" /> EMI Calculator
-          </TabsTrigger>
-          <TabsTrigger value="fuel" className="flex items-center gap-2">
-            <Fuel className="h-4 w-4" /> Octane Cost Estimator
-          </TabsTrigger>
-        </TabsList>
+      <div className="container py-12 max-w-4xl mx-auto space-y-8">
+        <Tabs defaultValue="emi" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="emi" className="flex items-center gap-2">
+              <Calculator className="h-4 w-4" /> EMI Calculator
+            </TabsTrigger>
+            <TabsTrigger value="fuel" className="flex items-center gap-2">
+              <Fuel className="h-4 w-4" /> Octane Cost Estimator
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="emi">
-          <EMICalculator />
-        </TabsContent>
+          <TabsContent value="emi">
+            <EMICalculator />
+          </TabsContent>
 
-        <TabsContent value="fuel">
-          <FuelCalculator />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="fuel">
+            <FuelCalculator />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

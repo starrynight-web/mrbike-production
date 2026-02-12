@@ -2,7 +2,15 @@
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Bike, Loader2, Chrome } from "lucide-react";
+import Image from "next/image";
+import {
+  Bike,
+  Loader2,
+  Chrome,
+  Phone,
+  ArrowRight,
+  ArrowLeft,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,19 +25,88 @@ import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-service";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
-      <Suspense
-        fallback={
-          <Card className="w-full max-w-md p-6">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-          </Card>
-        }
-      >
-        <LoginContent />
-      </Suspense>
+    <div className="min-h-screen flex flex-col md:flex-row bg-background relative overflow-hidden">
+      {/* Background Image for Mobile (Absolute positioned) */}
+      <div className="absolute inset-0 md:hidden">
+        <Image
+          src="/images/hero.webp"
+          alt="Motorcycle Background"
+          fill
+          className="object-cover opacity-40"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-background to-background" />
+      </div>
+
+      {/* Left side: Branding/Image (Hidden on mobile) */}
+      <div className="hidden md:flex md:w-1/2 relative bg-zinc-900 overflow-hidden">
+        <Image
+          src="/images/hero.webp"
+          alt="Motorcycle"
+          fill
+          className="object-cover opacity-60"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+        <div className="relative z-10 flex flex-col justify-between p-12 text-white h-full">
+          <div className="flex items-center gap-2">
+            <Image
+              src="/images/onlybike_dark.png"
+              alt="MrBikeBD Logo"
+              width={40}
+              height={40}
+              className="brightness-0 invert"
+            />
+            <span className="text-2xl font-bold tracking-tight">MrBikeBD</span>
+          </div>
+
+          <div className="space-y-6 max-w-lg">
+            <h1 className="text-5xl font-extrabold tracking-tight leading-tight">
+              The Ultimate Destination for{" "}
+              <span className="text-primary">Bike Lovers</span>
+            </h1>
+            <p className="text-xl text-zinc-300">
+              Join our community to explore, compare, and find your perfect
+              ride. Get exclusive updates and connect with fellow riders.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-8 text-sm text-zinc-400">
+            <div className="flex flex-col">
+              <span className="text-white font-semibold text-lg">50k+</span>
+              <span>Active Users</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-white font-semibold text-lg">10k+</span>
+              <span>Bikes Listed</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-white font-semibold text-lg">100+</span>
+              <span>Dealers</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right side: Login Form */}
+      <div className="flex-1 flex items-center justify-center p-4 md:p-12 lg:p-16 bg-muted/20 md:bg-muted/20 relative z-10">
+        <div className="w-full max-w-md space-y-8 bg-background/80 md:bg-transparent p-6 md:p-0 rounded-2xl backdrop-blur-sm md:backdrop-blur-none shadow-xl md:shadow-none border border-white/10 md:border-none">
+          <Suspense
+            fallback={
+              <Card className="w-full p-8 border-none shadow-none bg-transparent">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+              </Card>
+            }
+          >
+            <LoginContent />
+          </Suspense>
+        </div>
+      </div>
     </div>
   );
 }
@@ -57,7 +134,6 @@ function LoginContent() {
 
     setIsLoading(true);
     try {
-      // Use api-service to send OTP
       await api.sendOtp(phone);
       toast.success("OTP sent successfully!");
       setStep("otp");
@@ -78,7 +154,6 @@ function LoginContent() {
 
     setIsLoading(true);
     try {
-      // Use NextAuth Credentials provider which we set up to handle OTP
       const result = await signIn("credentials", {
         phone,
         otp,
@@ -153,98 +228,154 @@ function LoginContent() {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <div className="mx-auto bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-          <Bike className="h-6 w-6 text-primary" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="md:hidden flex flex-col items-center mb-8">
+        <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-4">
+          <Image
+            src="/images/onlybike_dark.png"
+            alt="MrBikeBD"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
         </div>
-        <CardTitle className="text-2xl">
+        <h2 className="text-2xl font-bold">MrBikeBD</h2>
+      </div>
+
+      <div className="space-y-2 mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">
           {step === "phone" ? "Welcome Back" : "Verify Phone"}
-        </CardTitle>
-        <CardDescription>
+        </h1>
+        <p className="text-muted-foreground">
           {step === "phone"
-            ? "Sign in with your phone number"
-            : `Enter the 6-digit code sent to ${phone}`}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+            ? "Sign in with your phone number to continue"
+            : `Enter the 6-digit code we sent to ${phone}`}
+        </p>
+      </div>
+
+      <AnimatePresence mode="wait">
         {step === "phone" ? (
-          <form onSubmit={handleSendOtp} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="01XXXXXXXXX"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Send OTP
-            </Button>
-
-            {process.env.NODE_ENV === "development" && (
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="w-full text-xs"
-                  onClick={handleDemoLogin}
-                  disabled={isLoading}
-                >
-                  Mock User
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full text-xs text-red-600 border-red-200 hover:bg-red-50"
-                  onClick={handleAdminLogin}
-                  disabled={isLoading}
-                >
-                  Mock Admin
-                </Button>
+          <motion.div
+            key="phone-step"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <form onSubmit={handleSendOtp} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="01XXXXXXXXX"
+                    className="pl-10 h-12 text-lg"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
-            )}
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="otp">Verification Code</Label>
-              <Input
-                id="otp"
-                type="text"
-                placeholder="123456"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                required
-                maxLength={6}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Verify & Login
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => setStep("phone")}
-              disabled={isLoading}
-            >
-              Change Phone Number
-            </Button>
-          </form>
-        )}
+              <Button
+                type="submit"
+                className="w-full h-12 text-lg font-semibold"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    Send OTP
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </Button>
 
+              {process.env.NODE_ENV === "development" && (
+                <div className="grid grid-cols-2 gap-4 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleDemoLogin}
+                    disabled={isLoading}
+                  >
+                    Demo User
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                    onClick={handleAdminLogin}
+                    disabled={isLoading}
+                  >
+                    Admin
+                  </Button>
+                </div>
+              )}
+            </form>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="otp-step"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <form onSubmit={handleVerifyOtp} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="otp">Verification Code</Label>
+                <Input
+                  id="otp"
+                  type="text"
+                  placeholder="Enter 6-digit code"
+                  className="h-14 text-center text-2xl tracking-[0.5em] font-bold"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  required
+                  maxLength={6}
+                  autoFocus
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full h-12 text-lg font-semibold"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  "Verify & Sign In"
+                )}
+              </Button>
+              <button
+                type="button"
+                className="flex items-center justify-center w-full text-sm text-muted-foreground hover:text-primary transition-colors"
+                onClick={() => setStep("phone")}
+                disabled={isLoading}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Phone Number
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="mt-8 space-y-6">
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+            <span className="w-full border-t border-zinc-200" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
+            <span className="bg-transparent px-4 text-muted-foreground font-medium">
               Or continue with
             </span>
           </div>
@@ -252,19 +383,32 @@ function LoginContent() {
 
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full h-12 text-base font-medium border-zinc-200 hover:bg-zinc-50"
           onClick={handleGoogleLogin}
           disabled={isLoading}
         >
-          <Chrome className="mr-2 h-4 w-4" />
-          Google
+          <Chrome className="mr-2 h-5 w-5 text-red-500" />
+          Sign in with Google
         </Button>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
-          By continuing, you agree to our Terms and Privacy Policy.
-        </p>
-      </CardFooter>
-    </Card>
+      </div>
+
+      <p className="mt-10 text-center text-sm text-muted-foreground">
+        By continuing, you agree to our{" "}
+        <a
+          href="/terms"
+          className="underline underline-offset-4 hover:text-primary"
+        >
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a
+          href="/privacy"
+          className="underline underline-offset-4 hover:text-primary"
+        >
+          Privacy Policy
+        </a>
+        .
+      </p>
+    </motion.div>
   );
 }

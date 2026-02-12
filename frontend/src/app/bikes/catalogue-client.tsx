@@ -41,13 +41,15 @@ export function BikeCataloguePage() {
   return (
     <div className="min-h-screen">
       {/* Page Header */}
-      <div className="bg-muted/50 border-b">
-        <div className="container py-8">
+      <div className="bg-muted/50 border-b relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mt-20 -mr-20 opacity-5 pointer-events-none">
+          <BikeIcon size={400} />
+        </div>
+        <div className="w-full px-4 md:px-8 py-8 relative z-10">
           <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-              <BikeIcon className="h-5 w-5 text-primary" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold">Bike Catalogue</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">
+              Bike <span className="text-primary">Catalogue</span>
+            </h1>
           </div>
           <p className="text-muted-foreground">
             Browse and compare 300+ motorcycles available in Bangladesh
@@ -56,7 +58,7 @@ export function BikeCataloguePage() {
       </div>
 
       {/* Main Content */}
-      <div className="container py-6 md:py-8">
+      <div className="w-full px-4 md:px-8 py-6 md:py-8">
         <div className="flex gap-8">
           {/* Desktop Sidebar Filters */}
           {!brandsLoading && <BikeFiltersSidebar brands={brands} />}
@@ -144,10 +146,11 @@ export function BikeCataloguePage() {
                         <a
                           key={page}
                           href={`/bikes?page=${page}`}
-                          className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium transition-colors ${isActive
+                          className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                            isActive
                               ? "bg-primary text-primary-foreground"
                               : "hover:bg-muted"
-                            }`}
+                          }`}
                         >
                           {page}
                         </a>

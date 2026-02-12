@@ -27,12 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+
 import { useBrands } from "@/hooks/use-bikes";
 import { Brand } from "@/types";
 import { BD_CITIES, BIKE_CONDITIONS } from "@/config/constants";
@@ -151,9 +146,11 @@ export function UsedBikeFilters() {
   return (
     <>
       {/* Desktop Filters */}
-      <div className="hidden lg:block w-64 shrink-0 space-y-6 sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto pr-2 hide-scrollbar pb-10">
-        <FilterContent {...filterContentProps} />
-      </div>
+      <aside className="hidden lg:block w-64 shrink-0">
+        <div className="sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto pr-2 pb-10 scrollbar-none hover:scrollbar-thin">
+          <FilterContent {...filterContentProps} />
+        </div>
+      </aside>
 
       {/* Mobile Filters */}
       <div className="lg:hidden">
@@ -226,49 +223,18 @@ function FilterContent({
   return (
     <div className={cn("space-y-6", mobile ? "px-1" : "")}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-lg">
-          Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
-        </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold">Filters</h3>
         {activeFilterCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearFilters}
-            className="h-8 px-2 text-destructive hover:text-destructive"
-          >
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
             Reset
           </Button>
         )}
       </div>
 
-      {/* Price Range */}
-      <div className="space-y-4">
-        <Label>Price Range</Label>
-        <Slider
-          value={[minPrice, maxPrice]}
-          max={1000000}
-          step={5000}
-          minStepsBetweenThumbs={1}
-          onValueCommit={handlePriceChange}
-          className="py-4"
-        />
-        <div className="flex items-center justify-between text-sm">
-          <span className="border px-2 py-1 rounded bg-muted">
-            {formatPrice(minPrice)}
-          </span>
-          <span className="text-muted-foreground">-</span>
-          <span className="border px-2 py-1 rounded bg-muted">
-            {formatPrice(maxPrice)}
-          </span>
-        </div>
-      </div>
-
-      <Separator />
-
       {/* Location */}
-      <div className="space-y-3">
-        <Label>Location</Label>
+      <div>
+        <h4 className="text-sm font-medium mb-3">Location</h4>
         <Select value={location} onValueChange={handleLocationChange}>
           <SelectTrigger>
             <SelectValue placeholder="Select City" />
@@ -286,66 +252,75 @@ function FilterContent({
 
       <Separator />
 
-      {/* Dynamic Sections */}
-      <Accordion
-        type="multiple"
-        defaultValue={["condition", "brand"]}
-        className="w-full"
-      >
-        {/* Condition */}
-        <AccordionItem value="condition">
-          <AccordionTrigger>Condition</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-2 pt-1">
-              {BIKE_CONDITIONS.map((condition) => (
-                <div
-                  key={condition.value}
-                  className="flex items-center space-x-2"
-                >
-                  <Checkbox
-                    id={`cond-${condition.value}`}
-                    checked={selectedConditions.includes(condition.value)}
-                    onCheckedChange={() => toggleCondition(condition.value)}
-                  />
-                  <label
-                    htmlFor={`cond-${condition.value}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                  >
-                    {condition.label}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+      {/* Price Range */}
+      <div>
+        <h4 className="text-sm font-medium mb-3">Price Range</h4>
+        <Slider
+          value={[minPrice, maxPrice]}
+          max={1000000}
+          step={5000}
+          minStepsBetweenThumbs={1}
+          onValueCommit={handlePriceChange}
+          className="py-4"
+        />
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span className="border px-2 py-1 rounded bg-muted/50 text-xs">
+            {formatPrice(minPrice)}
+          </span>
+          <span>-</span>
+          <span className="border px-2 py-1 rounded bg-muted/50 text-xs">
+            {formatPrice(maxPrice)}
+          </span>
+        </div>
+      </div>
 
-        {/* Brand */}
-        <AccordionItem value="brand">
-          <AccordionTrigger>Brand</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-2 pt-1 max-h-[300px] overflow-y-auto pr-2">
-              {brands?.map((brand: Brand) => (
-                <div key={brand.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`brand-${brand.id}`}
-                    checked={selectedBrands.includes(brand.slug)}
-                    onCheckedChange={() => toggleBrand(brand.slug)}
-                  />
-                  <label
-                    htmlFor={`brand-${brand.id}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
-                  >
-                    {brand.name}
-                  </label>
-                  <span className="text-xs text-muted-foreground">
-                    ({brand.bikeCount})
-                  </span>
-                </div>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      <Separator />
+
+      {/* Condition */}
+      <div>
+        <h4 className="text-sm font-medium mb-3">Condition</h4>
+        <div className="space-y-2">
+          {BIKE_CONDITIONS.map((condition) => (
+            <label
+              key={condition.value}
+              className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1.5 rounded transition-colors"
+            >
+              <Checkbox
+                id={`cond-${condition.value}`}
+                checked={selectedConditions.includes(condition.value)}
+                onCheckedChange={() => toggleCondition(condition.value)}
+              />
+              <span className="text-sm">{condition.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Brand */}
+      <div>
+        <h4 className="text-sm font-medium mb-3">Brand</h4>
+        <div className="space-y-1">
+          {brands?.map((brand: Brand) => (
+            <label
+              key={brand.id}
+              className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 px-1.5 py-1 rounded transition-colors"
+            >
+              <Checkbox
+                id={`brand-${brand.id}`}
+                checked={selectedBrands.includes(brand.slug)}
+                onCheckedChange={() => toggleBrand(brand.slug)}
+                className="h-3.5 w-3.5 rounded-sm"
+              />
+              <span className="text-sm flex-1">{brand.name}</span>
+              <span className="text-[10px] text-muted-foreground">
+                ({brand.bikeCount})
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

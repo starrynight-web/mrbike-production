@@ -15,6 +15,8 @@ import {
   Check,
   Calculator,
   X,
+  Bike,
+  ImageOff,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +39,7 @@ import {
   useHasHydrated,
 } from "@/store";
 import { EMI_CONFIG } from "@/config/constants";
-import type { Review, UsedBike, Bike } from "@/types";
+import type { Review, UsedBike, Bike as BikeModel } from "@/types";
 import {
   Select,
   SelectContent,
@@ -178,17 +180,21 @@ function QuickSpecsPanel({
           </SelectContent>
         </Select>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {specs.map((spec) => (
           <div
             key={spec.label}
             className={cn(
-              "p-2.5 rounded-lg bg-muted/50 border border-transparent",
+              "p-2.5 rounded-lg bg-muted/50 border border-transparent min-w-0 flex flex-col justify-center",
               spec.dynamic && "border-primary/20 bg-primary/5",
             )}
           >
-            <p className="text-xs text-muted-foreground">{spec.label}</p>
-            <p className="font-semibold text-sm">{spec.value}</p>
+            <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider">
+              {spec.label}
+            </p>
+            <p className="font-bold text-xs sm:text-sm truncate">
+              {spec.value}
+            </p>
           </div>
         ))}
       </div>
@@ -307,8 +313,8 @@ function VariantComparison({
                     {typeof row.render === "function"
                       ? row.render(variants[key])
                       : String(
-                        variants[key][row.key as keyof VariantData] || "",
-                      )}
+                          variants[key][row.key as keyof VariantData] || "",
+                        )}
                   </td>
                 ))}
               </tr>
@@ -348,7 +354,7 @@ function SimilarNewBikes({ slug }: { slug: string }) {
       ) : (
         <div className="flex flex-col gap-4">
           {(Array.isArray(similarBikes) ? similarBikes : []).map(
-            (bike: Bike) => {
+            (bike: BikeModel) => {
               const bikeId = bike.id || bike.slug;
               const bikeName = bike.name || "";
               const bikePrice = bike.price || bike.priceRange?.min || 0;
@@ -362,7 +368,8 @@ function SimilarNewBikes({ slug }: { slug: string }) {
 
               const bikeSpecs =
                 bike.specsSummary ||
-                `${bike.specs?.displacement || ""}cc • ${bike.specs?.maxPower || ""
+                `${bike.specs?.displacement || ""}cc • ${
+                  bike.specs?.maxPower || ""
                 }`;
 
               return (
@@ -372,13 +379,17 @@ function SimilarNewBikes({ slug }: { slug: string }) {
                   className="group block"
                 >
                   <div className="flex gap-4 p-3 rounded-xl border border-transparent hover:border-border hover:bg-muted/30 transition-all">
-                    <div className="w-24 h-16 shrink-0 rounded-lg overflow-hidden bg-muted relative">
-                      <Image
-                        src={bikeImage}
-                        alt={bikeName}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+                    <div className="w-24 h-16 shrink-0 rounded-lg overflow-hidden bg-muted relative flex items-center justify-center">
+                      {bikeImage ? (
+                        <Image
+                          src={bikeImage}
+                          alt={bikeName}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <Bike className="h-8 w-8 text-muted-foreground/30" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
@@ -539,7 +550,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
 
   if (error || !bike) {
     return (
-      <div className="container py-16 text-center">
+      <div className="w-full px-4 md:px-8 py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">Bike Not Found</h1>
         <p className="text-muted-foreground mb-8">
           The bike you&apos;re looking for doesn&apos;t exist or has been
@@ -596,7 +607,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
     <div className="min-h-screen pb-20">
       {/* Breadcrumb */}
       <div className="bg-muted/50 border-b">
-        <div className="container py-3">
+        <div className="w-full px-4 md:px-8 py-3">
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
             <Link href="/" className="hover:text-foreground">
               Home
@@ -623,7 +634,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
       </div>
 
       {/* Hero Section */}
-      <section className="container py-6 md:py-10">
+      <section className="w-full px-4 md:px-8 py-6 md:py-10">
         {/* Top Row: Name/Rating (left) + Action Buttons (right) */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
@@ -763,9 +774,9 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                         : "border-border hover:border-primary/50 hover:bg-muted/50",
                     )}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>{variants[key].label}</span>
-                      <span className="text-xs font-medium">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate">{variants[key].label}</span>
+                      <span className="text-xs font-medium shrink-0">
                         {formatPrice(variants[key].price)}
                       </span>
                     </div>
@@ -780,31 +791,33 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
         </div>
 
         {/* Bottom Row: Price Info + Similar Used Bikes */}
-        <div className="grid md:grid-cols-2 gap-6 mt-6">
+        <div className="grid lg:grid-cols-2 gap-6 mt-6">
           {/* Price Information */}
-          <div className="bg-card border rounded-xl p-5">
+          <div className="bg-card border rounded-xl p-5 overflow-hidden">
             <h3 className="font-semibold mb-4">Price Information</h3>
             <div className="space-y-4">
               {/* Price */}
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Ex-showroom Price</span>
-                <span className="text-2xl font-bold text-primary">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 min-w-0">
+                <span className="text-muted-foreground text-sm sm:text-base">
+                  Ex-showroom Price
+                </span>
+                <span className="text-xl sm:text-2xl font-bold text-primary whitespace-nowrap">
                   {formatPrice(basePrice)}
                 </span>
               </div>
 
               {/* Estimated EMI */}
-              <div className="flex items-center justify-between py-3 border-t border-b">
-                <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-t border-b gap-2 sm:gap-4 min-w-0">
+                <div className="min-w-0">
                   <span className="text-muted-foreground text-sm">
                     Estimated EMI
                   </span>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
                     {EMI_CONFIG.downPaymentPercent}% down,{" "}
                     {EMI_CONFIG.defaultInterestRate}% rate, {emiMonths} months
                   </p>
                 </div>
-                <span className="text-lg font-semibold text-primary">
+                <span className="text-base sm:text-lg font-semibold text-primary whitespace-nowrap">
                   {formatPrice(emi)}/mo
                 </span>
               </div>
@@ -871,15 +884,13 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
             <VariantComparison variants={variants} />
           </div>
           <div className="lg:col-span-1">
-            <SimilarNewBikes
-              slug={slug}
-            />
+            <SimilarNewBikes slug={slug} />
           </div>
         </div>
       </section>
 
       {/* Full Specifications Section */}
-      <section className="container py-8">
+      <section className="w-full px-4 md:px-8 py-8">
         <div className="bg-card rounded-xl border p-6">
           <h2 className="text-2xl font-bold mb-4">Full Specifications</h2>
 
@@ -909,7 +920,30 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
 
           {/* Specs Tabs */}
           <Tabs value={specsTab} onValueChange={setSpecsTab} className="w-full">
-            <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6">
+            {/* Mobile Select */}
+            <div className="lg:hidden mb-6">
+              <Select value={specsTab} onValueChange={setSpecsTab}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select Section" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[
+                    { id: "general", label: "General Comments" },
+                    { id: "engine", label: "Engine & Performance" },
+                    { id: "transmission", label: "Transmission & Brakes" },
+                    { id: "dimensions", label: "Dimensions & Weight" },
+                    { id: "features", label: "Features & Electricals" },
+                  ].map((tab) => (
+                    <SelectItem key={tab.id} value={tab.id}>
+                      {tab.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Desktop TabsList */}
+            <TabsList className="hidden lg:flex w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6 overflow-x-auto">
               {[
                 { id: "general", label: "General Comments" },
                 { id: "engine", label: "Engine & Performance" },
@@ -920,7 +954,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3 text-sm"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3 text-sm whitespace-nowrap"
                 >
                   {tab.label}
                 </TabsTrigger>
@@ -1170,7 +1204,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
 
       {/* Pros and Cons Section */}
       {currentVariant?.pros && currentVariant?.cons && (
-        <section className="container py-8">
+        <section className="w-full px-4 md:px-8 py-8">
           <div className="bg-card rounded-xl border p-6">
             <h2 className="text-2xl font-bold mb-6">
               Pros and Cons of {bikeName}
@@ -1231,7 +1265,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
       )}
 
       {/* Summary / Verdict Section */}
-      <section className="container py-8">
+      <section className="w-full px-4 md:px-8 py-8">
         <div className="bg-card rounded-xl border p-6">
           <h2 className="text-2xl font-bold mb-4">{bikeName} Summary</h2>
 
@@ -1336,7 +1370,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
       </section>
 
       {/* Rate This Bike Section */}
-      <section className="container py-8">
+      <section className="w-full px-4 md:px-8 py-8">
         <div className="bg-card rounded-xl border p-6">
           <RatingSection bikeId={bikeId} reviews={reviews || []} />
         </div>
@@ -1360,14 +1394,18 @@ function SpecRow({
   available?: boolean;
 }) {
   return (
-    <div className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
-      <span className="text-primary text-sm">{label}</span>
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">{value}</span>
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start py-2.5 border-b border-border/50 last:border-0 gap-1 sm:gap-4">
+      <span className="text-primary text-xs font-semibold sm:text-sm sm:w-1/3 shrink-0 uppercase tracking-wider">
+        {label}
+      </span>
+      <div className="flex items-center gap-2 sm:justify-end flex-1 min-w-0 w-full">
+        <span className="text-sm font-medium break-words sm:text-right w-full">
+          {value}
+        </span>
         {badge && (
           <Badge
             variant="secondary"
-            className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+            className="text-[10px] sm:text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 shrink-0 ml-auto sm:ml-0"
           >
             {badge}
           </Badge>
@@ -1375,9 +1413,9 @@ function SpecRow({
         {isFeature &&
           available !== undefined &&
           (available ? (
-            <Check className="h-4 w-4 text-green-500" />
+            <Check className="h-4 w-4 text-green-500 shrink-0 ml-auto sm:ml-0" />
           ) : (
-            <X className="h-4 w-4 text-red-500" />
+            <X className="h-4 w-4 text-red-500 shrink-0 ml-auto sm:ml-0" />
           ))}
       </div>
     </div>
@@ -1582,9 +1620,9 @@ function RatingSection({
                 <p className="text-lg font-bold">
                   {totalReviews > 0
                     ? (
-                      reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-                      totalReviews
-                    ).toFixed(1)
+                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                        totalReviews
+                      ).toFixed(1)
                     : "4.6"}
                   /5
                 </p>
@@ -1597,9 +1635,9 @@ function RatingSection({
                 <p className="text-lg font-bold">
                   {totalReviews > 0
                     ? (
-                      reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-                      totalReviews
-                    ).toFixed(1)
+                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                        totalReviews
+                      ).toFixed(1)
                     : "4.8"}
                   /5
                 </p>
@@ -1612,9 +1650,9 @@ function RatingSection({
                 <p className="text-lg font-bold">
                   {totalReviews > 0
                     ? (
-                      reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-                      totalReviews
-                    ).toFixed(1)
+                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                        totalReviews
+                      ).toFixed(1)
                     : "4.9"}
                   /5
                 </p>

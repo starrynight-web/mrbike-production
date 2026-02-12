@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Bike,
   Facebook,
@@ -48,17 +49,25 @@ export function Footer() {
 
   return (
     <footer className="border-t bg-muted/40">
-      <div className="container py-12 md:py-16">
+      <div className="w-full px-4 md:px-8 py-12 md:py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <Bike className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-xl">
-                MrBike<span className="text-primary">BD</span>
-              </span>
+            <Link href="/" className="flex items-center gap-3 mb-4">
+              <Image
+                src="/images/onlybike_dark.png"
+                alt="MrBikeBD Logo"
+                width={48}
+                height={48}
+                className="h-12 w-auto"
+              />
+              <Image
+                src="/images/onlytext_dark.png"
+                alt="MrBikeBD"
+                width={120}
+                height={32}
+                className="h-14 w-auto"
+              />
             </Link>
             <p className="text-sm text-muted-foreground mb-4 max-w-xs">
               {APP_CONFIG.tagline}. Discover, compare, and buy motorcycles from
@@ -80,11 +89,11 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Company Links */}
+          {/* Resources Links */}
           <div>
-            <h3 className="font-semibold mb-4">Company</h3>
+            <h3 className="font-semibold mb-4">Resources</h3>
             <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
+              {footerLinks.resources.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
@@ -97,11 +106,11 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Resources Links */}
+          {/* Company Links */}
           <div>
-            <h3 className="font-semibold mb-4">Resources</h3>
+            <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
-              {footerLinks.resources.map((link) => (
+              {footerLinks.company.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}

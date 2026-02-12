@@ -61,7 +61,7 @@ export default async function DebugRoutesPage() {
             </Link>
           </Button>
           <Button variant="default" asChild>
-            <Link href="/debug/routes">
+            <Link href="/admin/debug">
               <RefreshCw className="mr-2 h-4 w-4" /> Refresh
             </Link>
           </Button>
@@ -119,10 +119,11 @@ export default async function DebugRoutesPage() {
         <CardHeader>
           <CardTitle>Route Map</CardTitle>
           <CardDescription>
-            List of all discovered pages in the application structure.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          List of all discovered pages in the application structure.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -216,8 +217,9 @@ export default async function DebugRoutesPage() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
   );
 }

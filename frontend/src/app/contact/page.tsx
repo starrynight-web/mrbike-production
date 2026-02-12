@@ -64,7 +64,7 @@ export default function ContactPage() {
         <div className="absolute top-0 right-0 -mt-20 -mr-20 opacity-5 pointer-events-none">
           <MessageSquare size={400} />
         </div>
-        <div className="container py-20 relative z-10">
+        <div className="w-full px-4 md:px-8 py-20 relative z-10">
           <div className="max-w-2xl mx-auto text-center space-y-4">
             <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-primary/20">
               Get in Touch
@@ -80,7 +80,7 @@ export default function ContactPage() {
         </div>
       </div>
 
-      <div className="container py-20">
+      <div className="w-full px-4 md:px-8 py-20">
         <div className="grid lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
           {/* Contact Information (Reference: Bike Registration Steps) */}
           <div className="space-y-8">
