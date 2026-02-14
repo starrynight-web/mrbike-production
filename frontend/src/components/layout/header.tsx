@@ -105,13 +105,13 @@ export function Header() {
                     aria-hidden
                     className="absolute left-0 top-0 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75 pointer-events-none"
                   >
-                    Sell your bike
+                    Post your ad
                   </span>
                   <span
                     aria-hidden
                     className="whitespace-nowrap opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none"
                   >
-                    Sell
+                    Post
                   </span>
                 </span>
               </Link>

@@ -83,7 +83,7 @@ export default async function HomePage() {
             src="/images/hero.webp"
             alt="Hero Background"
             fill
-            className="object-cover opacity-20"
+            className="object-cover opacity-30"
             priority
           />
         </div>
@@ -98,8 +98,8 @@ export default async function HomePage() {
             </Badge> */}
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-              Find Your Perfect{" "}
-              <span className="text-gradient">Motorcycle</span>
+              Find Your <span className="text-gradient">Perfect</span> Motor
+              <span className="text-gradient">cycle</span>
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -111,7 +111,7 @@ export default async function HomePage() {
             <HeroSearch />
 
             {/* Category Pills */}
-            <div className="flex flex-wrap justify-center gap-2">
+            {/* <div className="flex flex-wrap justify-center gap-2">
               {BIKE_CATEGORIES.map((category) => {
                 const Icon =
                   {
@@ -138,7 +138,7 @@ export default async function HomePage() {
                   </Link>
                 );
               })}
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

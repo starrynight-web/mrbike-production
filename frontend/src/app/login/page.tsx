@@ -26,6 +26,7 @@ import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-service";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 export default function LoginPage() {
   return (
@@ -393,6 +394,16 @@ function LoginContent() {
       </div>
 
       <p className="mt-10 text-center text-sm text-muted-foreground">
+        Don&apos;t have an account?{" "}
+        <Link
+          href="/register"
+          className="text-primary hover:underline font-semibold"
+        >
+          Sign up
+        </Link>
+      </p>
+
+      <p className="mt-6 text-center text-xs text-muted-foreground">
         By continuing, you agree to our{" "}
         <a
           href="/terms"
