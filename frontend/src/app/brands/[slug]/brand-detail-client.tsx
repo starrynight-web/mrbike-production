@@ -15,6 +15,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { Bike as BikeType } from "@/types";
+import { ALLOWED_BRANDS } from "@/config/constants";
 
 interface BrandDetailClientProps {
   slug: string;
@@ -43,6 +44,11 @@ export function BrandDetailClient({ slug }: BrandDetailClientProps) {
     );
   }
 
+  const brandLogo =
+    brand?.logo ||
+    ALLOWED_BRANDS.find((b) => b.slug === brand?.slug)?.logo ||
+    "";
+
   return (
     <div className="min-h-screen pb-20">
       {/* Breadcrumb */}
@@ -63,39 +69,55 @@ export function BrandDetailClient({ slug }: BrandDetailClientProps) {
 
       {/* Brand Hero Header */}
       <div className="bg-muted/50 border-b relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mt-20 -mr-20 opacity-5 pointer-events-none">
-          <BadgeCheck size={400} />
+        {/* Background Watermark/Blur */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {brandLogo && (
+            <div className="absolute -right-20 -top-20 w-[600px] h-[600px] opacity-[0.03] rotate-12">
+              <Image
+                src={brandLogo}
+                alt=""
+                fill
+                className="object-contain grayscale"
+              />
+            </div>
+          )}
         </div>
+
         <div className="w-full px-4 md:px-8 py-8 md:py-12 relative z-10">
-          <div className="flex flex-col md:flex-row gap-8 items-start">
+          <div className="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
             <div className="w-full md:w-auto flex-shrink-0 flex justify-center md:block">
-              <div className="relative w-40 h-40 md:w-56 md:h-56 bg-card border rounded-2xl p-6 flex items-center justify-center shadow-sm">
-                {brand.logo ? (
+              <div className="relative w-32 h-32 md:w-48 md:h-48 bg-card/80 backdrop-blur-sm border rounded-2xl p-4 flex items-center justify-center shadow-sm">
+                {brandLogo ? (
                   <Image
-                    src={brand.logo}
+                    src={brandLogo}
                     alt={brand.name}
                     fill
-                    className="object-contain p-4"
+                    className="object-contain p-2"
                     priority
                   />
                 ) : (
-                  <Bike className="w-20 h-20 text-muted-foreground/30" />
+                  <Bike className="w-16 h-16 text-muted-foreground/30" />
                 )}
               </div>
             </div>
-            <div className="space-y-4 text-center md:text-left flex-1">
+            <div className="space-y-4 flex-1">
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">
                   {brand.name} Bikes
                 </h1>
-                <div className="flex items-center justify-center md:justify-start gap-2 text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>{brand.country}</span>
-                  <span>•</span>
-                  <span>{brand.bikeCount} Models Available</span>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4" />
+                    <span>{brand.country}</span>
+                  </div>
+                  <div className="hidden md:block w-1 h-1 rounded-full bg-muted-foreground/30" />
+                  <div className="flex items-center gap-1.5">
+                    <Bike className="h-4 w-4" />
+                    <span>{brand.bikeCount} Models Available</span>
+                  </div>
                 </div>
               </div>
-              <p className="text-lg text-muted-foreground max-w-3xl">
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto md:mx-0">
                 {brand.description ||
                   `Explore the complete lineup of ${brand.name} motorcycles available in Bangladesh. Find the latest prices, specifications, and features of all ${brand.name} bikes.`}
               </p>
@@ -108,7 +130,7 @@ export function BrandDetailClient({ slug }: BrandDetailClientProps) {
           </div>
         </div>
       </div>
-<div className="w-full px-4 md:px-8 py-12 space-y-12">
+      <div className="w-full px-4 md:px-8 py-12 space-y-12">
         {/* Bike List */}
         <div className="space-y-8">
           <div className="flex items-center justify-between">

@@ -16,6 +16,7 @@ import {
   Shield,
   PlusCircle,
 } from "lucide-react";
+import { TireIcon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -193,7 +194,7 @@ export function Header() {
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2">
+                  <Button variant="ghost" className="gap-2 px-2">
                     {user.image ? (
                       <Image
                         src={user.image}
@@ -250,7 +251,7 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button asChild size="sm" className="hidden sm:flex">
+              <Button asChild className="hidden sm:flex">
                 <Link href="/login">Sign In</Link>
               </Button>
             )}
@@ -266,7 +267,12 @@ export function Header() {
                   size="icon"
                   className="lg:hidden h-9 w-9 rounded-lg border bg-muted/50 hover:bg-muted shadow-sm"
                 >
-                  <LayoutGrid className="h-5 w-5" />
+                  <TireIcon
+                    className={cn(
+                      "h-5 w-5 transition-transform duration-500 ease-in-out",
+                      isMobileMenuOpen && "rotate-[360deg]",
+                    )}
+                  />
                   <span className="sr-only">Quick navigation</span>
                 </Button>
               </DropdownMenuTrigger>

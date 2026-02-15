@@ -12,9 +12,9 @@ import {
   Compass,
   Mountain,
   Plug,
-  Bike,
+  Bike as BikeIcon,
 } from "lucide-react";
-import { BIKE_CATEGORIES } from "@/config/constants";
+import { BIKE_CATEGORIES, ALLOWED_BRANDS } from "@/config/constants";
 import type { Bike, UsedBike } from "@/types";
 import { api } from "@/lib/api-service";
 import { sanitizeImageUrl, mapBike, mapUsedBike } from "@/lib/data-utils";
@@ -22,17 +22,7 @@ import { HeroSearch } from "@/components/layout/hero-search";
 import { PopularBikesCarousel } from "@/components/bikes/popular-bikes-carousel";
 import { CompareYourChoiceSection } from "@/components/bikes/compare-your-choice-section";
 import { UsedBikesCarousel } from "@/components/used-bikes/used-bikes-carousel";
-
-const popularBrands = [
-  { name: "Yamaha", logo: "/brands/yamaha.svg", slug: "yamaha" },
-  { name: "Honda", logo: "/brands/honda.svg", slug: "honda" },
-  { name: "Suzuki", logo: "/brands/suzuki.svg", slug: "suzuki" },
-  { name: "KTM", logo: "/brands/ktm.svg", slug: "ktm" },
-  { name: "TVS", logo: "/brands/tvs.svg", slug: "tvs" },
-  { name: "Bajaj", logo: "/brands/bajaj.svg", slug: "bajaj" },
-  { name: "Hero", logo: "/brands/hero.svg", slug: "hero" },
-  { name: "CFMoto", logo: "/brands/cfmoto.svg", slug: "cfmoto" },
-];
+import { CategoryShowcase } from "@/components/bikes/category-showcase";
 
 export default async function HomePage() {
   let featuredBikes: Bike[] = [];
@@ -153,18 +143,22 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ==================== COMPARE YOUR CHOICE ==================== */}
-      <CompareYourChoiceSection />
-
       {/* ==================== USED BIKES SECTION ==================== */}
-      <section className="py-12 md:py-16">
+      <section className="py-12 md:py-16 bg-muted/40">
         <div className="w-full px-4 md:px-8">
           <UsedBikesCarousel bikes={usedBikes} />
         </div>
       </section>
 
+      {/* ==================== CATEGORIES SECTION ==================== */}
+      <section className="py-12 md:py-16">
+        <div className="w-full px-4 md:px-8">
+          <CategoryShowcase />
+        </div>
+      </section>
+
       {/* ==================== BRANDS SECTION ==================== */}
-      <section className="py-12 md:py-16 bg-muted/50">
+      <section className="py-12 md:py-16 bg-muted/40">
         <div className="w-full px-4 md:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold mb-2">
@@ -176,7 +170,7 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
-            {popularBrands.map((brand) => (
+            {ALLOWED_BRANDS.map((brand) => (
               <Link
                 key={brand.slug}
                 href={`/brands/${brand.slug}`}
@@ -184,7 +178,7 @@ export default async function HomePage() {
               >
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden relative">
                   <Image
-                    src={sanitizeImageUrl(brand.logo, "/bikes/default.webp")}
+                    src={brand.logo}
                     alt={brand.name}
                     fill
                     className="object-contain p-2"
@@ -198,11 +192,22 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
+          <div className="mt-8 flex justify-center">
+            <Link
+              href="/brands"
+              className="inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-10 px-6"
+            >
+              View All Brands <ChevronRight className="ml-2 h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
+      {/* ==================== COMPARE YOUR CHOICE ==================== */}
+      <CompareYourChoiceSection />
+
       {/* ==================== CTA SECTION ==================== */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24 bg-muted/40">
         <div className="w-full px-4 md:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-primary to-orange-600 p-8 md:p-12 lg:p-16">
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />

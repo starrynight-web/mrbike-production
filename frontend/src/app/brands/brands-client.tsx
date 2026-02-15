@@ -6,9 +6,24 @@ import { useBrands } from "@/hooks/use-brands";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, Bike, Award } from "lucide-react";
+import { ALLOWED_BRANDS } from "@/config/constants";
 
 export function BrandsClient() {
   const { data: brands = [], isLoading } = useBrands();
+
+  // Filter brands to only show allowed ones and map to include local logo
+  const displayBrands = ALLOWED_BRANDS.map((allowedBrand) => {
+    const apiBrand = brands.find(
+      (b) => b.slug.toLowerCase() === allowedBrand.slug.toLowerCase(),
+    );
+    return {
+      ...allowedBrand,
+      ...apiBrand, // Merge API data (like id, bikeCount if available)
+      logo: allowedBrand.logo, // Enforce local logo
+      bikeCount: apiBrand?.bikeCount || 0,
+      id: apiBrand?.id || allowedBrand.slug, // Fallback ID
+    };
+  });
 
   if (isLoading) {
     return <BrandsLoadingSkeleton />;
@@ -33,7 +48,7 @@ export function BrandsClient() {
 
       <div className="w-full px-4 md:px-8 py-8 md:py-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
-          {brands.map((brand) => (
+          {displayBrands.map((brand) => (
             <Link
               key={brand.id}
               href={`/brands/${brand.slug}`}

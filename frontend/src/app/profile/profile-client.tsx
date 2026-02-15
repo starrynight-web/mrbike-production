@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   Loader2,
   Heart,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -67,6 +69,22 @@ export function ProfileClient() {
       [];
 
   const [activeTab, setActiveTab] = useState("overview");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      const newScrollLeft =
+        direction === "left"
+          ? scrollContainerRef.current.scrollLeft - scrollAmount
+          : scrollContainerRef.current.scrollLeft + scrollAmount;
+
+      scrollContainerRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: "smooth",
+      });
+    }
+  };
 
   useEffect(() => {
     if (!user && !statsLoading) {
@@ -146,56 +164,79 @@ export function ProfileClient() {
         onValueChange={setActiveTab}
         className="space-y-8"
       >
-        <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-muted/50 rounded-lg no-scrollbar">
-          <TabsTrigger
-            value="overview"
-            className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+        <div className="relative group">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/80 backdrop-blur-sm shadow-sm border opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0"
+            onClick={() => scroll("left")}
           >
-            Overview
-          </TabsTrigger>
-          <TabsTrigger
-            value="listings"
-            className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <TabsList
+            ref={scrollContainerRef}
+            className="w-full justify-start overflow-x-auto h-auto p-1 bg-muted/50 rounded-lg hide-scrollbar px-2"
           >
-            My Listings
-          </TabsTrigger>
-          <TabsTrigger
-            value="wishlist"
-            className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            <TabsTrigger
+              value="overview"
+              className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm flex-shrink-0"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger
+              value="listings"
+              className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm flex-shrink-0"
+            >
+              My Listings
+            </TabsTrigger>
+            <TabsTrigger
+              value="wishlist"
+              className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm flex-shrink-0"
+            >
+              Wishlist ({bikeIds.size})
+            </TabsTrigger>
+            <TabsTrigger
+              value="favorites"
+              className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm flex-shrink-0"
+            >
+              Favorites ({favoriteIds.size})
+            </TabsTrigger>
+            <TabsTrigger
+              value="notifications"
+              className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm flex-shrink-0"
+            >
+              Notifications
+            </TabsTrigger>
+            <TabsTrigger
+              value="reviews"
+              className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm flex-shrink-0"
+            >
+              My Reviews
+            </TabsTrigger>
+            <TabsTrigger
+              value="subscription"
+              className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm flex-shrink-0"
+            >
+              Subscription
+            </TabsTrigger>
+            <TabsTrigger
+              value="settings"
+              className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm flex-shrink-0"
+            >
+              Settings
+            </TabsTrigger>
+          </TabsList>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 bg-background/80 backdrop-blur-sm shadow-sm border opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={() => scroll("right")}
           >
-            Wishlist ({bikeIds.size})
-          </TabsTrigger>
-          <TabsTrigger
-            value="favorites"
-            className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            Favorites ({favoriteIds.size})
-          </TabsTrigger>
-          <TabsTrigger
-            value="notifications"
-            className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            Notifications
-          </TabsTrigger>
-          <TabsTrigger
-            value="reviews"
-            className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            My Reviews
-          </TabsTrigger>
-          <TabsTrigger
-            value="subscription"
-            className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            Subscription
-          </TabsTrigger>
-          <TabsTrigger
-            value="settings"
-            className="px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            Settings
-          </TabsTrigger>
-        </TabsList>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
 
         {/* OVERVIEW TAB */}
         <TabsContent value="overview" className="space-y-6">

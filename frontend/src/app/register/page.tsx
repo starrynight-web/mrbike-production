@@ -65,7 +65,13 @@ export default function RegisterPage() {
               height={40}
               className="brightness-0 invert"
             />
-            <span className="text-2xl font-bold tracking-tight">MrBikeBD</span>
+            <Image
+              src="/images/onlytext_dark.png"
+              alt="MrBikeBD"
+              width={120}
+              height={40}
+              className="brightness-0 invert h-12 w-auto object-contain"
+            />
           </div>
 
           <div className="space-y-6 max-w-lg">
@@ -206,7 +212,13 @@ function RegisterContent() {
             className="object-contain"
           />
         </div>
-        <h2 className="text-2xl font-bold">MrBikeBD</h2>
+        <Image
+          src="/images/onlytext_dark.png"
+          alt="MrBikeBD"
+          width={120}
+          height={40}
+          className="h-12 w-auto object-contain"
+        />
       </div>
 
       <div className="space-y-2 mb-8">

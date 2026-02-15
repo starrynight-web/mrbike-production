@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Fuel, Star, Check } from "lucide-react";
+import { Heart, Fuel, Star, Check, ArrowLeftRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -112,7 +112,11 @@ export function BikeCard({
                   isSelected ? "Remove from compare" : "Add to compare"
                 }
               >
-                <Check className={cn("h-3 w-3", !isSelected && "opacity-0")} />
+                {isSelected ? (
+                  <Check className="h-3 w-3" />
+                ) : (
+                  <ArrowLeftRight className="h-3 w-3" />
+                )}
                 Compare
               </button>
             )}
@@ -136,8 +140,8 @@ export function BikeCard({
                 {bike.priceRange
                   ? formatPrice(bike.priceRange.min)
                   : bike.price
-                  ? formatPrice(bike.price)
-                  : "Price TBD"}
+                    ? formatPrice(bike.price)
+                    : "Price TBD"}
               </span>
               {bike.priceRange &&
                 bike.priceRange.min !== bike.priceRange.max && (

@@ -91,7 +91,7 @@ function FilterContent({
                 className="cursor-pointer transition-colors gap-1.5"
                 onClick={() => toggleCategory(cat.value)}
               >
-                <Icon className="h-3.5 w-3.5" /> {cat.label}
+                {cat.label}
               </Badge>
             );
           })}
@@ -484,7 +484,6 @@ export function BikeFiltersSidebar({ brands }: { brands: Brand[] }) {
                       className="rounded border-gray-300 text-primary focus:ring-primary"
                     />
                     <div className="flex items-center gap-2 text-sm">
-                      <Icon className="h-4 w-4 text-muted-foreground" />
                       <span>{cat.label}</span>
                     </div>
                   </label>

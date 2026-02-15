@@ -204,7 +204,7 @@ export default function AdvertisePage() {
                 </CardHeader>
                 <CardContent className="flex-1 space-y-6">
                   <div>
-                    <span className="text-4xl font-bold text-primary">
+                    <span className="text-3xl font-bold text-primary">
                       {plan.price}
                     </span>
                     <span className="text-muted-foreground font-medium">

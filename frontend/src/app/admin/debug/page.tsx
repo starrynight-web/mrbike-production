@@ -119,107 +119,107 @@ export default async function DebugRoutesPage() {
         <CardHeader>
           <CardTitle>Route Map</CardTitle>
           <CardDescription>
-          List of all discovered pages in the application structure.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="rounded-md border overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Route Path</TableHead>
-                <TableHead>Parameters</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Auth</TableHead>
-                <TableHead className="text-right">Component Source</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {routes.map((route) => (
-                <TableRow key={route.path}>
-                  <TableCell>
-                    {route.type === "route" ? (
-                      <Badge
-                        variant="secondary"
-                        className="bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-200"
-                      >
-                        API
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">Page</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="font-mono">
-                    <Link
-                      href={route.path.includes("[") ? "#" : route.path}
-                      className={
-                        route.path.includes("[")
-                          ? "cursor-not-allowed text-muted-foreground"
-                          : "text-primary hover:underline"
-                      }
-                    >
-                      {route.path}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    {route.params.length > 0 ? (
-                      <div className="flex gap-1">
-                        {route.params.map((p) => (
-                          <Badge
-                            key={p}
-                            variant="outline"
-                            className="font-mono text-xs"
-                          >
-                            {p}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {route.status === "implemented" ? (
-                      <Badge
-                        variant="secondary"
-                        className="bg-green-100 text-green-800 hover:bg-green-100 border-green-200"
-                      >
-                        <CheckCircle2 className="w-3 h-3 mr-1" /> Implemented
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="text-yellow-600 border-yellow-200 bg-yellow-50"
-                      >
-                        <AlertCircle className="w-3 h-3 mr-1" /> Partial
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {route.authRequired ? (
-                      <Badge
-                        variant="outline"
-                        className="border-blue-200 text-blue-700 bg-blue-50"
-                      >
-                        <Shield className="w-3 h-3 mr-1" /> Required
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">
-                        Public
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right text-xs text-muted-foreground font-mono">
-                    {route.componentPath}
-                  </TableCell>
+            List of all discovered pages in the application structure.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Route Path</TableHead>
+                  <TableHead>Parameters</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Auth</TableHead>
+                  <TableHead className="text-right">Component Source</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
+              </TableHeader>
+              <TableBody>
+                {routes.map((route) => (
+                  <TableRow key={route.path}>
+                    <TableCell>
+                      {route.type === "route" ? (
+                        <Badge
+                          variant="secondary"
+                          className="bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-200"
+                        >
+                          API
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">Page</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="font-mono">
+                      <Link
+                        href={route.path.includes("[") ? "#" : route.path}
+                        className={
+                          route.path.includes("[")
+                            ? "cursor-not-allowed text-muted-foreground"
+                            : "text-primary hover:underline"
+                        }
+                      >
+                        {route.path}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      {route.params.length > 0 ? (
+                        <div className="flex gap-1">
+                          {route.params.map((p) => (
+                            <Badge
+                              key={p}
+                              variant="outline"
+                              className="font-mono text-xs"
+                            >
+                              {p}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {route.status === "implemented" ? (
+                        <Badge
+                          variant="secondary"
+                          className="bg-green-100 text-green-800 hover:bg-green-100 border-green-200"
+                        >
+                          <CheckCircle2 className="w-3 h-3 mr-1" /> Implemented
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="text-yellow-600 border-yellow-200 bg-yellow-50"
+                        >
+                          <AlertCircle className="w-3 h-3 mr-1" /> Partial
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {route.authRequired ? (
+                        <Badge
+                          variant="outline"
+                          className="border-blue-200 text-blue-700 bg-blue-50"
+                        >
+                          <Shield className="w-3 h-3 mr-1" /> Required
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">
+                          Public
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right text-xs text-muted-foreground font-mono">
+                      {route.componentPath}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

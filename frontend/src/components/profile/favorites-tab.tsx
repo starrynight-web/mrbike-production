@@ -70,7 +70,12 @@ export function FavoritesTab() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button asChild variant="default" size="sm" className="flex-1">
+                  <Button
+                    asChild
+                    variant="default"
+                    size="sm"
+                    className="flex-1"
+                  >
                     <Link href={`/bike/${id}`}>View bike</Link>
                   </Button>
                   <Button

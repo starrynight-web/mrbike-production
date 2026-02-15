@@ -152,204 +152,97 @@ export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
       </div>
 
       <div className="container py-6 md:py-10">
-        <div className="grid lg:grid-cols-[1fr_400px] gap-8 items-start">
-          {/* Main Content Area */}
-          <div className="space-y-8">
-            {/* Gallery Section */}
-            <div className="space-y-4">
-              <div className="relative aspect-video bg-zinc-950 rounded-2xl overflow-hidden shadow-2xl group">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeImageIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="relative w-full h-full"
-                  >
-                    <Image
-                      src={bike.images[activeImageIndex] || bike.thumbnailUrl}
-                      alt={bike.bikeName}
-                      fill
-                      className="object-contain"
-                      priority
-                    />
-                  </motion.div>
-                </AnimatePresence>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 md:gap-8 items-start">
+          {/* 1. Gallery Section - Mobile Order 1 */}
+          <div className="order-1 lg:col-start-1 space-y-4">
+            <div className="relative aspect-video bg-zinc-950 rounded-2xl overflow-hidden shadow-2xl group">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeImageIndex}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative w-full h-full"
+                >
+                  <Image
+                    src={bike.images[activeImageIndex] || bike.thumbnailUrl}
+                    alt={bike.bikeName}
+                    fill
+                    className="object-contain"
+                    priority
+                  />
+                </motion.div>
+              </AnimatePresence>
 
-                {/* Verified Badge */}
-                {bike.isVerified && (
-                  <div className="absolute top-6 left-6 z-10">
-                    <Badge className="bg-green-500/90 backdrop-blur-md hover:bg-green-600 px-3 py-1.5 text-sm gap-1.5 shadow-lg border-none">
-                      <ShieldCheck className="h-4 w-4" /> Verified Listing
-                    </Badge>
-                  </div>
-                )}
+              {/* Verified Badge */}
+              {bike.isVerified && (
+                <div className="absolute top-6 left-6 z-10">
+                  <Badge className="bg-green-500/90 backdrop-blur-md hover:bg-green-600 px-3 py-1.5 text-sm gap-1.5 shadow-lg border-none">
+                    <ShieldCheck className="h-4 w-4" /> Verified Listing
+                  </Badge>
+                </div>
+              )}
 
-                {/* Navigation Arrows */}
-                {bike.images.length > 1 && (
-                  <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="rounded-full shadow-xl pointer-events-auto h-12 w-12"
-                      onClick={() =>
-                        setActiveImageIndex((prev) =>
-                          prev === 0 ? bike.images.length - 1 : prev - 1,
-                        )
-                      }
-                    >
-                      <ChevronLeft className="h-6 w-6" />
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="rounded-full shadow-xl pointer-events-auto h-12 w-12"
-                      onClick={() =>
-                        setActiveImageIndex((prev) =>
-                          prev === bike.images.length - 1 ? 0 : prev + 1,
-                        )
-                      }
-                    >
-                      <ChevronRight className="h-6 w-6" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Thumbnails */}
+              {/* Navigation Arrows */}
               {bike.images.length > 1 && (
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                  {bike.images.map((img: string, index: number) => (
-                    <button
-                      key={index}
-                      onClick={() => setActiveImageIndex(index)}
-                      className={cn(
-                        "relative shrink-0 w-24 h-16 rounded-xl overflow-hidden border-2 transition-all",
-                        activeImageIndex === index
-                          ? "border-primary shadow-md"
-                          : "border-transparent opacity-60 hover:opacity-100",
-                      )}
-                    >
-                      <Image
-                        src={img}
-                        alt={`Thumb ${index}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </button>
-                  ))}
+                <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="rounded-full shadow-xl pointer-events-auto h-12 w-12"
+                    onClick={() =>
+                      setActiveImageIndex((prev) =>
+                        prev === 0 ? bike.images.length - 1 : prev - 1,
+                      )
+                    }
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="rounded-full shadow-xl pointer-events-auto h-12 w-12"
+                    onClick={() =>
+                      setActiveImageIndex((prev) =>
+                        prev === bike.images.length - 1 ? 0 : prev + 1,
+                      )
+                    }
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
                 </div>
               )}
             </div>
 
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="border-none shadow-sm bg-background">
-                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                      Year
-                    </p>
-                    <p className="font-bold text-lg">{bike.year}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-none shadow-sm bg-background">
-                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                  <Gauge className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                      Mileage
-                    </p>
-                    <p className="font-bold text-lg">
-                      {bike.kmDriven.toLocaleString()} km
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-none shadow-sm bg-background">
-                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                  <Zap className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                      Condition
-                    </p>
-                    <p className="font-bold text-lg capitalize">
-                      {bike.condition}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-none shadow-sm bg-background">
-                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                      History
-                    </p>
-                    <p className="font-bold text-lg">
-                      {bike.accidentHistory ? "Accident" : "Clean"}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Description Card */}
-            <Card className="border-none shadow-sm overflow-hidden">
-              <CardHeader className="bg-background border-b">
-                <CardTitle className="text-xl">
-                  Seller&apos;s Description
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 bg-background">
-                <div className="prose max-w-none text-muted-foreground leading-relaxed whitespace-pre-line text-lg">
-                  {bike.description || "No description provided by the seller."}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Similar Ads */}
-            {similarBikes.length > 0 && (
-              <div className="space-y-6 pt-6">
-                <h2 className="text-2xl font-bold">Similar Used Bikes</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {similarBikes.map((b) => (
-                    <Link
-                      key={b.id}
-                      href={`/used-bike/${b.id}`}
-                      className="group bg-background rounded-2xl overflow-hidden border border-transparent hover:border-primary transition-all shadow-sm hover:shadow-xl"
-                    >
-                      <div className="aspect-[4/3] relative overflow-hidden">
-                        <Image
-                          src={b.thumbnailUrl}
-                          alt={b.bikeName}
-                          fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-bold text-sm truncate group-hover:text-primary transition-colors">
-                          {b.bikeName}
-                        </h3>
-                        <p className="text-primary font-black mt-1">
-                          {formatPrice(b.price)}
-                        </p>
-                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-2 font-medium">
-                          <MapPin className="h-3 w-3" /> {b.location.city}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+            {/* Thumbnails */}
+            {bike.images.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {bike.images.map((img: string, index: number) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveImageIndex(index)}
+                    className={cn(
+                      "relative shrink-0 w-24 h-16 rounded-xl overflow-hidden border-2 transition-all",
+                      activeImageIndex === index
+                        ? "border-primary shadow-md"
+                        : "border-transparent opacity-60 hover:opacity-100",
+                    )}
+                  >
+                    <Image
+                      src={img}
+                      alt={`Thumb ${index}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Sidebar Area */}
-          <div className="space-y-6 lg:sticky lg:top-24">
+          {/* 2. Sidebar Area (Price & Safety) - Mobile Order 2 */}
+          <div className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-5 space-y-6 lg:sticky lg:top-24">
             {/* Price & Contact Card */}
             <Card className="border-none shadow-xl bg-background overflow-hidden">
               <div className="p-6 space-y-6">
@@ -400,9 +293,23 @@ export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Report Listing */}
+              <div className="px-6 pb-4 pt-2 border-t border-muted">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-destructive hover:text-destructive hover:bg-destructive/5 font-medium"
+                  asChild
+                >
+                  <Link href={`/report/${id}`}>
+                    <Flag className="h-4 w-4 mr-2" /> Report this listing
+                  </Link>
+                </Button>
+              </div>
             </Card>
 
-            {/* Safety Tips Card - HIGHLIGHTED */}
+            {/* Safety Tips Card */}
             <Card className="border-2 border-primary/20 bg-primary/5 shadow-lg overflow-hidden relative">
               <div className="absolute top-0 right-0 p-3 opacity-10">
                 <ShieldCheck className="h-20 w-20 text-primary" />
@@ -436,18 +343,115 @@ export function UsedBikeDetailClient({ id }: UsedBikeDetailClientProps) {
                 </div>
               </CardContent>
             </Card>
+          </div>
 
-            {/* Report Listing */}
-            <div className="flex justify-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-destructive hover:text-destructive hover:bg-destructive/5 font-medium"
-              >
-                <Flag className="h-4 w-4 mr-2" /> Report this listing
-              </Button>
+          {/* 3. Quick Stats Grid - Mobile Order 3 */}
+          <div className="order-3 lg:col-start-1">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-3 md:p-4 flex flex-col items-center text-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                      Year
+                    </p>
+                    <p className="font-bold text-base md:text-lg">
+                      {bike.year}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-3 md:p-4 flex flex-col items-center text-center gap-2">
+                  <Gauge className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                      Mileage
+                    </p>
+                    <p className="font-bold text-base md:text-lg">
+                      {bike.kmDriven.toLocaleString()} km
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-3 md:p-4 flex flex-col items-center text-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                      Condition
+                    </p>
+                    <p className="font-bold text-base md:text-lg capitalize">
+                      {bike.condition}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-3 md:p-4 flex flex-col items-center text-center gap-2">
+                  <ShieldCheck className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                      History
+                    </p>
+                    <p className="font-bold text-base md:text-lg">
+                      {bike.accidentHistory ? "Accident" : "Clean"}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
+
+          {/* 4. Description Card - Mobile Order 4 */}
+          <Card className="order-4 lg:col-start-1 border-none shadow-sm overflow-hidden">
+            <CardHeader className="bg-background border-b">
+              <CardTitle className="text-xl">
+                Seller&apos;s Description
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 bg-background">
+              <div className="prose max-w-none text-muted-foreground leading-relaxed whitespace-pre-line text-lg">
+                {bike.description || "No description provided by the seller."}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 5. Similar Ads - Mobile Order 5 */}
+          {similarBikes.length > 0 && (
+            <div className="order-5 lg:col-start-1 space-y-6 pt-6">
+              <h2 className="text-2xl font-bold">Similar Used Bikes</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {similarBikes.map((b) => (
+                  <Link
+                    key={b.id}
+                    href={`/used-bike/${b.id}`}
+                    className="group bg-background rounded-2xl overflow-hidden border border-transparent hover:border-primary transition-all shadow-sm hover:shadow-xl"
+                  >
+                    <div className="aspect-[4/3] relative overflow-hidden">
+                      <Image
+                        src={b.thumbnailUrl}
+                        alt={b.bikeName}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-bold text-sm truncate group-hover:text-primary transition-colors">
+                        {b.bikeName}
+                      </h3>
+                      <p className="text-primary font-black mt-1">
+                        {formatPrice(b.price)}
+                      </p>
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-2 font-medium">
+                        <MapPin className="h-3 w-3" /> {b.location.city}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

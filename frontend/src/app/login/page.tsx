@@ -4,22 +4,17 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
-  Bike,
   Loader2,
   Chrome,
   Phone,
   ArrowRight,
   ArrowLeft,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
@@ -63,7 +58,13 @@ export default function LoginPage() {
               height={40}
               className="brightness-0 invert"
             />
-            <span className="text-2xl font-bold tracking-tight">MrBikeBD</span>
+            <Image
+              src="/images/onlytext_dark.png"
+              alt="MrBikeBD"
+              width={120}
+              height={40}
+              className="brightness-0 invert h-12 w-auto object-contain"
+            />
           </div>
 
           <div className="space-y-6 max-w-lg">
@@ -99,9 +100,9 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8 bg-background/80 md:bg-transparent p-6 md:p-0 rounded-2xl backdrop-blur-sm md:backdrop-blur-none shadow-xl md:shadow-none border border-white/10 md:border-none">
           <Suspense
             fallback={
-              <Card className="w-full p-8 border-none shadow-none bg-transparent">
+              <div className="w-full p-8">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-              </Card>
+              </div>
             }
           >
             <LoginContent />
@@ -117,9 +118,19 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const [isLoading, setIsLoading] = useState(false);
+
+  // Login mode: "phone" or "email"
+  const [loginMode, setLoginMode] = useState<"phone" | "email">("email");
+
+  // Phone login states
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
+
+  // Email login states
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleGoogleLogin = () => {
     setIsLoading(true);
@@ -178,6 +189,42 @@ function LoginContent() {
     }
   };
 
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast.error("Please enter your email address");
+      return;
+    }
+    if (!password) {
+      toast.error("Please enter your password");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl,
+      });
+
+      if (result?.error) {
+        console.error("Login error:", result.error);
+        toast.error("Invalid email or password");
+      } else {
+        toast.success("Successfully logged in!");
+        router.push(callbackUrl);
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Email login error:", error);
+      toast.error("An error occurred during sign in");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleDemoLogin = async () => {
     setIsLoading(true);
     try {
@@ -228,6 +275,18 @@ function LoginContent() {
     }
   };
 
+  const getHeadingText = () => {
+    if (loginMode === "email") return "Welcome Back";
+    return step === "phone" ? "Welcome Back" : "Verify Phone";
+  };
+
+  const getSubheadingText = () => {
+    if (loginMode === "email") return "Sign in with your email and password";
+    return step === "phone"
+      ? "Sign in with your phone number to continue"
+      : `Enter the 6-digit code we sent to ${phone}`;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -244,22 +303,136 @@ function LoginContent() {
             className="object-contain"
           />
         </div>
-        <h2 className="text-2xl font-bold">MrBikeBD</h2>
+        <Image
+          src="/images/onlytext_dark.png"
+          alt="MrBikeBD"
+          width={120}
+          height={40}
+          className="h-12 w-auto object-contain"
+        />
       </div>
 
-      <div className="space-y-2 mb-8">
+      <div className="space-y-2 mb-6">
         <h1 className="text-3xl font-bold tracking-tight">
-          {step === "phone" ? "Welcome Back" : "Verify Phone"}
+          {getHeadingText()}
         </h1>
-        <p className="text-muted-foreground">
-          {step === "phone"
-            ? "Sign in with your phone number to continue"
-            : `Enter the 6-digit code we sent to ${phone}`}
-        </p>
+        <p className="text-muted-foreground">{getSubheadingText()}</p>
       </div>
+
+      {/* Login Mode Tabs */}
+      {(loginMode === "email" || step === "phone") && (
+        <div className="flex bg-muted rounded-xl p-1 mb-6">
+          <button
+            type="button"
+            onClick={() => setLoginMode("email")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+              loginMode === "email"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Mail className="h-4 w-4" />
+            Email
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setLoginMode("phone");
+              setStep("phone");
+            }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+              loginMode === "phone"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Phone className="h-4 w-4" />
+            Phone
+          </button>
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
-        {step === "phone" ? (
+        {loginMode === "email" ? (
+          <motion.div
+            key="email-step"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <form onSubmit={handleEmailLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    className="pl-10 h-12 text-lg"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-primary hover:underline font-medium"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    className="pl-10 pr-10 h-12 text-lg"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-12 text-lg font-semibold"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </motion.div>
+        ) : step === "phone" ? (
           <motion.div
             key="phone-step"
             initial={{ opacity: 0, x: -20 }}
