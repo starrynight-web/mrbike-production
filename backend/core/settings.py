@@ -81,6 +81,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'CONN_MAX_AGE': 0,  # Disable persistent connections for SQLite to prevent locking issues
+        'CONN_HEALTH_CHECKS': False,
+        'OPTIONS': {
+            'timeout': 20,  # Keep increased timeout for SQLite locks
+        }
     }
 }
 
@@ -138,6 +143,8 @@ REST_FRAMEWORK = {
         'anon': '100/hour',
         'user': '1000/hour',
         'image_upload': '10/hour',
+        'login': '5/min',
+        'register': '10/hour',
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
@@ -173,6 +180,18 @@ cloudinary.config(
     secure = True
 )
 
+# Frontend URL (for email verification links)
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+# Email Configuration (Brevo / Sendinblue SMTP)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp-relay.brevo.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('BREVO_SMTP_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('BREVO_API_KEY', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@mrbikebd.com')
+
 # CORS Settings
 if DEBUG:
     CORS_ALLOWED_ORIGINS = [
@@ -202,10 +221,11 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 # CSRF & Session Security
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False  # Frontend JS needs to read CSRF token
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+SECURE_REFERRER_POLICY = 'same-origin'
 
 # Logging Configuration
 LOGGING = {

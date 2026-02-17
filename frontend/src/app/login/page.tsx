@@ -131,6 +131,7 @@ function LoginContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [verificationError, setVerificationError] = useState(false);
 
   const handleGoogleLogin = () => {
     setIsLoading(true);
@@ -201,8 +202,9 @@ function LoginContent() {
     }
 
     setIsLoading(true);
+    setVerificationError(false); // Reset error state on new attempt
     try {
-      const result = await signIn("credentials", {
+      const result = await signIn("email-password", {
         email,
         password,
         redirect: false,
@@ -210,16 +212,50 @@ function LoginContent() {
       });
 
       if (result?.error) {
-        console.error("Login error:", result.error);
-        toast.error("Invalid email or password");
+        if (result.error === "EMAIL_NOT_VERIFIED") {
+          setVerificationError(true);
+          toast.error("Email not verified", {
+            description: "Please check your inbox or resend the verification link.",
+          });
+        } else {
+          toast.error(result.error || "Invalid email or password");
+        }
       } else {
         toast.success("Successfully logged in!");
         router.push(callbackUrl);
         router.refresh();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Email login error:", error);
-      toast.error("An error occurred during sign in");
+      toast.error(error.message || "An error occurred during sign in");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      toast.error("Please enter your email address first");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/auth/resend-verification/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Verification email sent!");
+        setVerificationError(false);
+      } else {
+        toast.error(data.error || "Failed to resend verification link");
+      }
+    } catch (error) {
+      toast.error("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -325,11 +361,10 @@ function LoginContent() {
           <button
             type="button"
             onClick={() => setLoginMode("email")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-              loginMode === "email"
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${loginMode === "email"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <Mail className="h-4 w-4" />
             Email
@@ -340,11 +375,10 @@ function LoginContent() {
               setLoginMode("phone");
               setStep("phone");
             }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-              loginMode === "phone"
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${loginMode === "phone"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <Phone className="h-4 w-4" />
             Phone
@@ -415,6 +449,21 @@ function LoginContent() {
                   </button>
                 </div>
               </div>
+
+              {verificationError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 flex flex-col gap-2">
+                  <p>Your email has not been verified yet.</p>
+                  <Button
+                    variant="link"
+                    className="p-0 text-red-700 font-bold justify-start h-auto"
+                    onClick={handleResendVerification}
+                    disabled={isLoading}
+                    type="button"
+                  >
+                    Resend verification link
+                  </Button>
+                </div>
+              )}
 
               <Button
                 type="submit"

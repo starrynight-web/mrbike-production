@@ -59,6 +59,12 @@ import { formatPrice } from "@/lib/utils";
 import { BIKE_CATEGORIES } from "@/config/constants";
 import { adminAPI, Bike as BikeType } from "@/lib/admin-api";
 
+interface Brand {
+  id: number;
+  name: string;
+  logo_url?: string;
+}
+
 export default function AdminBikesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -70,6 +76,7 @@ export default function AdminBikesPage() {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [brands, setBrands] = useState<Brand[]>([]);
 
   const [newBike, setNewBike] = useState({
     name: "",
@@ -77,17 +84,31 @@ export default function AdminBikesPage() {
     category: "commuter",
     price: 0,
     description: "",
-    engine_cc: 0,
-    fuel_type: "petrol",
-    transmission: "manual",
-    braking_system: "hydraulic",
-    featured: false,
-    image_url: "",
+    engine_capacity: 0,
+    engine_type: "petrol",
+    gears: 5,
+    clutch_type: "wet",
+    curb_weight: 0,
+    fuel_capacity: 0,
+    seat_height: 0,
+    tyre_type: "tubeless",
+    is_available: true,
+    primary_image: "",
   });
 
   useEffect(() => {
     loadBikes();
+    loadBrands();
   }, []);
+
+  const loadBrands = async () => {
+    try {
+      const data = await adminAPI.getAllBrands();
+      setBrands(data || []);
+    } catch {
+      console.error("Failed to load brands");
+    }
+  };
 
   const loadBikes = async () => {
     try {
@@ -96,7 +117,7 @@ export default function AdminBikesPage() {
         limit: 100,
         offset: 0,
       });
-      setBikes(response.results || response);
+      setBikes(response?.results || []);
     } catch {
       toast.error("Failed to load bikes");
     } finally {
@@ -122,7 +143,7 @@ export default function AdminBikesPage() {
     try {
       setSubmitting(true);
 
-      let imageUrl = newBike.image_url || imagePreview;
+      let imageUrl = newBike.primary_image || imagePreview;
 
       // Upload image if provided
       if (imageFile && !imageFile.name?.startsWith("data:")) {
@@ -133,15 +154,13 @@ export default function AdminBikesPage() {
           toast.error("Failed to upload image");
           return;
         }
-      } else if (imagePreview?.startsWith("data:")) {
-        // Don't use base64 data URLs
-        imageUrl = newBike.image_url || "";
       }
 
       const bikeData = {
         ...newBike,
         price: Number(newBike.price),
-        image_url: imageUrl,
+        primary_image: imageUrl,
+        brand: Number(newBike.brand), // Ensure brand is an ID
       };
 
       if (editingId) {
@@ -170,12 +189,16 @@ export default function AdminBikesPage() {
       category: "commuter",
       price: 0,
       description: "",
-      engine_cc: 0,
-      fuel_type: "petrol",
-      transmission: "manual",
-      braking_system: "hydraulic",
-      featured: false,
-      image_url: "",
+      engine_capacity: 0,
+      engine_type: "petrol",
+      gears: 5,
+      clutch_type: "wet",
+      curb_weight: 0,
+      fuel_capacity: 0,
+      seat_height: 0,
+      tyre_type: "tubeless",
+      is_available: true,
+      primary_image: "",
     });
     setImageFile(null);
     setImagePreview("");
@@ -185,18 +208,22 @@ export default function AdminBikesPage() {
   const handleEdit = (bike: BikeType) => {
     setNewBike({
       name: bike.name,
-      brand: bike.brand,
+      brand: (typeof bike.brand === 'object' ? (bike.brand as { id: number }).id.toString() : bike.brand.toString()),
       category: bike.category,
       price: bike.price,
       description: bike.description || "",
-      engine_cc: bike.engine_cc || 0,
-      fuel_type: bike.fuel_type || "petrol",
-      transmission: bike.transmission || "manual",
-      braking_system: bike.braking_system || "hydraulic",
-      featured: bike.featured || false,
-      image_url: bike.image_url || "",
+      engine_capacity: bike.engine_capacity || 0,
+      engine_type: bike.engine_type || "petrol",
+      gears: bike.gears || 5,
+      clutch_type: bike.clutch_type || "wet",
+      curb_weight: bike.curb_weight || 0,
+      fuel_capacity: bike.fuel_capacity || 0,
+      seat_height: bike.seat_height || 0,
+      tyre_type: bike.tyre_type || "tubeless",
+      is_available: bike.is_available ?? true,
+      primary_image: bike.primary_image || "",
     });
-    setImagePreview(bike.image_url || "");
+    setImagePreview(bike.primary_image || "");
     setEditingId(bike.id);
     setIsAddDialogOpen(true);
   };
@@ -229,9 +256,10 @@ export default function AdminBikesPage() {
   };
 
   const filteredBikes = bikes.filter((bike) => {
+    const bikeBrand = (typeof bike.brand === 'object' ? (bike.brand as { name: string }).name : (brands.find(b => b.id.toString() === bike.brand.toString())?.name || ""));
     const matchesSearch =
       bike.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bike.brand.toLowerCase().includes(searchTerm.toLowerCase());
+      bikeBrand.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
       categoryFilter === "all" || bike.category === categoryFilter;
     return matchesSearch && matchesCategory;
@@ -296,15 +324,24 @@ export default function AdminBikesPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="brand">Brand *</Label>
-                      <Input
-                        id="brand"
-                        placeholder="e.g. Yamaha"
-                        required
+                      <Select
                         value={newBike.brand}
-                        onChange={(e) =>
-                          setNewBike({ ...newBike, brand: e.target.value })
+                        onValueChange={(v) =>
+                          setNewBike({ ...newBike, brand: v })
                         }
-                      />
+                        required
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Brand" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {brands.map((brand) => (
+                            <SelectItem key={brand.id} value={brand.id.toString()}>
+                              {brand.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -362,75 +399,90 @@ export default function AdminBikesPage() {
                 <TabsContent value="engine" className="space-y-4 pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="engine_cc">Engine (CC)</Label>
+                      <Label htmlFor="engine_capacity">Engine (CC) *</Label>
                       <Input
-                        id="engine_cc"
+                        id="engine_capacity"
                         type="number"
                         placeholder="e.g. 155"
-                        value={newBike.engine_cc || ""}
+                        required
+                        value={newBike.engine_capacity || ""}
                         onChange={(e) =>
                           setNewBike({
                             ...newBike,
-                            engine_cc: Number(e.target.value),
+                            engine_capacity: Number(e.target.value),
                           })
                         }
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="fuel_type">Fuel Type</Label>
-                      <Select
-                        value={newBike.fuel_type}
-                        onValueChange={(v) =>
-                          setNewBike({ ...newBike, fuel_type: v })
+                      <Label htmlFor="engine_type">Engine Type</Label>
+                      <Input
+                        id="engine_type"
+                        placeholder="e.g. Single Cylinder, 4-Stroke"
+                        value={newBike.engine_type}
+                        onChange={(e) =>
+                          setNewBike({ ...newBike, engine_type: e.target.value })
                         }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="petrol">Petrol</SelectItem>
-                          <SelectItem value="diesel">Diesel</SelectItem>
-                          <SelectItem value="hybrid">Hybrid</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="transmission">Transmission</Label>
-                      <Select
-                        value={newBike.transmission}
-                        onValueChange={(v) =>
-                          setNewBike({ ...newBike, transmission: v })
+                      <Label htmlFor="gears">Number of Gears</Label>
+                      <Input
+                        id="gears"
+                        type="number"
+                        value={newBike.gears}
+                        onChange={(e) =>
+                          setNewBike({ ...newBike, gears: Number(e.target.value) })
                         }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="manual">Manual</SelectItem>
-                          <SelectItem value="automatic">Automatic</SelectItem>
-                          <SelectItem value="cvt">CVT</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="braking_system">Braking System</Label>
-                      <Select
-                        value={newBike.braking_system}
-                        onValueChange={(v) =>
-                          setNewBike({ ...newBike, braking_system: v })
+                      <Label htmlFor="clutch_type">Clutch Type</Label>
+                      <Input
+                        id="clutch_type"
+                        placeholder="e.g. Wet Multi-plate"
+                        value={newBike.clutch_type}
+                        onChange={(e) =>
+                          setNewBike({ ...newBike, clutch_type: e.target.value })
                         }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="mechanical">Mechanical</SelectItem>
-                          <SelectItem value="hydraulic">Hydraulic</SelectItem>
-                          <SelectItem value="disc">Disc</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="curb_weight">Body Weight (kg)</Label>
+                      <Input
+                        id="curb_weight"
+                        type="number"
+                        value={newBike.curb_weight}
+                        onChange={(e) =>
+                          setNewBike({ ...newBike, curb_weight: Number(e.target.value) })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="fuel_capacity">Fuel Capacity (L)</Label>
+                      <Input
+                        id="fuel_capacity"
+                        type="number"
+                        value={newBike.fuel_capacity}
+                        onChange={(e) =>
+                          setNewBike({ ...newBike, fuel_capacity: Number(e.target.value) })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="seat_height">Seat Height (mm)</Label>
+                      <Input
+                        id="seat_height"
+                        type="number"
+                        value={newBike.seat_height}
+                        onChange={(e) =>
+                          setNewBike({ ...newBike, seat_height: Number(e.target.value) })
+                        }
+                      />
                     </div>
                   </div>
                 </TabsContent>
@@ -590,9 +642,9 @@ export default function AdminBikesPage() {
                     <TableRow key={bike.id}>
                       <TableCell>
                         <div className="h-12 w-16 rounded overflow-hidden bg-muted relative">
-                          {bike.image_url ? (
+                          {bike.primary_image ? (
                             <Image
-                              src={bike.image_url}
+                              src={bike.primary_image}
                               alt={bike.name}
                               fill
                               className="object-cover"
@@ -608,7 +660,7 @@ export default function AdminBikesPage() {
                       <TableCell>
                         <div className="font-medium">{bike.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {bike.brand}
+                          {bike.brand_name || (typeof bike.brand === 'object' ? (bike.brand as { name: string }).name : brands.find(b => b.id.toString() === bike.brand.toString())?.name) || 'Unknown Brand'}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -618,7 +670,7 @@ export default function AdminBikesPage() {
                       </TableCell>
                       <TableCell>{formatPrice(bike.price)}</TableCell>
                       <TableCell className="text-sm">
-                        {bike.engine_cc}cc {bike.fuel_type}
+                        {bike.engine_capacity}cc {bike.engine_type}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>

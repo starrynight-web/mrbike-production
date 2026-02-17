@@ -1,0 +1,157 @@
+﻿
+> frontend@0.1.0 build
+> next build
+
+node.exe : ΓÜá 
+Warning: Next.js 
+inferred your 
+workspace root, but 
+it may not be 
+correct.
+At line:1 char:1
++ & "C:\Program Files
+\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (ΓÜá War   
+ ning: Ne...not b    
+e correct.:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+ We detected 
+multiple lockfiles 
+and selected the 
+directory of E:\mr\pa
+ckage-lock.json as 
+the root directory.
+ To silence this 
+warning, set 
+`turbopack.root` in 
+your Next.js config, 
+or consider removing 
+one of the lockfiles 
+if it's not needed.
+   See https://nextjs
+.org/docs/app/api-ref
+erence/config/next-co
+nfig-js/turbopack#roo
+t-directory for more 
+information.
+ Detected additional 
+lockfiles: 
+   * E:\mr\frontend\p
+ackage-lock.json
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 10.2s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/35) ...
+  Generating static pages using 11 workers (8/35) 
+(node:28900) 
+[DEP0169] 
+DeprecationWarning: 
+`url.parse()` 
+behavior is not 
+standardized and 
+prone to errors that 
+have security 
+implications. Use 
+the WHATWG URL API 
+instead. CVEs are 
+not issued for 
+`url.parse()` 
+vulnerabilities.
+(Use `node 
+--trace-deprecation 
+...` to show where 
+the warning was 
+created)
+  Generating static pages using 11 workers (17/35) 
+  Generating static pages using 11 workers (26/35) 
+Sitemap: Failed to 
+fetch bikes 
+TypeError: fetch 
+failed
+    at async x (E:\mr
+\frontend\.next\serve
+r\chunks\[root-of-the
+-server]__909f30bb._.
+js:16:539)
+    at async R (E:\mr
+\frontend\.next\serve
+r\chunks\[root-of-the
+-server]__909f30bb._.
+js:16:1436) {
+  [cause]: 
+AggregateError: 
+      at 
+ignore-listed frames 
+{
+    code: 
+'ECONNREFUSED'
+  }
+}
+Γ£ô Generating static pages using 11 workers (35/35) in 825.1ms
+  Finalizing page optimization ...
+
+Route (app)                       Revalidate  Expire
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ Γùï /about
+Γö£ Γùï /admin
+Γö£ Γùï /admin/bikes
+Γö£ ╞Æ /admin/debug
+Γö£ Γùï /admin/news
+Γö£ Γùï /admin/used-bikes
+Γö£ Γùï /advertise
+Γö£ ╞Æ /api/auth/[...nextauth]
+Γö£ ΓùÅ /bike/[slug]
+Γöé Γö£ /bike/yamaha-r15-v4
+Γöé Γö£ /bike/honda-cb150r
+Γöé Γö£ /bike/suzuki-gixxer-sf
+Γöé Γöö [+2 more paths]
+Γö£ Γùï /bikes
+Γö£ Γùï /brands
+Γö£ ╞Æ /brands/[slug]
+Γö£ Γùï /compare
+Γö£ Γùï /contact
+Γö£ Γùï /dealers
+Γö£ Γùï /forgot-password
+Γö£ Γùï /login
+Γö£ Γùï /news
+Γö£ ╞Æ /news/[slug]
+Γö£ Γùï /privacy
+Γö£ Γùï /profile
+Γö£ Γùï /register
+Γö£ ╞Æ /report/[id]
+Γö£ Γùï /reset-password
+Γö£ Γùï /robots.txt
+Γö£ Γùï /sell-bike
+Γö£ Γùï /services/bike-registration
+Γö£ Γùï /services/expense-calculator
+Γö£ Γùï /sitemap.xml                          1h      1y
+Γö£ Γùï /terms
+Γö£ ╞Æ /used-bike/[id]
+Γö£ Γùï /used-bikes
+Γöö Γùï /verify-email
+
+
+Γùï  (Static)   prerendered as static content
+ΓùÅ  (SSG)      prerendered as static HTML (uses generateStaticParams)
+╞Æ  (Dynamic)  server-rendered on demand
+

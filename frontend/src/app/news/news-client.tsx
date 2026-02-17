@@ -82,9 +82,9 @@ export function NewsClient() {
           <section className="relative group overflow-hidden rounded-2xl border bg-card">
             <div className="grid lg:grid-cols-2 gap-0">
               <div className="relative h-80 lg:h-auto overflow-hidden bg-muted">
-                {featuredNews.featuredImage ? (
+                {featuredNews.featured_image ? (
                   <Image
-                    src={featuredNews.featuredImage}
+                    src={featuredNews.featured_image}
                     alt={featuredNews.title}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -107,7 +107,7 @@ export function NewsClient() {
                   </Badge>
                   <span className="text-sm text-muted-foreground flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
-                    {new Date(featuredNews.publishedAt).toLocaleDateString(
+                    {new Date(featuredNews.published_at).toLocaleDateString(
                       "en-US",
                       { month: "short", day: "numeric", year: "numeric" },
                     )}
@@ -129,19 +129,19 @@ export function NewsClient() {
 
                 <div className="flex items-center justify-between pt-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-muted overflow-hidden">
+                    <div className="h-10 w-10 rounded-full bg-muted overflow-hidden relative">
                       <Image
                         src={
-                          featuredNews.author.image || "/placeholder-avatar.png"
+                          featuredNews.author.profile_image || "/placeholder-avatar.png"
                         }
-                        alt={featuredNews.author.name}
-                        width={40}
-                        height={40}
+                        alt={featuredNews.author.username}
+                        fill
+                        className="object-cover"
                       />
                     </div>
                     <div>
                       <p className="font-semibold text-sm">
-                        {featuredNews.author.name}
+                        {featuredNews.author.username}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {featuredNews.views.toLocaleString()} reads
@@ -182,9 +182,9 @@ export function NewsClient() {
                         href={`/news/${article.slug}`}
                         className="w-full h-full relative block"
                       >
-                        {article.featuredImage ? (
+                        {article.featured_image ? (
                           <Image
-                            src={article.featuredImage}
+                            src={article.featured_image}
                             alt={article.title}
                             fill
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -202,8 +202,8 @@ export function NewsClient() {
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {new Date(article.publishedAt).toLocaleDateString(
+                          <Clock className="h-3 v-3" />
+                          {new Date(article.published_at).toLocaleDateString(
                             "en-US",
                             { month: "short", day: "numeric", year: "numeric" },
                           )}
@@ -225,12 +225,12 @@ export function NewsClient() {
                     </CardContent>
                     <CardFooter className="p-4 pt-0">
                       <div className="flex flex-wrap gap-2">
-                        {article.tags.map((tag: string) => (
+                        {Array.isArray(article.tags) && article.tags.map((tag: any) => (
                           <span
-                            key={tag}
+                            key={typeof tag === 'string' ? tag : tag.name}
                             className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md flex items-center gap-1"
                           >
-                            <Hash className="h-2.5 w-2.5" /> {tag}
+                            <Hash className="h-2.5 w-2.5" /> {typeof tag === 'string' ? tag : tag.name}
                           </span>
                         ))}
                       </div>

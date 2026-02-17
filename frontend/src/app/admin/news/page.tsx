@@ -59,20 +59,30 @@ import { toast } from "sonner";
 import { useNews } from "@/hooks/use-news";
 import { adminAPI } from "@/lib/admin-api";
 
+interface Tag {
+  id: number;
+  name: string;
+}
+
 interface Article {
-  id: string;
+  id: string | number;
   title: string;
+  slug?: string;
   category: string;
   excerpt?: string;
   content: string;
-  author?: string | { name: string };
-  tags?: string;
-  image?: string;
-  created_at?: string;
-  publishedAt?: string;
+  author?: {
+    id: string | number;
+    username: string;
+    first_name?: string;
+    last_name?: string;
+  };
+  tags?: string[] | Tag[];
+  featured_image?: string;
+  created_at?: string | Date;
+  published_at?: string | Date;
   views?: number;
-  status?: string;
-  [key: string]: unknown;
+  is_published?: boolean;
 }
 
 const categories = [
@@ -87,14 +97,12 @@ export default function AdminNewsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
-  const { data: articlesData = [], refetch } = useNews(
+  const { data: articlesData, refetch } = useNews(
     categoryFilter !== "all" ? { category: categoryFilter } : undefined,
   );
 
-  // Handle different API response structures
-  const articles = Array.isArray(articlesData)
-    ? articlesData
-    : (articlesData as unknown as { results: Article[] }).results || [];
+  // Handle data structure from useNews hook ({ articles, meta })
+  const articles = articlesData?.articles || [];
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -131,14 +139,15 @@ export default function AdminNewsPage() {
       category: article.category,
       excerpt: article.excerpt || "",
       content: article.content,
-      author:
-        typeof article.author === "object"
-          ? article.author.name
-          : article.author || "Admin User",
-      tags: article.tags || "",
+      author: article.author?.username || "Admin User",
+      tags: article.tags
+        ? (article.tags as (string | Tag)[])
+          .map((t) => (typeof t === "string" ? t : t.name))
+          .join(", ")
+        : "",
     });
-    setCurrentImagePreview(article.image || null);
-    setEditingId(article.id);
+    setCurrentImagePreview(article.featured_image || null);
+    setEditingId(article.id.toString());
     setIsCreateDialogOpen(true);
   };
 
@@ -178,10 +187,7 @@ export default function AdminNewsPage() {
   const filteredArticles = articles.filter((article: Article) => {
     const matchesSearch =
       (article.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (typeof article.author === "string"
-        ? article.author
-        : article.author?.name || ""
-      )
+      (article.author?.username || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
     // Category filter is already handled by the API hook, but we can double check or handle 'all'
@@ -192,7 +198,7 @@ export default function AdminNewsPage() {
     return matchesSearch; // Category check is largely redundant if API handles it, but harmless
   });
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string | number) => {
     if (confirm("Are you sure you want to delete this article?")) {
       try {
         await adminAPI.deleteArticle(id);
@@ -440,7 +446,7 @@ export default function AdminNewsPage() {
                     <TableCell>
                       <div className="h-12 w-16 rounded overflow-hidden bg-muted relative">
                         <Image
-                          src={article.image || "/default-image.webp"}
+                          src={article.featured_image || "/default-image.webp"}
                           alt={article.title}
                           fill
                           className="object-cover"
@@ -466,23 +472,23 @@ export default function AdminNewsPage() {
                         <div className="h-6 w-6 rounded-full bg-accent flex items-center justify-center">
                           <UserIcon className="h-3 w-3" />
                         </div>
-                        <span className="text-sm">{typeof article.author === 'object' ? article.author?.name : article.author}</span>
+                        <span className="text-sm">{article.author?.username || 'Admin'}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant={
-                          article.status === "published"
+                          article.is_published
                             ? "default"
                             : "secondary"
                         }
                       >
-                        {article.status}
+                        {article.is_published ? "Published" : "Draft"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                       <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" /> {article.publishedAt || '-'}
+                        <Calendar className="h-3 w-3" /> {article.published_at ? new Date(article.published_at).toLocaleDateString() : '-'}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">

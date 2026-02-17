@@ -9,10 +9,10 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 'phone', 'is_phone_verified',
-            'location', 'profile_image', 'bio', 'role',
+            'is_email_verified', 'location', 'profile_image', 'bio', 'role',
             'date_joined', 'last_login'
         ]
-        read_only_fields = ['username', 'date_joined', 'last_login', 'role']
+        read_only_fields = ['username', 'date_joined', 'last_login', 'role', 'is_email_verified']
 
 class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -25,22 +25,38 @@ class GoogleAuthSerializer(serializers.Serializer):
     id_token = serializers.CharField()
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, min_length=8)
+    username = serializers.CharField(required=False, allow_blank=True)
     
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'first_name', 'last_name', 'phone']
     
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value
+
     def create(self, validated_data):
+        from .views import generate_unique_username
+        email = validated_data['email']
+        username = validated_data.get('username', '').strip()
+        if not username:
+            username = generate_unique_username(email, User)
+        
         user = User.objects.create_user(
-            email=validated_data['email'],
-            username=validated_data['username'],
+            email=email,
+            username=username,
             password=validated_data['password'],
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
-            phone=validated_data.get('phone', '')
+            phone=validated_data.get('phone') or None,
         )
         return user
+
+class EmailLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()

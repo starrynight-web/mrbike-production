@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store";
+import { User } from "@/types";
+import { api } from "@/lib/api-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,18 +51,35 @@ export function AccountManagement() {
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    if (user) {
-      login({
-        ...user,
-        ...formData,
+    try {
+      const response = await api.updateProfile({
+        first_name: formData.name.split(" ")[0] || "",
+        last_name: formData.name.split(" ").slice(1).join(" ") || "",
+        phone: formData.phone,
+        location: formData.location,
       });
-    }
 
-    setIsSaving(false);
-    toast.success("Profile updated successfully");
+      if (response.success) {
+        const updatedUser = response.data as any;
+        if (user) {
+          login({
+            ...user,
+            id: updatedUser.id ? updatedUser.id.toString() : user.id,
+            name: `${updatedUser.first_name || ""} ${updatedUser.last_name || ""}`.trim() || updatedUser.username || user.name,
+            phone: updatedUser.phone || user.phone,
+            location: updatedUser.location || user.location,
+            image: updatedUser.profile_image || user.image,
+          } as User);
+        }
+        toast.success("Profile updated successfully");
+      } else {
+        toast.error(response.error?.message || "Failed to update profile");
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {

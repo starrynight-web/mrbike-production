@@ -66,7 +66,7 @@ export function ProfileClient() {
   const notifications = Array.isArray(notificationsData)
     ? notificationsData
     : (notificationsData as unknown as { results: Notification[] })?.results ||
-      [];
+    [];
 
   const [activeTab, setActiveTab] = useState("overview");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -126,8 +126,8 @@ export function ProfileClient() {
               <span className="flex items-center gap-1">
                 <Mail className="h-3.5 w-3.5" /> {user.email}
               </span>
-              {user.location && <span className="hidden sm:inline">•</span>}
-              {user.location && <span>{user.location}</span>}
+              {user?.location && <span className="hidden sm:inline">•</span>}
+              {user?.location && <span>{user.location}</span>}
               {user.phoneVerified && (
                 <Badge
                   variant="secondary"
@@ -415,15 +415,14 @@ export function ProfileClient() {
                       </div>
                     )}
                     <Badge
-                      className={`absolute top-2 left-2 ${
-                        listing.status === "active"
+                      className={`absolute top-2 left-2 ${listing.status === "active"
                           ? "bg-green-500"
                           : listing.status === "sold"
                             ? "bg-blue-500"
                             : listing.status === "expired"
                               ? "bg-orange-500"
                               : "bg-gray-500"
-                      }`}
+                        }`}
                     >
                       {listing.status.charAt(0).toUpperCase() +
                         listing.status.slice(1)}
@@ -549,11 +548,10 @@ export function ProfileClient() {
                           {[...Array(5)].map((_, s) => (
                             <Star
                               key={s}
-                              className={`h-3 w-3 ${
-                                s < review.rating
+                              className={`h-3 w-3 ${s < review.rating
                                   ? "text-yellow-400 fill-yellow-400"
                                   : "text-muted"
-                              }`}
+                                }`}
                             />
                           ))}
                           <span className="text-xs text-muted-foreground ml-2">

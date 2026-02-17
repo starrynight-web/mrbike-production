@@ -1,0 +1,138 @@
+﻿
+> frontend@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 9.0s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/24) ...
+  Generating static pages using 11 workers (6/24) 
+  Generating static pages using 11 workers (12/24) 
+node.exe : 
+ReferenceError: 
+location is not 
+defined
+At line:1 char:1
++ & "C:\Program Files
+\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Referen   
+ ceError: locatio    
+n is not defined    
+:String) [], Rem    
+oteException
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+    at B (E:\mr\front
+end\.next\server\chun
+ks\ssr\src_app_profil
+e_profile-client_tsx_
+c718e847._.js:1:1140)
+  Generating static pages using 11 workers (18/24) 
+(node:16156) 
+[DEP0169] 
+DeprecationWarning: 
+`url.parse()` 
+behavior is not 
+standardized and 
+prone to errors that 
+have security 
+implications. Use 
+the WHATWG URL API 
+instead. CVEs are 
+not issued for 
+`url.parse()` 
+vulnerabilities.
+(Use `node 
+--trace-deprecation 
+...` to show where 
+the warning was 
+created)
+Failed to fetch 
+featured bikes: 
+Error 
+[AggregateError]: 
+    at am.from (E:\mr
+\frontend\.next\serve
+r\chunks\ssr\_f85f2cb
+3._.js:1:83391)
+    at w.<anonymous> 
+(E:\mr\frontend\.next
+\server\chunks\ssr\_f
+85f2cb3._.js:3:12277)
+    at p.<computed> (
+E:\mr\frontend\.next\
+server\chunks\ssr\_f8
+5f2cb3._.js:1:37181)
+    at b0.request (E:
+\mr\frontend\.next\se
+rver\chunks\ssr\_f85f
+2cb3._.js:3:24588)
+    at async b9 (E:\m
+r\frontend\.next\serv
+er\chunks\ssr\_f85f2c
+b3._.js:3:31984) {
+  isAxiosError: true,
+  code: 
+'ECONNREFUSED',
+  config: [Object],
+  request: 
+[Writable],
+  [cause]: 
+AggregateError: 
+      at 
+ignore-listed frames 
+{
+    code: 
+'ECONNREFUSED'
+  }
+}
+Γ£ô Generating static pages using 11 workers (24/24) in 873.1ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ Γùï /about
+Γö£ Γùï /admin
+Γö£ Γùï /admin/bikes
+Γö£ Γùï /admin/news
+Γö£ Γùï /admin/used-bikes
+Γö£ ╞Æ /api/auth/[...nextauth]
+Γö£ ΓùÅ /bike/[slug]
+Γöé Γö£ /bike/yamaha-r15-v4
+Γöé Γö£ /bike/honda-cb150r
+Γöé Γö£ /bike/suzuki-gixxer-sf
+Γöé Γöö [+2 more paths]
+Γö£ Γùï /bikes
+Γö£ Γùï /brands
+Γö£ ╞Æ /brands/[slug]
+Γö£ Γùï /compare
+Γö£ Γùï /login
+Γö£ Γùï /news
+Γö£ ╞Æ /news/[slug]
+Γö£ Γùï /privacy
+Γö£ Γùï /profile
+Γö£ Γùï /sell-bike
+Γö£ Γùï /terms
+Γö£ ╞Æ /used-bike/[id]
+Γöö Γùï /used-bikes
+
+
+Γùï  (Static)   prerendered as static content
+ΓùÅ  (SSG)      prerendered as static HTML (uses generateStaticParams)
+╞Æ  (Dynamic)  server-rendered on demand
+

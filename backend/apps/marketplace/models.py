@@ -17,6 +17,14 @@ class UsedBikeListing(models.Model):
         ('need_work', 'Needs Work'),
     ]
 
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('active', 'Active'),
+        ('rejected', 'Rejected'),
+        ('sold', 'Sold'),
+        ('expired', 'Expired'),
+    ]
+
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='listings')
     bike_model = models.ForeignKey(BikeModel, on_delete=models.SET_NULL, null=True, blank=True)
     
@@ -33,13 +41,27 @@ class UsedBikeListing(models.Model):
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
     description = models.TextField()
     location = models.CharField(max_length=255)
+    contact_number = models.CharField(max_length=20, null=True, blank=True, help_text="Seller contact number for this listing")
+    
+    # Categorization
+    category = models.CharField(
+        max_length=20, 
+        choices=BikeModel.CATEGORY_CHOICES,
+        default='commuter',
+        blank=True,
+        help_text="Bike category (e.g. Sports, Commuter)"
+    )
     
     # Verification & Status
     is_verified = models.BooleanField(default=False)
-    status = models.CharField(
-        max_length=20, 
-        choices=[('active', 'Active'), ('sold', 'Sold'), ('expired', 'Expired'), ('pending', 'Pending')],
-        default='pending'
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Moderation
+    rejection_reason = models.TextField(blank=True, null=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='reviewed_listings'
     )
     
     # Premium features
@@ -51,6 +73,12 @@ class UsedBikeListing(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        # Sync category from bike_model if available
+        if self.bike_model and not self.category:
+            self.category = self.bike_model.category
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.title} - {self.price} BDT"
 
@@ -59,6 +87,7 @@ class UsedBikeListing(models.Model):
         indexes = [
             models.Index(fields=['status', '-created_at']),
             models.Index(fields=['seller', '-created_at']),
+            models.Index(fields=['category', 'status']),
             models.Index(fields=['location']),
         ]
 

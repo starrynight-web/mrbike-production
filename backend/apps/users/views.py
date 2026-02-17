@@ -6,7 +6,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.cache import cache
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
+from django.utils import timezone
 import secrets
 import hmac
 import hashlib
@@ -19,15 +20,15 @@ import google.auth.transport.requests
 from .serializers import (
     GoogleAuthSerializer, UserSerializer, NotificationSerializer,
     PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
-    RegisterSerializer
+    RegisterSerializer, EmailLoginSerializer
 )
 from apps.marketplace.models import UsedBikeListing
 from apps.interactions.models import Review, Wishlist
-from .models import Notification
+from .models import Notification, EmailVerificationToken
+from .services.email_service import email_service
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from django.core.mail import send_mail
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -90,6 +91,7 @@ class GoogleAuthView(generics.GenericAPIView):
                 username=username,
                 first_name=first_name,
                 last_name=last_name,
+                is_email_verified=True,  # Google-verified emails are trusted
             )
             created = True
 
@@ -264,21 +266,165 @@ class NotificationListView(generics.ListAPIView):
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user)
 
+class LoginThrottle(UserRateThrottle):
+    """Rate limit login attempts to 5 per minute"""
+    scope = 'login'
+    rate = '5/min'
+
+
+class RegisterThrottle(UserRateThrottle):
+    """Rate limit registration to 10 per hour"""
+    scope = 'register'
+    rate = '10/hour'
+
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
+    throttle_classes = [RegisterThrottle]
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        
+        # Create verification token and send email
+        token = EmailVerificationToken.objects.create(
+            user=user,
+            expires_at=timezone.now() + timezone.timedelta(hours=24)
+        )
+        email_service.send_verification_email(
+            to_email=user.email,
+            token=str(token.token),
+            to_name=user.first_name or user.username
+        )
+        
+        return Response({
+            'message': 'Registration successful! Please check your email to verify your account.',
+            'email': user.email,
+        }, status=status.HTTP_201_CREATED)
+
+
+class EmailLoginView(generics.GenericAPIView):
+    """Login with email and password. Requires email verification."""
+    permission_classes = [AllowAny]
+    throttle_classes = [LoginThrottle]
+    serializer_class = EmailLoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        email = serializer.validated_data['email']
+        password = serializer.validated_data['password']
+        
+        # Find user by email
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'Invalid email or password'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        # Check password
+        if not user.check_password(password):
+            return Response(
+                {'error': 'Invalid email or password'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        # Check email verification
+        if not user.is_email_verified:
+            return Response(
+                {'error': 'Please verify your email before logging in.', 'needs_verification': True},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         refresh = RefreshToken.for_user(user)
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
             'user': UserSerializer(user).data,
-        }, status=status.HTTP_201_CREATED)
+        })
+
+
+class EmailVerifyView(APIView):
+    """Verify email using token from verification email"""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token_str = request.data.get('token')
+        if not token_str:
+            return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            token = EmailVerificationToken.objects.get(token=token_str)
+        except EmailVerificationToken.DoesNotExist:
+            return Response({'error': 'Invalid verification token'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not token.is_valid:
+            return Response({'error': 'Token has expired or already been used'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Mark email as verified
+        user = token.user
+        user.is_email_verified = True
+        user.save()
+        
+        # Mark token as used
+        token.used = True
+        token.save()
+        
+        # Send welcome email
+        email_service.send_welcome_email(
+            to_email=user.email,
+            to_name=user.first_name or user.username
+        )
+        
+        # Return JWT tokens so user can log in immediately after verification
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'message': 'Email verified successfully!',
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': UserSerializer(user).data,
+        })
+
+
+class ResendVerificationView(APIView):
+    """Resend email verification link"""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Don't reveal whether user exists
+            return Response({'message': 'If an account exists, a verification email has been sent.'})
+        
+        if user.is_email_verified:
+            return Response({'message': 'Email is already verified.'})
+        
+        # Invalidate old tokens
+        EmailVerificationToken.objects.filter(user=user, used=False).update(used=True)
+        
+        # Create new token
+        token = EmailVerificationToken.objects.create(
+            user=user,
+            expires_at=timezone.now() + timezone.timedelta(hours=24)
+        )
+        email_service.send_verification_email(
+            to_email=user.email,
+            token=str(token.token),
+            to_name=user.first_name or user.username
+        )
+        
+        return Response({'message': 'Verification email sent.'})
 
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
@@ -293,15 +439,12 @@ class PasswordResetRequestView(APIView):
         if user:
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            # In production, this would be a link to your frontend reset page
-            reset_url = f"{settings.ALLOWED_HOSTS[0]}/reset-password/{uid}/{token}/"
+            reset_token = f"{uid}/{token}"
             
-            send_mail(
-                'Password Reset Request',
-                f'Click the link to reset your password: {reset_url}',
-                settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@mrbikebd.com',
-                [email],
-                fail_silently=False,
+            email_service.send_password_reset(
+                to_email=email,
+                reset_token=reset_token,
+                to_name=user.first_name or user.username
             )
             
         return Response({"message": "If an account exists with this email, a reset link has been sent."}, status=status.HTTP_200_OK)
@@ -336,3 +479,53 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+from apps.marketplace.models import UsedBikeListing
+from apps.news.models import Article
+
+class GlobalAdminStatsView(APIView):
+    """
+    Returns global statistics for the platform admin dashboard.
+    Only accessible by staff/superusers.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        total_users = User.objects.count()
+        verified_users = User.objects.filter(is_email_verified=True).count()
+        
+        # Marketplace stats
+        active_listings = UsedBikeListing.objects.filter(status='active').count()
+        pending_listings = UsedBikeListing.objects.filter(status='pending').count()
+        total_listings = UsedBikeListing.objects.count()
+        
+        # News stats
+        published_news = Article.objects.filter(is_published=True).count()
+        draft_news = Article.objects.filter(is_published=False).count()
+        
+        # Category breakdown for used bikes
+        from django.db.models import Count
+        category_stats = UsedBikeListing.objects.values('category').annotate(count=Count('id')).order_by('-count')
+        
+        # Location breakdown
+        location_stats = UsedBikeListing.objects.values('location').annotate(count=Count('id')).order_by('-count')[:5]
+
+        return Response({
+            "users": {
+                "total": total_users,
+                "verified": verified_users,
+            },
+            "marketplace": {
+                "total": total_listings,
+                "active": active_listings,
+                "pending": pending_listings,
+                "categories": category_stats,
+                "locations": location_stats,
+            },
+            "content": {
+                "published_articles": published_news,
+                "draft_articles": draft_news,
+            },
+            "last_updated": timezone.now()
+        })

@@ -35,6 +35,12 @@ export function NewsDetailClient({ slug }: NewsDetailClientProps) {
     return <NotFoundState />;
   }
 
+  const authorName =
+    article.author?.username ||
+    [article.author?.first_name, article.author?.last_name].filter(Boolean).join(" ") ||
+    "Unknown Author";
+  const authorImage = (article.author as any)?.profile_image || undefined;
+
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -76,7 +82,7 @@ export function NewsDetailClient({ slug }: NewsDetailClientProps) {
             </Badge>
             <span className="text-muted-foreground flex items-center gap-1.5 text-sm font-medium">
               <Calendar className="h-4 w-4" />
-              {new Date(article.publishedAt).toLocaleDateString("en-US", {
+              {new Date(article.published_at).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
                 year: "numeric",
@@ -94,17 +100,12 @@ export function NewsDetailClient({ slug }: NewsDetailClientProps) {
           <div className="flex items-center justify-between py-4 border-y">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border">
-                <AvatarImage
-                  src={article.author?.image || undefined}
-                  alt={article.author?.name || "Author"}
-                />
-                <AvatarFallback>
-                  {(article.author?.name || "A").charAt(0)}
-                </AvatarFallback>
+                <AvatarImage src={authorImage} alt={authorName} />
+                <AvatarFallback>{authorName.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
                 <p className="text-sm font-bold">
-                  {article.author?.name || "Unknown Author"}
+                  {authorName}
                 </p>
                 <p className="text-xs text-muted-foreground">Author</p>
               </div>
@@ -134,10 +135,10 @@ export function NewsDetailClient({ slug }: NewsDetailClientProps) {
         </header>
 
         {/* Featured Image */}
-        {article.featuredImage ? (
+        {article.featured_image ? (
           <div className="aspect-[16/9] relative rounded-2xl overflow-hidden shadow-sm">
             <Image
-              src={article.featuredImage}
+              src={article.featured_image}
               alt={article.title}
               fill
               className="object-cover"
@@ -168,16 +169,20 @@ export function NewsDetailClient({ slug }: NewsDetailClientProps) {
         {/* Footer / Tags */}
         <div className="space-y-6">
           <div className="flex flex-wrap gap-2">
-            {(article.tags || []).map((tag: string) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="px-3 py-1 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              >
-                <Hash className="h-3 w-3 mr-1" />
-                {tag}
-              </Badge>
-            ))}
+            {(article.tags || []).map((tag: any) => {
+              const tagLabel = typeof tag === "string" ? tag : tag.name || String(tag.id || "tag");
+              const key = typeof tag === "string" ? tag : tag.id || tag.name || JSON.stringify(tag);
+              return (
+                <Badge
+                  key={key}
+                  variant="secondary"
+                  className="px-3 py-1 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <Hash className="h-3 w-3 mr-1" />
+                  {tagLabel}
+                </Badge>
+              );
+            })}
           </div>
 
           <div className="bg-muted/30 rounded-xl p-8 text-center space-y-4">

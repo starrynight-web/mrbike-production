@@ -194,5 +194,158 @@ class BrevoEmailService:
             to_name=to_name
         )
 
+    def send_verification_email(self, to_email: str, token: str, to_name: Optional[str] = None) -> bool:
+        """Send email verification link after registration"""
+        verify_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/verify-email?token={token}"
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #1a73e8; color: white; padding: 20px; text-align: center; }}
+                .content {{ padding: 30px; background: #f9f9f9; }}
+                .button {{ 
+                    display: inline-block; 
+                    padding: 12px 30px; 
+                    background: #1a73e8; 
+                    color: white !important; 
+                    text-decoration: none; 
+                    border-radius: 5px; 
+                    margin: 20px 0;
+                }}
+                .footer {{ padding: 20px; text-align: center; color: #666; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Verify Your Email</h1>
+                </div>
+                <div class="content">
+                    <p>Hello{' ' + to_name if to_name else ''},</p>
+                    <p>Thank you for registering with MrBikeBD! Please verify your email address by clicking the button below:</p>
+                    <a href="{verify_url}" class="button">Verify Email</a>
+                    <p>If you didn't create an account, you can safely ignore this email.</p>
+                    <p>This link will expire in 24 hours.</p>
+                </div>
+                <div class="footer">
+                    <p>&copy; 2026 MrBikeBD. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return self.send_email(
+            to_email=to_email,
+            subject="Verify Your Email - MrBikeBD",
+            html_content=html_content,
+            to_name=to_name
+        )
+
+    def send_rejection_email(self, to_email: str, listing_title: str, reason: str, to_name: Optional[str] = None) -> bool:
+        """Send listing rejection notification email"""
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #dc3545; color: white; padding: 20px; text-align: center; }}
+                .content {{ padding: 30px; background: #f9f9f9; }}
+                .reason {{ background: white; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0; }}
+                .footer {{ padding: 20px; text-align: center; color: #666; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Listing Not Approved</h1>
+                </div>
+                <div class="content">
+                    <p>Hello{' ' + to_name if to_name else ''},</p>
+                    <p>Unfortunately, your listing <strong>"{listing_title}"</strong> was not approved for the following reason:</p>
+                    <div class="reason">
+                        <p>{reason}</p>
+                    </div>
+                    <p>You can update your listing and resubmit it for review.</p>
+                    <p>If you have questions, please contact our support team.</p>
+                </div>
+                <div class="footer">
+                    <p>&copy; 2026 MrBikeBD. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return self.send_email(
+            to_email=to_email,
+            subject=f"Listing Update: {listing_title} - MrBikeBD",
+            html_content=html_content,
+            to_name=to_name
+        )
+
+    def send_welcome_email(self, to_email: str, to_name: Optional[str] = None) -> bool:
+        """Send welcome email after email verification"""
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #28a745; color: white; padding: 20px; text-align: center; }}
+                .content {{ padding: 30px; background: #f9f9f9; }}
+                .button {{ 
+                    display: inline-block; 
+                    padding: 12px 30px; 
+                    background: #1a73e8; 
+                    color: white !important; 
+                    text-decoration: none; 
+                    border-radius: 5px; 
+                    margin: 20px 0;
+                }}
+                .footer {{ padding: 20px; text-align: center; color: #666; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Welcome to MrBikeBD!</h1>
+                </div>
+                <div class="content">
+                    <p>Hello{' ' + to_name if to_name else ''},</p>
+                    <p>Your email has been verified and your account is now active!</p>
+                    <p>You can now:</p>
+                    <ul>
+                        <li>Browse and compare motorcycles</li>
+                        <li>Post used bikes for sale</li>
+                        <li>Save bikes to your wishlist</li>
+                        <li>Write reviews</li>
+                    </ul>
+                    <a href="{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/login" class="button">Get Started</a>
+                </div>
+                <div class="footer">
+                    <p>&copy; 2026 MrBikeBD. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return self.send_email(
+            to_email=to_email,
+            subject="Welcome to MrBikeBD!",
+            html_content=html_content,
+            to_name=to_name
+        )
+
 # Singleton instance
 email_service = BrevoEmailService()

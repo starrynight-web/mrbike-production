@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets, filters, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils import timezone
 from .models import UsedBikeListing
 from .serializers import UsedBikeListingSerializer, UsedBikeListingCreateSerializer
 
@@ -33,15 +34,21 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         queryset = UsedBikeListing.objects.all().order_by('-created_at')
+        user = self.request.user
         
         # Staff can see all listings
-        if self.request.user and self.request.user.is_staff:
+        if user and user.is_staff:
             status_filter = self.request.query_params.get('status')
             if status_filter and status_filter != 'all':
                 queryset = queryset.filter(status=status_filter)
             return queryset
         
-        # Regular users only see active listings
+        # Registered users can see active listings OR their own listings
+        if user and user.is_authenticated:
+            from django.db.models import Q
+            return queryset.filter(Q(status='active') | Q(seller=user)).order_by('-is_featured', '-created_at')
+            
+        # Anonymous users only see active listings
         return queryset.filter(status='active').order_by('-is_featured', '-created_at')
 
     def get_serializer_class(self):
@@ -76,12 +83,47 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
     def approve(self, request, pk=None):
         listing = self.get_object()
         listing.status = 'active'
+        listing.is_verified = True
+        listing.reviewed_by = request.user
+        listing.reviewed_at = timezone.now()
         listing.save()
-        return Response({"status": "approved"})
+        return Response({"status": "approved", "message": "Listing has been approved and is now active."})
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         listing = self.get_object()
+        reason = request.data.get('reason', '')
+        
+        if not reason:
+            return Response(
+                {"error": "A rejection reason is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         listing.status = 'rejected'
+        listing.rejection_reason = reason
+        listing.reviewed_by = request.user
+        listing.reviewed_at = timezone.now()
         listing.save()
-        return Response({"status": "rejected"})
+        
+        # Send rejection email to seller
+        from apps.users.services.email_service import email_service
+        from apps.users.models import Notification
+        
+        seller = listing.seller
+        if seller.email:
+            email_service.send_rejection_email(
+                to_email=seller.email,
+                listing_title=listing.title,
+                reason=reason,
+                to_name=seller.first_name or seller.username
+            )
+        
+        # Create in-app notification
+        Notification.objects.create(
+            user=seller,
+            title="Listing Not Approved",
+            message=f'Your listing "{listing.title}" was not approved. Reason: {reason}'
+        )
+        
+        return Response({"status": "rejected", "message": "Listing has been rejected and seller has been notified."})

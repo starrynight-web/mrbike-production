@@ -41,7 +41,7 @@ export function UsedBikeFilters() {
   // -- State from URL --
   const selectedBrands = searchParams.getAll("brand");
   const selectedConditions = searchParams.getAll("condition");
-  const location = searchParams.get("location") || "all";
+  const selectedLocation = searchParams.get("location") || "all";
   const minPrice = Number(searchParams.get("minPrice")) || 0;
   const maxPrice = Number(searchParams.get("maxPrice")) || 1000000;
 
@@ -125,7 +125,7 @@ export function UsedBikeFilters() {
   const activeFilterCount =
     selectedBrands.length +
     selectedConditions.length +
-    (location !== "all" ? 1 : 0) +
+    (selectedLocation !== "all" ? 1 : 0) +
     (minPrice > 0 || maxPrice < 1000000 ? 1 : 0);
 
   const filterContentProps = {
@@ -134,7 +134,7 @@ export function UsedBikeFilters() {
     minPrice,
     maxPrice,
     handlePriceChange,
-    location,
+    selectedLocation,
     handleLocationChange,
     selectedConditions,
     toggleCondition,
@@ -196,7 +196,7 @@ interface FilterContentProps {
   minPrice: number;
   maxPrice: number;
   handlePriceChange: (value: number[]) => void;
-  location: string;
+  selectedLocation: string;
   handleLocationChange: (value: string) => void;
   selectedConditions: string[];
   toggleCondition: (value: string) => void;
@@ -212,7 +212,7 @@ function FilterContent({
   minPrice,
   maxPrice,
   handlePriceChange,
-  location,
+  selectedLocation,
   handleLocationChange,
   selectedConditions,
   toggleCondition,
@@ -235,7 +235,7 @@ function FilterContent({
       {/* Location */}
       <div>
         <h4 className="text-sm font-medium mb-3">Location</h4>
-        <Select value={location} onValueChange={handleLocationChange}>
+        <Select value={selectedLocation} onValueChange={handleLocationChange}>
           <SelectTrigger>
             <SelectValue placeholder="Select City" />
           </SelectTrigger>

@@ -18,17 +18,23 @@ class EmotionalRecommendationEngine:
         """
         cache_key = f"recommendations:similar:{bike_slug}"
         if self.redis_client:
-            cached = self.redis_client.get(cache_key)
-            if cached:
-                return json.loads(cached)
+            try:
+                cached = self.redis_client.get(cache_key)
+                if cached:
+                    return json.loads(cached)
+            except Exception:
+                # Silently fail on Redis errors, fallback to DB
+                self.redis_client = None  # Disable for this instance lifetime
         
         try:
-            base_bike = BikeModel.objects.get(slug=bike_slug)
+            base_bike = BikeModel.objects.select_related('brand', 'category').get(slug=bike_slug)
         except BikeModel.DoesNotExist:
             return []
 
-        # Rule 1: Same category
-        candidates = BikeModel.objects.filter(category=base_bike.category).exclude(id=base_bike.id)
+        # Rule 1: Same category, pre-fetch relationship
+        candidates = BikeModel.objects.filter(
+            category=base_bike.category
+        ).select_related('brand').exclude(id=base_bike.id)
         
         scored_candidates = []
         for bike in candidates:
@@ -36,24 +42,33 @@ class EmotionalRecommendationEngine:
             reasons = []
 
             # Price proximity (30%)
-            price_diff = abs(float(bike.price) - float(base_bike.price)) / float(base_bike.price)
-            if price_diff <= 0.15:
-                score += 30 * (1 - price_diff)
-                if bike.price < base_bike.price:
-                    reasons.append("More affordable")
+            try:
+                base_price = float(base_bike.price)
+                bike_price = float(bike.price)
+                if base_price > 0:
+                    price_diff = abs(bike_price - base_price) / base_price
+                    if price_diff <= 0.20:
+                        score += 30 * (1 - price_diff)
+                        if bike_price < base_price:
+                            reasons.append("More affordable")
+            except (ValueError, TypeError):
+                pass
             
             # Engine CC similarity (20%)
-            cc_diff = abs(bike.engine_capacity - base_bike.engine_capacity) / base_bike.engine_capacity
-            if cc_diff <= 0.20:
-                score += 20 * (1 - cc_diff)
+            if base_bike.engine_capacity > 0:
+                cc_diff = abs(bike.engine_capacity - base_bike.engine_capacity) / base_bike.engine_capacity
+                if cc_diff <= 0.25:
+                    score += 20 * (1 - cc_diff)
             
-            # Brand Trust Factor (25%)
+            # Brand Trust Factor (25%) - Case insensitive
             brand_scores = {
-                'Honda': 25, 'Yamaha': 24, 'Suzuki': 23, 
-                'Bajaj': 20, 'TVS': 19, 'Hero': 18,
-                'Royal Enfield': 15, 'KTM': 12
+                'honda': 25, 'yamaha': 24, 'suzuki': 23, 
+                'bajaj': 20, 'tvs': 19, 'hero': 18,
+                'royal enfield': 15, 'ktm': 12
             }
-            brand_score = brand_scores.get(bike.brand.name, 10)
+            brand_name_lower = bike.brand.name.lower()
+            brand_score = brand_scores.get(brand_name_lower, 10)
+            
             if getattr(bike.brand, 'is_popular', False):
                 brand_score += 5
             score += min(brand_score, 25)
@@ -65,10 +80,6 @@ class EmotionalRecommendationEngine:
             elif bike.popularity_score > 50:
                 score += 10
             
-            # Category Matching (Mandatory in filter, but adding bonus for specific match)
-            if bike.category == base_bike.category:
-                score += 10
-
             if not reasons:
                 reasons.append("Trusted alternative")
 
@@ -91,7 +102,7 @@ class EmotionalRecommendationEngine:
                 'name': b.name,
                 'slug': b.slug,
                 'price': float(b.price),
-                'primary_image': b.primary_image,
+                'primary_image': b.primary_image.url if b.primary_image else None,
                 'brand_name': b.brand.name,
                 'reasons': pick['emotional_reasons']
             })
@@ -113,19 +124,22 @@ class EmotionalRecommendationEngine:
         
         cache_key = f"recommendations:used:budget:{budget}"
         if self.redis_client:
-            cached = self.redis_client.get(cache_key)
-            if cached:
-                return json.loads(cached)
+            try:
+                cached = self.redis_client.get(cache_key)
+                if cached:
+                    return json.loads(cached)
+            except Exception:
+                self.redis_client = None
 
-        # Range: 85% to 115% of budget
-        min_price = float(budget) * 0.85
-        max_price = float(budget) * 1.15
+        # Range: 80% to 120% of budget for broader matches
+        min_price = float(budget) * 0.80
+        max_price = float(budget) * 1.20
 
         candidates = UsedBikeListing.objects.filter(
             status='active',
             price__gte=min_price,
             price__lte=max_price
-        ).select_related('bike_model', 'bike_model__brand')
+        ).select_related('bike_model', 'bike_model__brand').prefetch_related('images')
 
         scored_candidates = []
         for listing in candidates:
@@ -135,11 +149,15 @@ class EmotionalRecommendationEngine:
                 score += 40
             
             # Priority to lower mileage (30%)
-            mileage = getattr(listing, 'mileage', 0)
-            if mileage < 15000:
+            mileage = getattr(listing, 'mileage', 0) or 0
+            if mileage < 10000:
                 score += 30
-            elif mileage < 30000:
+            elif mileage < 25000:
                 score += 15
+            
+            # Recency bonus (10%)
+            if listing.is_featured:
+                score += 10
                 
             scored_candidates.append({
                 'listing': listing,
@@ -152,33 +170,28 @@ class EmotionalRecommendationEngine:
         result = []
         for pick in top_picks:
             listing = pick['listing']
-            # Get primary image safely
-            primary_img = None
-            try:
-                primary_img = listing.images.filter(is_primary=True).first()
-            except Exception:
-                primary_img = None
+            # Get primary image from prefetched images
+            primary_img = next((img for img in listing.images.all() if img.is_primary), None)
+            if not primary_img:
+                primary_img = listing.images.all()[0] if listing.images.exists() else None
 
             img_url = None
             if primary_img:
-                if getattr(primary_img, 'webp_image', None) and getattr(primary_img.webp_image, 'url', None):
-                    img_url = primary_img.webp_image.url
-                elif getattr(primary_img, 'original_image', None) and getattr(primary_img.original_image, 'url', None):
-                    img_url = primary_img.original_image.url
+                img_url = primary_img.get_best_url()
 
             # Build bike name defensively
             bike_model = getattr(listing, 'bike_model', None)
-            model_name = getattr(bike_model, 'name', '') if bike_model else ''
+            model_name = getattr(bike_model, 'name', '') if bike_model else (listing.custom_model or '')
             brand_obj = getattr(bike_model, 'brand', None) if bike_model else None
-            brand_name = getattr(brand_obj, 'name', '') if brand_obj else ''
-            bike_name = f"{brand_name} {model_name}".strip() or "Unknown"
+            brand_name = getattr(brand_obj, 'name', '') if brand_obj else (listing.custom_brand or 'Unknown')
+            bike_name = f"{brand_name} {model_name}".strip()
 
             result.append({
-                'id': str(getattr(listing, 'id', '')),
-                'title': getattr(listing, 'title', ''),
-                'price': float(getattr(listing, 'price', 0) or 0),
+                'id': str(listing.id),
+                'title': listing.title,
+                'price': float(listing.price or 0),
                 'image': img_url,
-                'location': getattr(listing, 'location', ''),
+                'location': listing.location,
                 'year': getattr(listing, 'manufacturing_year', None),
                 'mileage': getattr(listing, 'mileage', None),
                 'bike_name': bike_name

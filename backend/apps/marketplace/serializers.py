@@ -32,7 +32,10 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsedBikeListing
         fields = '__all__'
-        read_only_fields = ['views_count', 'is_verified', 'created_at']
+        read_only_fields = [
+            'views_count', 'is_verified', 'created_at', 'updated_at',
+            'rejection_reason', 'reviewed_at', 'reviewed_by'
+        ]
 
     def get_seller_phone(self, obj):
         return getattr(obj.seller, 'phone', None) or ''
@@ -72,7 +75,10 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UsedBikeListing
-        exclude = ['seller', 'views_count', 'is_verified', 'created_at', 'updated_at']
+        exclude = [
+            'seller', 'views_count', 'is_verified', 'created_at', 'updated_at',
+            'rejection_reason', 'reviewed_at', 'reviewed_by'
+        ]
         extra_kwargs = {
             'custom_brand': {'required': False},
             'custom_model': {'required': False},
@@ -80,6 +86,7 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
             'is_featured': {'required': False},
             'is_urgent': {'required': False},
             'status': {'required': False},
+            'contact_number': {'required': True},
         }
 
     def validate(self, data):

@@ -3,9 +3,13 @@ from .models import Article
 from .serializers import ArticleSerializer
 
 class ArticleListCreateView(generics.ListCreateAPIView):
-    queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     parser_classes = (parsers.MultiPartParser, parsers.FormParser)
+
+    def get_queryset(self):
+        if self.request.user and self.request.user.is_staff:
+            return Article.objects.all().order_by('-created_at')
+        return Article.objects.filter(is_published=True).order_by('-published_at')
 
     def get_permissions(self):
         if self.request.method == 'POST':
@@ -16,10 +20,14 @@ class ArticleListCreateView(generics.ListCreateAPIView):
         serializer.save(author=self.request.user)
 
 class ArticleDetailView(generics.RetrieveAPIView):
-    queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     lookup_field = 'slug'
     permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        if self.request.user and self.request.user.is_staff:
+            return Article.objects.all()
+        return Article.objects.filter(is_published=True)
 
 class ArticleAdminUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Article.objects.all()

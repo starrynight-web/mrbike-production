@@ -177,6 +177,10 @@ class ApiService {
     return this.request(this.client.get(API_ENDPOINTS.USER_STATS));
   }
 
+  async updateProfile(data: any) {
+    return this.request(this.client.patch(API_ENDPOINTS.USER_PROFILE, data));
+  }
+
   async getNotifications() {
     return this.request(this.client.get(API_ENDPOINTS.USER_NOTIFICATIONS));
   }

@@ -7,24 +7,33 @@ import { api } from "./api-service";
 
 // ==================== TYPES ====================
 
+interface Brand {
+  id: number;
+  name: string;
+  logo_url?: string;
+}
+
 export interface Bike {
   id: number;
   name: string;
-  brand: string;
+  brand: number | string;
+  brand_name?: string;
   category: string;
   price: number;
-  image_url: string;
-  featured: boolean;
-  published: boolean;
-  ratings: number;
-  reviews_count: number;
-  stock: number;
-  engine_cc: number;
-  fuel_type: string;
-  transmission: string;
-  braking_system: string;
-  features: string[];
+  primary_image: string;
+  image_url?: string; // For compatibility
+  featured?: boolean;
+  engine_capacity: number;
+  engine_type?: string;
+  gears?: number;
+  clutch_type?: string;
+  curb_weight?: number;
+  fuel_capacity?: number;
+  seat_height?: number;
+  tyre_type?: string;
+  is_available: boolean;
   description?: string;
+  created_at?: string;
 }
 
 export interface UsedBikeListing {
@@ -55,6 +64,22 @@ export interface AdminStats {
   bikes_change: number;
   listings_change: number;
   traffic_change: number;
+  verified_users?: number;
+  published_news?: number;
+}
+
+// Internal interface for backend response mapping
+interface BackendAdminStats {
+  users: { total: number; verified: number };
+  marketplace: {
+    total: number;
+    active: number;
+    pending: number;
+    categories: Array<{ category: string, count: number }>;
+    locations: Array<{ location: string, count: number }>;
+  };
+  content: { published_articles: number; draft_articles: number };
+  last_updated: string;
 }
 
 // ==================== API CLIENT ====================
@@ -148,7 +173,7 @@ class AdminAPI {
     limit?: number;
     offset?: number;
   }) {
-    const response = await api.get<any>("/used-bikes/", { params });
+    const response = await api.get<any>("/marketplace/listings/", { params });
     if (!response.success || !response.data) {
       return { results: [], count: 0 };
     }
@@ -157,7 +182,7 @@ class AdminAPI {
     const results = (response.data.results || []).map((item: any) => ({
       id: item.id,
       bike_model: item.bike_model_name || item.title || "Unknown Model",
-      brand: item.brand || "Unknown Brand",
+      brand: item.brand_name || item.custom_brand || "Unknown Brand",
       seller_name: item.seller_name || "Unknown Seller",
       seller_phone: item.seller_phone || "",
       seller_location: item.location || "",
@@ -166,7 +191,7 @@ class AdminAPI {
       mileage: item.mileage || 0,
       condition: item.condition || "good",
       status: item.status || "pending",
-      image_url: item.image_url || "",
+      image_url: item.image_url || (item.images && item.images.length > 0 ? item.images[0].url : ""),
       description: item.description || "",
       created_at: item.created_at || new Date().toISOString(),
       seller_id: item.seller || 0,
@@ -182,7 +207,7 @@ class AdminAPI {
    * Get single used bike listing
    */
   async getUsedBike(id: number) {
-    const response = await api.get(`/used-bikes/${id}/`);
+    const response = await api.get(`/marketplace/listings/${id}/`);
     return response.data;
   }
 
@@ -190,7 +215,7 @@ class AdminAPI {
    * Approve used bike listing
    */
   async approveListing(id: number, reason?: string) {
-    const response = await api.post(`/used-bikes/${id}/approve/`, { reason });
+    const response = await api.post(`/marketplace/listings/${id}/approve/`, { reason });
     return response.data;
   }
 
@@ -198,7 +223,7 @@ class AdminAPI {
    * Reject used bike listing
    */
   async rejectListing(id: number, reason: string) {
-    const response = await api.post(`/used-bikes/${id}/reject/`, { reason });
+    const response = await api.post(`/marketplace/listings/${id}/reject/`, { reason });
     return response.data;
   }
 
@@ -206,22 +231,24 @@ class AdminAPI {
    * Delete used bike listing
    */
   async deleteUsedBike(id: number) {
-    await api.delete(`/used-bikes/${id}/`);
+    await api.delete(`/marketplace/listings/${id}/`);
   }
 
   /**
    * Mark listing as featured
    */
   async markFeatured(id: number, featured: boolean) {
-    const response = await api.patch(`/used-bikes/${id}/`, { featured });
+    const response = await api.patch(`/marketplace/listings/${id}/`, { is_featured: featured });
     return response.data;
   }
 
   /**
-   * Send verification email to seller
+   * Send verification email to seller (using the new resend-verification if needed or specific marketplace logic)
    */
   async sendVerificationEmail(id: number) {
-    const response = await api.post(`/used-bikes/${id}/send-verification/`);
+    // This is often for the listing itself if there's a specific logic, 
+    // but the backend uses Brevo for user verification now.
+    const response = await api.post(`/marketplace/listings/${id}/send-verification/`);
     return response.data;
   }
 
@@ -288,7 +315,7 @@ class AdminAPI {
    * Get admin dashboard statistics
    */
   async getDashboardStats(): Promise<AdminStats> {
-    const response = await api.get<AdminStats>("/admin/stats/");
+    const response = await api.get<BackendAdminStats>("/users/admin/stats/");
     if (!response.success || !response.data) {
       return {
         total_users: 0,
@@ -302,7 +329,21 @@ class AdminAPI {
         traffic_change: 0,
       };
     }
-    return response.data as AdminStats;
+
+    const d = response.data;
+    return {
+      total_users: d.users.total,
+      verified_users: d.users.verified,
+      total_bikes: d.marketplace.total, // Total used listings as a proxy if official bikes not available here
+      active_listings: d.marketplace.active,
+      pending_approvals: d.marketplace.pending,
+      published_news: d.content.published_articles,
+      monthly_traffic: 0, // Not implemented in backend yet
+      user_change: 0,
+      bikes_change: 0,
+      listings_change: 0,
+      traffic_change: 0,
+    };
   }
 
   /**
@@ -310,7 +351,7 @@ class AdminAPI {
    */
   async getPendingApprovalsCount(): Promise<{ count: number }> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await api.get<any>("/used-bikes/?status=pending&limit=1");
+    const response = await api.get<any>("/marketplace/listings/?status=pending&limit=1");
     if (!response.success || !response.data) {
       return { count: 0 };
     }
@@ -321,17 +362,34 @@ class AdminAPI {
    * Get recent pending listings (for dashboard)
    */
   async getRecentPending(limit: number = 5): Promise<UsedBikeListing[]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await api.get<any>(
-      "/used-bikes/?status=pending&ordering=-created_at",
+      "/marketplace/listings/?status=pending&ordering=-created_at",
       {
         params: { limit },
       },
     );
+
     if (!response.success || !response.data) {
       return [];
     }
-    return response.data.results || [];
+
+    return (response.data.results || []).map((item: any) => ({
+      id: item.id,
+      bike_model: item.bike_model_name || item.title || "Unknown Model",
+      brand: item.brand_name || item.custom_brand || "Unknown Brand",
+      seller_name: item.seller_name || "Unknown Seller",
+      seller_phone: item.seller_phone || "",
+      seller_location: item.location || "",
+      price: Number(item.price) || 0,
+      year: item.manufacturing_year || new Date().getFullYear(),
+      mileage: item.mileage || 0,
+      condition: item.condition || "good",
+      status: item.status || "pending",
+      image_url: item.image_url || (item.images?.[0]?.get_best_url) || "",
+      description: item.description || "",
+      created_at: item.created_at || new Date().toISOString(),
+      seller_id: item.seller || 0,
+    }));
   }
 
   // ===== IMAGE MANAGEMENT =====
@@ -393,7 +451,7 @@ class AdminAPI {
    * Get all brands
    */
   async getAllBrands() {
-    const response = await api.get("/brands/");
+    const response = await api.get<Brand[]>("/bikes/brands/");
     return response.data;
   }
 

@@ -49,29 +49,29 @@ export default function AdminDashboard() {
                 {
                     title: "Total Users",
                     value: dashboardStats.total_users.toLocaleString(),
-                    change: `${dashboardStats.user_change > 0 ? '+' : ''}${dashboardStats.user_change}%`,
-                    trend: dashboardStats.user_change > 0 ? "up" : "down",
+                    change: `${dashboardStats.verified_users || 0} verified`,
+                    trend: "up",
                     icon: Users,
                 },
                 {
                     title: "Official Bikes",
                     value: dashboardStats.total_bikes.toLocaleString(),
-                    change: `${dashboardStats.bikes_change > 0 ? '+' : ''}${dashboardStats.bikes_change}`,
-                    trend: dashboardStats.bikes_change > 0 ? "up" : "down",
+                    change: "Official",
+                    trend: "up",
                     icon: Bike,
                 },
                 {
                     title: "Active Used Ads",
                     value: dashboardStats.active_listings.toLocaleString(),
-                    change: `${dashboardStats.listings_change > 0 ? '+' : ''}${dashboardStats.listings_change}`,
-                    trend: dashboardStats.listings_change > 0 ? "up" : "down",
+                    change: `${dashboardStats.pending_approvals || 0} pending`,
+                    trend: (dashboardStats.pending_approvals ?? 0) > 0 ? "down" : "up",
                     icon: Store,
                 },
                 {
-                    title: "Monthly Traffic",
-                    value: `${(dashboardStats.monthly_traffic / 1000).toFixed(1)}k`,
-                    change: `${dashboardStats.traffic_change > 0 ? '+' : ''}${dashboardStats.traffic_change}%`,
-                    trend: dashboardStats.traffic_change > 0 ? "up" : "down",
+                    title: "News Articles",
+                    value: (dashboardStats.published_news || 0).toLocaleString(),
+                    change: "Published",
+                    trend: "up",
                     icon: TrendingUp,
                 },
             ];
@@ -186,9 +186,9 @@ export default function AdminDashboard() {
                                         <div className="flex items-center gap-4">
                                             <div className="h-12 w-12 rounded bg-background flex items-center justify-center border relative overflow-hidden">
                                                 {item.image_url ? (
-                                                    <Image 
-                                                        src={item.image_url} 
-                                                        alt={item.bike_model} 
+                                                    <Image
+                                                        src={item.image_url}
+                                                        alt={item.bike_model}
                                                         fill
                                                         className="object-cover"
                                                         unoptimized
@@ -206,17 +206,17 @@ export default function AdminDashboard() {
                                             <span className="text-xs text-muted-foreground mr-2 flex items-center gap-1">
                                                 <Clock className="h-3 w-3" /> {new Date(item.created_at).toLocaleDateString()}
                                             </span>
-                                            <Button 
-                                                size="sm" 
-                                                variant="ghost" 
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
                                                 className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                                                 onClick={() => handleReject(item.id)}
                                                 disabled={rejectingId === item.id}
                                             >
                                                 {rejectingId === item.id ? <Loader className="h-4 w-4 animate-spin" /> : <AlertCircle className="h-4 w-4" />}
                                             </Button>
-                                            <Button 
-                                                size="sm" 
+                                            <Button
+                                                size="sm"
                                                 className="h-8 bg-green-600 hover:bg-green-700"
                                                 onClick={() => handleApprove(item.id)}
                                                 disabled={approvingId === item.id}

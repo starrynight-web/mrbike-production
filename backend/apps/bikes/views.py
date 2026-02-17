@@ -131,7 +131,3 @@ class BikeModelViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.exception("Error while uploading image to Cloudinary: %s", e)
             return Response({"error": "Internal server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        except Exception as e:
-            logger.exception("Error while uploading image: %s", e)
-            return Response({"error": "Internal server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

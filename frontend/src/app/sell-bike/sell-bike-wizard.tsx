@@ -63,6 +63,7 @@ const formSchema = z.object({
     .max(2000, "Description too long"),
   location: z.string().min(1, "Location is required"),
   accidentHistory: z.boolean().default(false),
+  contactNumber: z.string().min(11, "Valid contact number is required"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -113,6 +114,7 @@ export function SellBikeWizard() {
       accidentHistory: false,
       description: "",
       location: "",
+      contactNumber: "",
     },
   });
 
@@ -176,6 +178,13 @@ export function SellBikeWizard() {
     setImageFiles(imageFiles.filter((_, i) => i !== index));
   };
 
+  // Pre-fill contact number if available
+  useEffect(() => {
+    if (session?.user?.phone && !form.getValues("contactNumber")) {
+      form.setValue("contactNumber", session.user.phone);
+    }
+  }, [session, form]);
+
   const onSubmit: SubmitHandler<FormData> = async (_data) => {
     if (!session) {
       toast.error("You must be logged in to post an ad");
@@ -187,14 +196,24 @@ export function SellBikeWizard() {
     try {
       const formData = new FormData();
 
-      // Append text fields
-      Object.entries(_data).forEach(([key, value]) => {
-        formData.append(key, String(value));
-      });
+      // Explicitly map fields to match backend expectations
+      formData.append("title", `${_data.brand} ${_data.model} ${_data.year}`);
+      formData.append("price", _data.price.toString());
+      formData.append("mileage", _data.kmDriven.toString());
+      formData.append("manufacturing_year", _data.year.toString());
+      formData.append("condition", _data.condition);
+      formData.append("description", _data.description);
+      formData.append("location", _data.location);
+      formData.append("custom_brand", _data.brand);
+      formData.append("custom_model", _data.model);
+      formData.append("contact_number", _data.contactNumber);
+
+      // Default registration_year same as manufacturing_year if not specified
+      formData.append("registration_year", _data.year.toString());
 
       // Append images
       imageFiles.forEach((file) => {
-        formData.append("images", file);
+        formData.append("uploaded_images", file); // Django serializer expects uploaded_images
       });
 
       await api.createUsedBike(formData);
@@ -483,6 +502,24 @@ export function SellBikeWizard() {
                     Honesty helps build trust with buyers.
                   </p>
                 </div>
+              </div>
+
+              {/* Contact Number */}
+              <div className="space-y-2">
+                <Label htmlFor="contactNumber">Contact Number (For Buyers)</Label>
+                <Input
+                  id="contactNumber"
+                  placeholder="e.g. 01XXXXXXXXX"
+                  {...form.register("contactNumber")}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Buyers will use this number to contact you.
+                </p>
+                {form.formState.errors.contactNumber && (
+                  <p className="text-red-500 text-sm">
+                    {form.formState.errors.contactNumber.message}
+                  </p>
+                )}
               </div>
             </div>
           )}

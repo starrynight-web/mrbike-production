@@ -173,25 +173,29 @@ export interface Rating {
 
 // -------------------- NEWS TYPES --------------------
 export interface NewsArticle {
-  id: string;
+  id: string | number;
   slug: string;
   title: string;
   excerpt: string;
   content: string;
-  featuredImage: string;
+  featured_image: string;
   author: Author;
-  category: NewsCategory;
-  tags: string[];
+  category: NewsCategory | string;
+  tags: string[] | Array<{ id: number, name: string }>;
   views: number;
-  publishedAt: Date;
-  updatedAt: Date;
+  is_published?: boolean;
+  published_at: string | Date;
+  created_at: string | Date;
+  updated_at: string | Date;
 }
 
 export interface Author {
-  id: string;
-  name: string;
-  image: string;
-  bio: string;
+  id: string | number;
+  username: string;
+  first_name?: string;
+  last_name?: string;
+  profile_image?: string;
+  bio?: string;
 }
 
 export type NewsCategory =
