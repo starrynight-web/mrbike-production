@@ -2,6 +2,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status, viewsets, filters, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from apps.core.permissions import IsSuperAdminOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from .models import UsedBikeListing
@@ -65,7 +66,7 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsSellerOrReadOnly()]
         elif self.action in ['approve', 'reject']:
-            return [IsAdminUser()]
+            return [IsSuperAdminOnly()]
         return [AllowAny()]
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])

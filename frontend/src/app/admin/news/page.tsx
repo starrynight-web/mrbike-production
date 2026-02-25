@@ -55,9 +55,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useNews } from "@/hooks/use-news";
 import { adminAPI } from "@/lib/admin-api";
+import { getSafeImageUrl } from "@/lib/utils";
 
 interface Tag {
   id: number;
@@ -117,6 +120,9 @@ export default function AdminNewsPage() {
     content: "",
     author: "Admin User",
     tags: "",
+    is_published: false,
+    meta_title: "",
+    meta_description: "",
   });
 
   const resetForm = () => {
@@ -127,13 +133,16 @@ export default function AdminNewsPage() {
       content: "",
       author: "Admin User",
       tags: "",
+      is_published: false,
+      meta_title: "",
+      meta_description: "",
     });
     setImageFile(null);
     setCurrentImagePreview(null);
     setEditingId(null);
   };
 
-  const handleEdit = (article: Article) => {
+  const handleEdit = (article: Article & { meta_title?: string; meta_description?: string }) => {
     setNewArticle({
       title: article.title,
       category: article.category,
@@ -145,6 +154,9 @@ export default function AdminNewsPage() {
           .map((t) => (typeof t === "string" ? t : t.name))
           .join(", ")
         : "",
+      is_published: article.is_published || false,
+      meta_title: article.meta_title || "",
+      meta_description: article.meta_description || "",
     });
     setCurrentImagePreview(article.featured_image || null);
     setEditingId(article.id.toString());
@@ -154,34 +166,45 @@ export default function AdminNewsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const toastId = toast.loading(editingId ? "Updating article..." : "Creating article...");
     try {
       const formData = new FormData();
       formData.append("title", newArticle.title);
       formData.append("category", newArticle.category);
       formData.append("excerpt", newArticle.excerpt);
       formData.append("content", newArticle.content);
-      // formData.append("author", newArticle.author); // Backend usually handles this from token
       formData.append("tags", newArticle.tags);
+      formData.append("is_published", String(newArticle.is_published));
+      formData.append("meta_title", newArticle.meta_title);
+      formData.append("meta_description", newArticle.meta_description);
 
       if (imageFile) {
-        formData.append("featured_image", imageFile); // Adjust field name as per backend
+        formData.append("featured_image", imageFile);
       }
 
       if (editingId) {
         await adminAPI.updateArticle(editingId, formData);
-        toast.success("Article updated successfully");
+        toast.success("Article updated successfully", { id: toastId });
       } else {
         await adminAPI.createArticle(formData);
-        toast.success("Article created successfully");
+        toast.success("Article created successfully", { id: toastId });
       }
 
       setIsCreateDialogOpen(false);
       resetForm();
       refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save article:", error);
-      toast.error("Failed to save article");
+      toast.error(error.message || "Failed to save article", { id: toastId });
     }
+  };
+
+  const handlePreview = (article: Article) => {
+    if (!article.slug) {
+      toast.error("Article slug not found. Save as draft first.");
+      return;
+    }
+    window.open(`/news/${article.slug}`, "_blank");
   };
 
   const filteredArticles = articles.filter((article: Article) => {
@@ -247,134 +270,206 @@ export default function AdminNewsPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6 py-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Article Title</Label>
-                  <Input
-                    id="title"
-                    placeholder="e.g. Yamaha R15 V4 Launch Event in Dhaka"
-                    required
-                    value={newArticle.title}
-                    onChange={(e) =>
-                      setNewArticle({ ...newArticle, title: e.target.value })
-                    }
-                  />
-                </div>
+              <div className="py-6">
+                <Tabs defaultValue="content" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="content">Article Content</TabsTrigger>
+                    <TabsTrigger value="seo">SEO & Settings</TabsTrigger>
+                  </TabsList>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Select
-                      value={newArticle.category}
-                      onValueChange={(v) =>
-                        setNewArticle({ ...newArticle, category: v })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.value} value={cat.value}>
-                            {cat.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="author">Author Name</Label>
-                    <Input
-                      id="author"
-                      value={newArticle.author}
-                      onChange={(e) =>
-                        setNewArticle({ ...newArticle, author: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="excerpt">Excerpt (Short Summary)</Label>
-                  <Textarea
-                    id="excerpt"
-                    placeholder="Briefly describe what this article is about for the list view..."
-                    rows={2}
-                    value={newArticle.excerpt}
-                    onChange={(e) =>
-                      setNewArticle({ ...newArticle, excerpt: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="content">
-                    Article Content (Markdown supported)
-                  </Label>
-                  <Textarea
-                    id="content"
-                    placeholder="Write your article content here..."
-                    rows={12}
-                    required
-                    value={newArticle.content}
-                    onChange={(e) =>
-                      setNewArticle({ ...newArticle, content: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tags">Tags (Comma separated)</Label>
-                  <Input
-                    id="tags"
-                    placeholder="e.g. yamaha, sportbike, launch"
-                    value={newArticle.tags}
-                    onChange={(e) =>
-                      setNewArticle({ ...newArticle, tags: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
-                  <label className="h-20 w-32 border-2 border-dashed rounded flex flex-col items-center justify-center text-muted-foreground cursor-pointer hover:bg-muted/50 transition-colors relative overflow-hidden">
-                    {imageFile ? (
-                      <Image
-                        src={URL.createObjectURL(imageFile)}
-                        alt="Preview"
-                        fill
-                        className="object-cover"
-                      />
-                    ) : currentImagePreview ? (
-                      <Image
-                        src={currentImagePreview}
-                        alt="Preview"
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <>
-                        <ImageIcon className="h-6 w-6 mb-1" />
-                        <span className="text-[10px]">Featured Image</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        if (e.target.files?.[0]) {
-                          setImageFile(e.target.files[0]);
+                  <TabsContent value="content" className="space-y-6 py-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Article Title</Label>
+                      <Input
+                        id="title"
+                        placeholder="e.g. Yamaha R15 V4 Launch Event in Dhaka"
+                        required
+                        value={newArticle.title}
+                        onChange={(e) =>
+                          setNewArticle({ ...newArticle, title: e.target.value })
                         }
-                      }}
-                    />
-                  </label>
-                  <p className="text-xs text-muted-foreground">
-                    Upload a high-quality featured image (16:9 ratio
-                    recommended).
-                    <br />
-                    Max size: 2MB.
-                  </p>
-                </div>
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Category</Label>
+                        <Select
+                          value={newArticle.category}
+                          onValueChange={(v) =>
+                            setNewArticle({ ...newArticle, category: v })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((cat) => (
+                              <SelectItem key={cat.value} value={cat.value}>
+                                {cat.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="author">Author Name</Label>
+                        <Input
+                          id="author"
+                          value={newArticle.author}
+                          onChange={(e) =>
+                            setNewArticle({ ...newArticle, author: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="excerpt">Excerpt (Short Summary)</Label>
+                      <Textarea
+                        id="excerpt"
+                        placeholder="Briefly describe what this article is about for the list view..."
+                        rows={2}
+                        value={newArticle.excerpt}
+                        onChange={(e) =>
+                          setNewArticle({ ...newArticle, excerpt: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="content">
+                        Article Content (Markdown supported)
+                      </Label>
+                      <Textarea
+                        id="content"
+                        placeholder="Write your article content here..."
+                        rows={12}
+                        required
+                        value={newArticle.content}
+                        onChange={(e) =>
+                          setNewArticle({ ...newArticle, content: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="tags">Tags (Comma separated)</Label>
+                      <Input
+                        id="tags"
+                        placeholder="e.g. yamaha, sportbike, launch"
+                        value={newArticle.tags}
+                        onChange={(e) =>
+                          setNewArticle({ ...newArticle, tags: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
+                      <label className="h-20 w-32 border-2 border-dashed rounded flex flex-col items-center justify-center text-muted-foreground cursor-pointer hover:bg-muted/50 transition-colors relative overflow-hidden">
+                        {(imageFile || currentImagePreview) ? (
+                          <Image
+                            src={imageFile ? URL.createObjectURL(imageFile) : getSafeImageUrl(currentImagePreview)}
+                            alt="Preview"
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center justify-center text-xs">
+                            <ImageIcon className="h-5 w-5 mb-1" />
+                            <span>Add Image</span>
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              setImageFile(e.target.files[0]);
+                            }
+                          }}
+                        />
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Upload a high-quality featured image (16:9 ratio
+                        recommended).
+                        <br />
+                        Max size: 2MB.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 border rounded-lg bg-primary/5 border-primary/20">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="is_published" className="text-base">
+                          Publish Article
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Make this article visible on the public website immediately.
+                        </p>
+                      </div>
+                      <Switch
+                        id="is_published"
+                        checked={newArticle.is_published}
+                        onCheckedChange={(checked) =>
+                          setNewArticle({ ...newArticle, is_published: checked })
+                        }
+                      />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="seo" className="space-y-6 py-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="meta_title">Meta Title (SEO)</Label>
+                        <Input
+                          id="meta_title"
+                          placeholder="Search engine optimized title..."
+                          value={newArticle.meta_title}
+                          onChange={(e) =>
+                            setNewArticle({ ...newArticle, meta_title: e.target.value })
+                          }
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Recommended length: 50-60 characters.
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="meta_description">Meta Description</Label>
+                        <Textarea
+                          id="meta_description"
+                          placeholder="Brief description for search results..."
+                          rows={4}
+                          value={newArticle.meta_description}
+                          onChange={(e) =>
+                            setNewArticle({ ...newArticle, meta_description: e.target.value })
+                          }
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Recommended length: 150-160 characters.
+                        </p>
+                      </div>
+
+                      <div className="p-4 border rounded-lg bg-muted/30 space-y-2">
+                        <h4 className="text-sm font-semibold flex items-center gap-2">
+                          <Search className="h-4 w-4" /> Search Engine Preview
+                        </h4>
+                        <div className="space-y-1">
+                          <p className="text-blue-600 hover:underline cursor-pointer text-lg font-medium leading-tight">
+                            {newArticle.meta_title || newArticle.title || "Article Title Prevew"}
+                          </p>
+                          <p className="text-green-700 text-sm line-clamp-1">
+                            mrbikebd.com › news › {newArticle.title.toLowerCase().replace(/\s+/g, '-')}
+                          </p>
+                          <p className="text-muted-foreground text-sm line-clamp-2">
+                            {newArticle.meta_description || newArticle.excerpt || "Article description preview will appear here when you write a meta description or an excerpt."}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
 
               <DialogFooter>
@@ -386,7 +481,7 @@ export default function AdminNewsPage() {
                   Cancel
                 </Button>
                 <Button type="submit">
-                  <Save className="mr-2 h-4 w-4" /> Save as Draft
+                  <Save className="mr-2 h-4 w-4" /> {editingId ? "Update Article" : "Create Article"}
                 </Button>
               </DialogFooter>
             </form>
@@ -446,7 +541,7 @@ export default function AdminNewsPage() {
                     <TableCell>
                       <div className="h-12 w-16 rounded overflow-hidden bg-muted relative">
                         <Image
-                          src={article.featured_image || "/default-image.webp"}
+                          src={getSafeImageUrl(article.featured_image)}
                           alt={article.title}
                           fill
                           className="object-cover"
@@ -504,7 +599,7 @@ export default function AdminNewsPage() {
                           <DropdownMenuItem onClick={() => handleEdit(article)}>
                             <Edit2 className="mr-2 h-4 w-4" /> Edit Content
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handlePreview(article)}>
                             <Eye className="mr-2 h-4 w-4" /> Preview
                           </DropdownMenuItem>
                           <DropdownMenuItem>

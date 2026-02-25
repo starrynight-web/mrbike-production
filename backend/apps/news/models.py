@@ -55,6 +55,10 @@ class Article(models.Model):
     views = models.PositiveIntegerField(default=0)
     is_published = models.BooleanField(default=False)
     
+    # SEO & Settings
+    meta_title = models.CharField(max_length=255, blank=True, null=True)
+    meta_description = models.TextField(blank=True, null=True)
+    
     published_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

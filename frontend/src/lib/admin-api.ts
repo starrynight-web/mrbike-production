@@ -254,9 +254,6 @@ class AdminAPI {
 
   // ===== NEWS MANAGEMENT =====
 
-  /**
-   * Get all news articles
-   */
   async getAllNews(params?: {
     search?: string;
     category?: string;
@@ -267,6 +264,9 @@ class AdminAPI {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await api.get<any>("/news/", { params });
     if (!response.success || !response.data) {
+      if (!response.success && response.error) {
+        throw new Error(response.error.message || "Failed to fetch news articles");
+      }
       return { results: [], count: 0 };
     }
     return response.data;
@@ -277,6 +277,9 @@ class AdminAPI {
    */
   async getArticle(id: string | number) {
     const response = await api.get(`/news/${id}/`);
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to fetch article");
+    }
     return response.data;
   }
 
@@ -288,6 +291,11 @@ class AdminAPI {
     const response = await api.post<any>("/news/", data, {
       headers: { "Content-Type": "multipart/form-data" },
     });
+
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to create article");
+    }
+
     return response.data;
   }
 
@@ -299,6 +307,11 @@ class AdminAPI {
     const response = await api.patch<any>(`/news/${id}/`, data, {
       headers: { "Content-Type": "multipart/form-data" },
     });
+
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to update article");
+    }
+
     return response.data;
   }
 
@@ -306,7 +319,10 @@ class AdminAPI {
    * Delete article
    */
   async deleteArticle(id: string | number) {
-    await api.delete(`/news/${id}/`);
+    const response = await api.delete(`/news/${id}/`);
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to delete article");
+    }
   }
 
   // ===== ADMIN STATISTICS =====

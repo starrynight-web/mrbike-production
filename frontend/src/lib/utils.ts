@@ -178,3 +178,34 @@ export function formatRelativeTime(date: Date | string): string {
   }
   return "Just now";
 }
+
+/**
+ * Sanitizes and provides a safe URL for Next.js Image component
+ * @param url - Original image URL
+ * @param fallback - Fallback image path
+ * @returns Sanitized URL string
+ */
+export function getSafeImageUrl(
+  url?: string | null,
+  fallback: string = "/default-image.webp"
+): string {
+  if (!url) return fallback;
+
+  // Strip Cloudinary malformed prefix if present for absolute URLs
+  // (Safeguard in case backend isn't updated or for cached data)
+  if (url.startsWith("image/upload/http")) {
+    return url.replace("image/upload/", "");
+  }
+
+  // Ensure relative URLs start with a leading slash
+  if (
+    !url.startsWith("http") &&
+    !url.startsWith("/") &&
+    !url.startsWith("data:") &&
+    !url.startsWith("blob:")
+  ) {
+    return `/${url}`;
+  }
+
+  return url;
+}

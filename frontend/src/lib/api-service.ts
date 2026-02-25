@@ -28,9 +28,12 @@ class ApiService {
           const session = await getSession();
           if (session?.accessToken) {
             config.headers.Authorization = `Bearer ${session.accessToken}`;
+            console.log(`[API] Auth token attached for ${config.url}`);
+          } else {
+            console.warn(`[API] No access token found in session for ${config.url}`);
           }
         } catch (error) {
-          console.error("Session retrieval error:", error);
+          console.error("[API] Session retrieval error:", error);
         }
         return config;
       },

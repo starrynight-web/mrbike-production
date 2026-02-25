@@ -2,6 +2,7 @@ from rest_framework import viewsets, filters, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
+from apps.core.permissions import IsSuperAdminOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from .models import Brand, BikeModel
@@ -33,7 +34,7 @@ class BrandViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsAdminUser()]
+            return [IsSuperAdminOnly()]
         return [permissions.AllowAny()]
 
 class BikeModelViewSet(viewsets.ModelViewSet):
@@ -71,7 +72,7 @@ class BikeModelViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy', 'duplicate', 'upload_image']:
-            return [IsAdminUser()]
+            return [IsSuperAdminOnly()]
         return [permissions.AllowAny()]
 
     @action(detail=True, methods=['post'])

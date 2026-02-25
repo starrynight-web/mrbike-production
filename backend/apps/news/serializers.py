@@ -25,9 +25,15 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'slug', 'excerpt', 'content', 
             'featured_image', 'author', 'category', 'tags', 
-            'views', 'is_published', 'published_at', 
-            'created_at', 'updated_at'
+            'views', 'is_published', 'meta_title', 'meta_description',
+            'published_at', 'created_at', 'updated_at'
         ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.featured_image:
+            representation['featured_image'] = instance.featured_image.url
+        return representation
 
     def create(self, validated_data):
         tags_data = self.initial_data.get('tags')

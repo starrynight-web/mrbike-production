@@ -25,7 +25,7 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
     
     # Computed fields for admin panel
     bike_model_name = serializers.SerializerMethodField()
-    brand = serializers.SerializerMethodField()
+    brand_name = serializers.SerializerMethodField()
     year = serializers.ReadOnlyField(source='manufacturing_year')
     image_url = serializers.SerializerMethodField()
     
@@ -45,7 +45,7 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
             return obj.bike_model.name
         return obj.custom_model or obj.title
     
-    def get_brand(self, obj):
+    def get_brand_name(self, obj):
         if obj.bike_model and obj.bike_model.brand:
             return obj.bike_model.brand.name
         return obj.custom_brand or 'Unknown'

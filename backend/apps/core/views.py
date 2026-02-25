@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
+from apps.core.permissions import IsSuperAdminOnly
 from django.contrib.auth import get_user_model
 from apps.bikes.models import Brand, BikeModel
 from apps.marketplace.models import UsedBikeListing
@@ -11,7 +12,7 @@ from datetime import timedelta
 User = get_user_model()
 
 class AdminStatsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsSuperAdminOnly]
 
     def get(self, request):
         stats = {
@@ -29,7 +30,7 @@ class AdminStatsView(APIView):
         return Response(stats)
 
 class AdminFilterOptionsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsSuperAdminOnly]
 
     def get(self, request):
         brands = Brand.objects.values('id', 'name')
@@ -43,7 +44,7 @@ class AdminFilterOptionsView(APIView):
         })
 
 class AdminAnalyticsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsSuperAdminOnly]
 
     def get(self, request):
         # Basic mock data for analytics that the frontend might expect

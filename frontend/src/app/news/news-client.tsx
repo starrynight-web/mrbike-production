@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { NewsArticle } from "@/types";
+import { getSafeImageUrl } from "@/lib/utils";
 
 const CATEGORIES = [
   { id: "all", label: "All News" },
@@ -82,19 +83,13 @@ export function NewsClient() {
           <section className="relative group overflow-hidden rounded-2xl border bg-card">
             <div className="grid lg:grid-cols-2 gap-0">
               <div className="relative h-80 lg:h-auto overflow-hidden bg-muted">
-                {featuredNews.featured_image ? (
-                  <Image
-                    src={featuredNews.featured_image}
-                    alt={featuredNews.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Newspaper className="h-24 w-24 text-muted-foreground/30" />
-                  </div>
-                )}
+                <Image
+                  src={getSafeImageUrl(featuredNews.featured_image)}
+                  alt={featuredNews.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  priority
+                />
                 <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent lg:hidden" />
               </div>
               <div className="p-6 md:p-8 lg:p-12 flex flex-col justify-center space-y-6">
@@ -131,9 +126,10 @@ export function NewsClient() {
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-muted overflow-hidden relative">
                       <Image
-                        src={
-                          featuredNews.author.profile_image || "/placeholder-avatar.png"
-                        }
+                        src={getSafeImageUrl(
+                          featuredNews.author.profile_image,
+                          "/placeholder-avatar.png"
+                        )}
                         alt={featuredNews.author.username}
                         fill
                         className="object-cover"
@@ -182,18 +178,12 @@ export function NewsClient() {
                         href={`/news/${article.slug}`}
                         className="w-full h-full relative block"
                       >
-                        {article.featured_image ? (
-                          <Image
-                            src={article.featured_image}
-                            alt={article.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Newspaper className="h-12 w-12 text-muted-foreground/30" />
-                          </div>
-                        )}
+                        <Image
+                          src={getSafeImageUrl(article.featured_image)}
+                          alt={article.title}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
                       </Link>
                       <Badge className="absolute top-3 left-3 capitalize bg-background/80 hover:bg-background/90 text-foreground backdrop-blur-sm z-10">
                         {article.category}

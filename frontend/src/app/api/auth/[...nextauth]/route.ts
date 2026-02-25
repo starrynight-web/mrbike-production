@@ -147,6 +147,38 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google" && account.id_token) {
+        try {
+          // Exchange Google token for backend JWT
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/users/auth/google/`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_token: account.id_token }),
+            }
+          );
+
+          const data = await res.json();
+
+          if (res.ok && data) {
+            // Attach backend tokens to the user object temporarily 
+            // so they can be persisted in the jwt callback
+            (user as any).accessToken = data.access;
+            (user as any).refreshToken = data.refresh;
+            (user as any).role = data.user.role;
+            return true;
+          }
+          console.error("Backend Google auth failed:", data);
+          return false;
+        } catch (error) {
+          console.error("Link to backend failed:", error);
+          return false;
+        }
+      }
+      return true;
+    },
     async session({ session, token }) {
       if (session.user) {
         // @ts-expect-error - Adding custom properties to session user
@@ -161,15 +193,16 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, account }) {
       // Initial sign in
       if (user) {
-        token.role = user.role || "user";
-        // If it's a credentials login (OTP), user object will have tokens from authorize()
-        if (user.accessToken) {
-          token.accessToken = user.accessToken;
-          token.refreshToken = user.refreshToken;
+        token.role = (user as any).role || "user";
+        // If it's a credentials login OR OAuth with backend sync, 
+        // user object will have tokens
+        if ((user as any).accessToken) {
+          token.accessToken = (user as any).accessToken;
+          token.refreshToken = (user as any).refreshToken;
         }
       }
-      // If it's an OAuth login
-      if (account) {
+      // If it's an OAuth login and we didn't already get backend tokens from user object
+      if (account && !token.accessToken) {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
       }
