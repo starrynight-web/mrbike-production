@@ -3,6 +3,39 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthOptions } from "next-auth";
 
+async function refreshAccessToken(token: any) {
+  try {
+    const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/users/auth/refresh/`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh: token.refreshToken }),
+    });
+
+    const refreshedTokens = await response.json();
+
+    if (!response.ok) {
+      throw refreshedTokens;
+    }
+
+    // Since our backend returns access/refresh, we update them
+    return {
+      ...token,
+      accessToken: refreshedTokens.access,
+      accessTokenExpires: Date.now() + 60 * 60 * 1000, // 60 minutes
+      refreshToken: refreshedTokens.refresh ?? token.refreshToken, // Fall back to old refresh token
+    };
+  } catch (error) {
+    console.error("RefreshTokenError", error);
+
+    return {
+      ...token,
+      error: "RefreshAccessTokenError",
+    };
+  }
+}
+
 export const authOptions: AuthOptions = {
   providers: [
     GoogleProvider({
@@ -150,7 +183,6 @@ export const authOptions: AuthOptions = {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google" && account.id_token) {
         try {
-          // Exchange Google token for backend JWT
           const res = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/users/auth/google/`,
             {
@@ -163,8 +195,6 @@ export const authOptions: AuthOptions = {
           const data = await res.json();
 
           if (res.ok && data) {
-            // Attach backend tokens to the user object temporarily 
-            // so they can be persisted in the jwt callback
             (user as any).accessToken = data.access;
             (user as any).refreshToken = data.refresh;
             (user as any).role = data.user.role;
@@ -184,9 +214,10 @@ export const authOptions: AuthOptions = {
         // @ts-expect-error - Adding custom properties to session user
         session.user.id = token.sub;
         session.accessToken = token.accessToken as string;
-        // refreshToken may not always be present; copy if available
         session.refreshToken = token.refreshToken as string | undefined;
         session.user.role = token.role || "user";
+        // @ts-expect-error - Custom property
+        session.error = token.error;
       }
       return session;
     },
@@ -194,19 +225,21 @@ export const authOptions: AuthOptions = {
       // Initial sign in
       if (user) {
         token.role = (user as any).role || "user";
-        // If it's a credentials login OR OAuth with backend sync, 
-        // user object will have tokens
         if ((user as any).accessToken) {
           token.accessToken = (user as any).accessToken;
           token.refreshToken = (user as any).refreshToken;
+          token.accessTokenExpires = Date.now() + 60 * 60 * 1000; // 60 minutes
         }
+        return token;
       }
-      // If it's an OAuth login and we didn't already get backend tokens from user object
-      if (account && !token.accessToken) {
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
+
+      // Check if token is still valid
+      if (Date.now() < (token.accessTokenExpires as number)) {
+        return token;
       }
-      return token;
+
+      // Token has expired, try to refresh it
+      return refreshAccessToken(token);
     },
   },
   pages: {

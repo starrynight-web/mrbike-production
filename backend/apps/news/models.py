@@ -47,7 +47,7 @@ class Article(models.Model):
     
     category = models.ForeignKey(
         NewsCategory, 
-        on_delete=models.CASCADE, 
+        on_delete=models.PROTECT,
         related_name='articles'
     )
     tags = models.ManyToManyField(Tag, blank=True)

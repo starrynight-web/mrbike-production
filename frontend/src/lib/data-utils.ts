@@ -67,26 +67,27 @@ export function sanitizeImageUrl(
  */
 export function mapUsedBike(item: any): UsedBike {
     const bikeId = item.id?.toString() || `temp_${Date.now()}_${Math.random()}`;
+    const status = item.status || "active";
 
     return {
         id: bikeId,
         bikeName: item.bike_model_name || item.title || "Unknown Bike",
-        brandName: item.brand || "Unknown Brand",
+        brandName: item.brand_name || item.brand || "Unknown Brand",
         sellerId: item.seller?.toString() || "",
         sellerName: item.seller_name || "Unknown Seller",
         sellerPhone: item.seller_phone || "",
-        images: item.images?.map((img: any) => sanitizeImageUrl(typeof img === 'string' ? img : img.url)) || [],
+        images: item.images?.map((img: any) => sanitizeImageUrl(typeof img === 'string' ? img : (img.url || img.original_image))) || [],
         thumbnailUrl: sanitizeImageUrl(item.image_url || item.thumbnail_url),
         price: Number(item.price) || 0,
-        year: item.manufacturing_year || new Date().getFullYear(),
-        kmDriven: item.mileage || 0,
+        year: item.manufacturing_year || item.year || new Date().getFullYear(),
+        kmDriven: item.mileage || item.kmDriven || 0,
         condition: item.condition || "good",
         accidentHistory: !!item.accident_history,
         location: {
             city: item.location || "Unknown",
             area: "",
         },
-        status: item.status || "active",
+        status: status as any,
         isFeatured: item.is_featured || false,
         isVerified: item.is_verified || false,
         expiresAt: item.expires_at ? new Date(item.expires_at) : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),

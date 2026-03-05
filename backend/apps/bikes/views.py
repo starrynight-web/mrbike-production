@@ -34,7 +34,7 @@ class BrandViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsSuperAdminOnly()]
+            return [IsAdminUser()]
         return [permissions.AllowAny()]
 
 class BikeModelViewSet(viewsets.ModelViewSet):
@@ -68,12 +68,19 @@ class BikeModelViewSet(viewsets.ModelViewSet):
 
         return super().get_object()
 
-    permission_classes = [permissions.AllowAny] # Fallback for read actions
+    permission_classes_by_action = {
+        'default': [permissions.AllowAny],
+        'create': [IsAdminUser],
+        'update': [IsAdminUser],
+        'partial_update': [IsAdminUser],
+        'destroy': [IsAdminUser],
+        'upload_image': [IsAdminUser],
+        'duplicate': [IsAdminUser],
+    }
     
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy', 'duplicate', 'upload_image']:
-            return [IsSuperAdminOnly()]
-        return [permissions.AllowAny()]
+        # Instantiate and return the list of permissions that the view requires.
+        return [permission() for permission in self.permission_classes_by_action.get(self.action, self.permission_classes_by_action['default'])]
 
     @action(detail=True, methods=['post'])
     def duplicate(self, request, pk=None):

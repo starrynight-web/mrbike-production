@@ -37,17 +37,24 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         queryset = UsedBikeListing.objects.all().order_by('-created_at')
         user = self.request.user
         
-        # Staff can see all listings
+        # Staff can see all listings but only when explicitly requested!
+        # This prevents "auto-posting" leaks in the public feed.
         if user and user.is_staff:
             status_filter = self.request.query_params.get('status')
-            if status_filter and status_filter != 'all':
-                queryset = queryset.filter(status=status_filter)
+            if status_filter == 'active':
+                return queryset.filter(status='active')
+            elif status_filter == 'all':
+                return queryset
+            elif status_filter == 'rejected':
+                return queryset.filter(status='rejected')
+            
+            # Default for staff with no filter: show all listings
             return queryset
         
-        # Registered users can see active listings OR their own listings
+        # Registered users see ONLY active listings in the public feed
+        # Sellers can view their own listings via the /my-listings/ endpoint
         if user and user.is_authenticated:
-            from django.db.models import Q
-            return queryset.filter(Q(status='active') | Q(seller=user)).order_by('-is_featured', '-created_at')
+            return queryset.filter(status='active').order_by('-is_featured', '-created_at')
             
         # Anonymous users only see active listings
         return queryset.filter(status='active').order_by('-is_featured', '-created_at')
@@ -58,7 +65,8 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         return UsedBikeListingSerializer
 
     def perform_create(self, serializer):
-        serializer.save(seller=self.request.user)
+        # Force status to pending for safety, regardless of user role or frontend input
+        serializer.save(seller=self.request.user, status='pending')
 
     def get_permissions(self):
         if self.action == 'create':
@@ -69,8 +77,13 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
             return [IsSuperAdminOnly()]
         return [AllowAny()]
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'])
     def my_listings(self, request):
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Authentication credentials were not provided."},
+                status=401
+            )
         listings = UsedBikeListing.objects.filter(seller=request.user).order_by('-created_at')
         page = self.paginate_queryset(listings)
         if page is not None:
@@ -83,12 +96,18 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
         listing = self.get_object()
+        
+        # Optionally update category during approval
+        category = request.data.get('category')
+        if category:
+            listing.category = category
+            
         listing.status = 'active'
         listing.is_verified = True
         listing.reviewed_by = request.user
         listing.reviewed_at = timezone.now()
         listing.save()
-        return Response({"status": "approved", "message": "Listing has been approved and is now active."})
+        return Response({"status": "active", "message": "Listing has been approved and is now active."})
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):

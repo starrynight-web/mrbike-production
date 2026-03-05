@@ -6,10 +6,12 @@ from .views import (
     EmailLoginView, EmailVerifyView, ResendVerificationView,
     GlobalAdminStatsView,
 )
+from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
     path('auth/register/', RegisterView.as_view(), name='register'),
     path('auth/login/', EmailLoginView.as_view(), name='email-login'),
+    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/verify-email/', EmailVerifyView.as_view(), name='verify-email'),
     path('auth/resend-verification/', ResendVerificationView.as_view(), name='resend-verification'),
     path('auth/otp/send/', SendOTPView.as_view(), name='send-otp'),

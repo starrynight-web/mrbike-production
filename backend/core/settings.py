@@ -12,7 +12,14 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-mrbikebd-secret-key-123456789")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "django-insecure-mrbikebd-secret-key-123456789"
+    else:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured("The SECRET_KEY setting must not be empty in production.")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
@@ -76,29 +83,42 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'CONN_MAX_AGE': 0,  # Disable persistent connections for SQLite to prevent locking issues
-        'CONN_HEALTH_CHECKS': False,
-        'OPTIONS': {
-            'timeout': 20,  # Keep increased timeout for SQLite locks
+# Database Configuration
+# Primary: PostgreSQL/Supabase (if DATABASE_URL is set)
+# Fallback: Local SQLite for development or when remote DB is unreachable
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    try:
+        import dj_database_url
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=DATABASE_URL,
+                conn_max_age=600,
+                conn_health_checks=True,
+            )
+        }
+        print("[OK] Using PostgreSQL/Supabase database")
+    except ImportError:
+        # Fallback if dj-database-url is not installed but DATABASE_URL is present
+        print("[WARNING] dj-database-url not installed. Falling back to SQLite.")
+        DATABASE_URL = None
+
+if not DATABASE_URL:
+    # Use SQLite as primary local database
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+            'CONN_MAX_AGE': 0,
+            'CONN_HEALTH_CHECKS': False,
+            'OPTIONS': {
+                'timeout': 20,
+                'check_same_thread': False,
+            }
         }
     }
-}
-
-# Optional PostgreSQL support via environment variable
-try:
-    import dj_database_url
-    if os.getenv("DATABASE_URL"):
-        DATABASES['default'] = dj_database_url.config(
-            default=os.getenv("DATABASE_URL"),
-            conn_max_age=0 # Disable persistent connections for pooler stability
-        )
-except ImportError:
-    pass
+    print("[WARN] ⚠️ Using SQLite — NOT suitable for production. Set DATABASE_URL for PostgreSQL.")
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -129,7 +149,7 @@ AUTH_USER_MODEL = 'users.User'
 # DRF Settings
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -163,13 +183,59 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# MongoDB Settings
-# Avoid hardcoded credentials in repo. Default to local unauthenticated MongoDB instance.
+# MongoDB Settings with connection handling
 MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/mrbikebd")
 MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "mrbikebd")
 
-# Redis Settings
+MONGODB_AVAILABLE = False
+if DEBUG:
+    try:
+        from pymongo import MongoClient
+        mongo_test = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=2000)
+        mongo_test.server_info()
+        MONGODB_AVAILABLE = True
+        print("[OK] MongoDB connection successful")
+    except Exception as e:
+        print(f"[WARN] MongoDB connection failed: {e}")
+        print("  -> MongoDB-dependent features (recommendations) will be limited")
+
+# Redis Settings with SSL handling
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/1")
+if os.getenv("REDIS_SSL", "false").lower() == "true":
+    if REDIS_URL.startswith("redis://"):
+        REDIS_URL = REDIS_URL.replace("redis://", "rediss://", 1)
+else:
+    if REDIS_URL.startswith("rediss://"):
+        REDIS_URL = REDIS_URL.replace("rediss://", "redis://", 1)
+
+# Test Redis connection and configure cache backend
+if DEBUG:
+    try:
+        import redis
+        redis_test = redis.from_url(REDIS_URL, socket_connect_timeout=2)
+        redis_test.ping()
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+                'LOCATION': REDIS_URL,
+            }
+        }
+        print("[OK] Redis connection successful")
+    except Exception as e:
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            }
+        }
+        print(f"[WARN] Redis connection failed: {e}")
+        print("  -> Using local memory cache (OTP won't persist across restarts)")
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+        }
+    }
 
 # Cloudinary Settings
 import cloudinary
@@ -179,6 +245,14 @@ cloudinary.config(
     api_secret = os.getenv("CLOUDINARY_API_SECRET"),
     secure = True
 )
+
+# Validate Cloudinary config at startup
+if DEBUG:
+    _cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+    if not _cloud_name:
+        print("[WARN] Cloudinary not configured — image uploads will fail")
+    else:
+        print(f"[OK] Cloudinary configured (cloud: {_cloud_name})")
 
 # Frontend URL (for email verification links)
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
@@ -224,7 +298,10 @@ if not DEBUG:
 CSRF_COOKIE_HTTPONLY = False  # Frontend JS needs to read CSRF token
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_TRUSTED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+CSRF_TRUSTED_ORIGINS = [
+    origin if origin.startswith(("http://", "https://")) else f"http://{origin}"
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+]
 SECURE_REFERRER_POLICY = 'same-origin'
 
 # Logging Configuration

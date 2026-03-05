@@ -31,7 +31,7 @@ def test_news_crud_as_superadmin():
         "title": "Test Article Pro",
         "excerpt": "This is a test excerpt",
         "content": "Full content here",
-        "category": "Bangladesh", # Assuming this exists or using a known one
+        "category": "news", # Using valid slug confirmed from database
         "is_published": False,
         "meta_title": "SEO Title",
         "meta_description": "SEO Description"

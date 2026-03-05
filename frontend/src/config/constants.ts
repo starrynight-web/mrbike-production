@@ -88,7 +88,7 @@ export const API_ENDPOINTS = {
   USER_REVIEWS: "/interactions/me/reviews/",
 
   // Admin Tools
-  ADMIN_STATS: "/admin/stats/",
+  ADMIN_STATS: "/users/admin/stats/",
   ADMIN_FILTERS: "/admin/filter-options/",
   ADMIN_ANALYTICS: "/admin/analytics/",
 
@@ -101,13 +101,14 @@ export const API_ENDPOINTS = {
 
 // -------------------- BIKE CATEGORIES --------------------
 export const BIKE_CATEGORIES = [
-  { value: "sport", label: "Sports", icon: "🏍️" },
+  { value: "sports", label: "Sports", icon: "🏍️" },
   { value: "naked", label: "Naked", icon: "💪" },
   { value: "commuter", label: "Commuter", icon: "🛵" },
   { value: "scooter", label: "Scooter", icon: "🛴" },
   { value: "cruiser", label: "Cruiser", icon: "🏍️" },
   { value: "adventure", label: "Adventure", icon: "🏔️" },
-  { value: "electric", label: "Electric", icon: "⚡" },
+  { value: "cafe_racer", label: "Café Racer", icon: "☕" },
+  { value: "offroad", label: "Off-Road", icon: "🏞️" },
 ] as const;
 
 // -------------------- BIKE CONDITIONS --------------------
@@ -123,7 +124,7 @@ export const BIKE_CONDITIONS = [
     description: "Well maintained, minor issues",
   },
   { value: "fair", label: "Fair", description: "Some wear, functional" },
-  { value: "poor", label: "Poor", description: "Needs repairs" },
+  { value: "need_work", label: "Needs Work", description: "Needs repairs" },
 ] as const;
 
 // -------------------- PRICE RANGES (BDT) --------------------

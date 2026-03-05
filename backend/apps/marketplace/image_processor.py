@@ -79,7 +79,7 @@ class ImageProcessingService:
         webp_io.seek(0)
         return {
             'name': f"{base_name}.webp",
-            'content': ContentFile(webp_io.getvalue())
+            'content': webp_io.getvalue()
         }
     
     @classmethod
@@ -95,7 +95,7 @@ class ImageProcessingService:
         jpeg_io.seek(0)
         return {
             'name': f"{base_name}_compressed.jpg",
-            'content': ContentFile(jpeg_io.getvalue())
+            'content': jpeg_io.getvalue()
         }
     
     @classmethod

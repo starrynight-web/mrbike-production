@@ -1,7 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
-from apps.core.permissions import IsSuperAdminOnly
 from django.contrib.auth import get_user_model
 from apps.bikes.models import Brand, BikeModel
 from apps.marketplace.models import UsedBikeListing
@@ -12,7 +11,7 @@ from datetime import timedelta
 User = get_user_model()
 
 class AdminStatsView(APIView):
-    permission_classes = [IsSuperAdminOnly]
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         stats = {
@@ -30,7 +29,7 @@ class AdminStatsView(APIView):
         return Response(stats)
 
 class AdminFilterOptionsView(APIView):
-    permission_classes = [IsSuperAdminOnly]
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         brands = Brand.objects.values('id', 'name')
@@ -44,16 +43,17 @@ class AdminFilterOptionsView(APIView):
         })
 
 class AdminAnalyticsView(APIView):
-    permission_classes = [IsSuperAdminOnly]
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         # Basic mock data for analytics that the frontend might expect
         # In a real app, this would query a dedicated Analytics model or aggregate logs
         seven_days_ago = timezone.now() - timedelta(days=7)
         
+        from django.db.models.functions import TruncDate
         daily_listings = UsedBikeListing.objects.filter(
             created_at__gte=seven_days_ago
-        ).extra(select={'day': "date(created_at)"}).values('day').annotate(count=Count('id')).order_by('day')
+        ).annotate(day=TruncDate('created_at')).values('day').annotate(count=Count('id')).order_by('day')
         
         return Response({
             "listings_over_time": list(daily_listings),

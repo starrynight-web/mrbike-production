@@ -26,11 +26,13 @@ class ApiService {
       async (config: InternalAxiosRequestConfig) => {
         try {
           const session = await getSession();
+
+          // Always attach token when session has one.
+          // Backend views define their own permissions (AllowAny for public, IsAuthenticated for protected).
+          // Sending a valid token to an AllowAny endpoint is harmless and lets staff/admin
+          // features (like seeing pending listings or draft articles) work correctly.
           if (session?.accessToken) {
             config.headers.Authorization = `Bearer ${session.accessToken}`;
-            console.log(`[API] Auth token attached for ${config.url}`);
-          } else {
-            console.warn(`[API] No access token found in session for ${config.url}`);
           }
         } catch (error) {
           console.error("[API] Session retrieval error:", error);
@@ -43,12 +45,37 @@ class ApiService {
     this.client.interceptors.response.use(
       (response: AxiosResponse) => response,
       async (error) => {
-        if (error.response?.status === 401) {
-          // Token expired or invalid
-          if (typeof window !== "undefined") {
-            // Let next-auth handle logout if unauthorized
-            // signOut({ callbackUrl: '/login' });
+        const originalRequest = error.config;
+
+        // Handle 401 — attempt token refresh then retry
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          try {
+            // Force NextAuth to re-evaluate the JWT (triggers refreshAccessToken)
+            const newSession = await getSession();
+            if (newSession?.accessToken) {
+              originalRequest.headers.Authorization = `Bearer ${newSession.accessToken}`;
+              return this.client(originalRequest);
+            }
+          } catch (refreshError) {
+            console.error("[API] Token refresh failed:", refreshError);
           }
+
+          // Refresh failed — sign out as last resort
+          if (typeof window !== "undefined") {
+            signOut({ callbackUrl: '/login' });
+          }
+        }
+
+        // Retry on network errors or 502/503 (up to 2 retries)
+        const retryCount = originalRequest._retryCount || 0;
+        if (
+          retryCount < 2 &&
+          (!error.response || error.response.status === 502 || error.response.status === 503)
+        ) {
+          originalRequest._retryCount = retryCount + 1;
+          await new Promise((r) => setTimeout(r, 1000 * (retryCount + 1))); // exponential backoff
+          return this.client(originalRequest);
         }
 
         const apiError: ApiError = {

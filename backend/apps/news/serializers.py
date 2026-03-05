@@ -15,7 +15,7 @@ class TagSerializer(serializers.ModelSerializer):
 class ArticleSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     category = serializers.SlugRelatedField(
-        slug_field='name', 
+        slug_field='slug', 
         queryset=NewsCategory.objects.all()
     )
     tags = TagSerializer(many=True, read_only=True)
@@ -55,6 +55,11 @@ class ArticleSerializer(serializers.ModelSerializer):
     def _handle_tags(self, article, tags_input):
         if isinstance(tags_input, str):
             tag_names = [t.strip() for t in tags_input.split(',') if t.strip()]
-            for name in tag_names:
-                tag, created = Tag.objects.get_or_create(name=name)
-                article.tags.add(tag)
+        elif isinstance(tags_input, list):
+            tag_names = [str(t).strip() for t in tags_input if str(t).strip()]
+        else:
+            return
+
+        for name in tag_names:
+            tag, created = Tag.objects.get_or_create(name=name)
+            article.tags.add(tag)

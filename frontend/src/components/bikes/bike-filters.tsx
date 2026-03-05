@@ -71,15 +71,16 @@ function FilterContent({
         <h4 className="font-medium mb-3">Category</h4>
         <div className="flex flex-wrap gap-2">
           {BIKE_CATEGORIES.map((cat) => {
-            const Icon =
+            const CategoryIcon =
               {
-                sport: Zap,
+                sports: Zap,
                 naked: Wind,
                 commuter: Building2,
                 scooter: CircleDot,
                 cruiser: Compass,
                 adventure: Mountain,
-                electric: Plug,
+                cafe_racer: Bike,
+                offroad: Mountain,
               }[cat.value] || Bike;
 
             return (
@@ -91,6 +92,7 @@ function FilterContent({
                 className="cursor-pointer transition-colors gap-1.5"
                 onClick={() => toggleCategory(cat.value)}
               >
+                <CategoryIcon className="h-3 w-3" />
                 {cat.label}
               </Badge>
             );
@@ -114,11 +116,10 @@ function FilterContent({
               <button
                 key={range.label}
                 onClick={() => selectPriceRange(range)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                  isSelected
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${isSelected
                     ? "bg-primary text-primary-foreground"
                     : "hover:bg-muted"
-                }`}
+                  }`}
               >
                 {range.label}
               </button>
@@ -170,11 +171,10 @@ function FilterContent({
                   range.max === Infinity ? 1000 : range.max,
                 ])
               }
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                ccRange[0] === range.min
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${ccRange[0] === range.min
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-muted"
-              }`}
+                }`}
             >
               {range.label}
             </button>
@@ -461,15 +461,16 @@ export function BikeFiltersSidebar({ brands }: { brands: Brand[] }) {
             <h4 className="text-sm font-medium mb-3">Category</h4>
             <div className="space-y-2">
               {BIKE_CATEGORIES.map((cat) => {
-                const Icon =
+                const CategoryIcon =
                   {
-                    sport: Zap,
+                    sports: Zap,
                     naked: Wind,
                     commuter: Building2,
                     scooter: CircleDot,
                     cruiser: Compass,
                     adventure: Mountain,
-                    electric: Plug,
+                    cafe_racer: Bike,
+                    offroad: Mountain,
                   }[cat.value] || Bike;
 
                 return (
@@ -481,9 +482,10 @@ export function BikeFiltersSidebar({ brands }: { brands: Brand[] }) {
                       type="checkbox"
                       checked={selectedCategories.includes(cat.value)}
                       onChange={() => toggleCategory(cat.value)}
-                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                      className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5"
                     />
                     <div className="flex items-center gap-2 text-sm">
+                      <CategoryIcon className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>{cat.label}</span>
                     </div>
                   </label>
@@ -507,11 +509,10 @@ export function BikeFiltersSidebar({ brands }: { brands: Brand[] }) {
                       range.max === Infinity ? 10000000 : range.max,
                     ])
                   }
-                  className={`w-full text-left px-2 py-1.5 rounded text-sm transition-colors ${
-                    priceRange[0] === range.min
+                  className={`w-full text-left px-2 py-1.5 rounded text-sm transition-colors ${priceRange[0] === range.min
                       ? "bg-primary/10 text-primary font-medium"
                       : "hover:bg-muted"
-                  }`}
+                    }`}
                 >
                   {range.label}
                 </button>

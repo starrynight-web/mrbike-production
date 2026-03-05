@@ -47,7 +47,8 @@ export interface UsedBikeListing {
   year: number;
   mileage: number;
   condition: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "active" | "rejected" | "sold";
+  category?: string;
   image_url: string;
   description: string;
   created_at: string;
@@ -97,14 +98,18 @@ class AdminAPI {
     limit?: number;
     offset?: number;
   }) {
-    const response = await api.get<{ count: number; results: Bike[] }>(
+    const response = await api.get<any>(
       "/bikes/",
       { params },
     );
     if (!response.success || !response.data) {
       return { results: [], count: 0 };
     }
-    return response.data;
+    // api-service request() wrapper already extracts 'results' from paginated responses
+    // So response.data is the array of bikes directly
+    const results = Array.isArray(response.data) ? response.data : (response.data.results || []);
+    const count = response.meta?.total || results.length;
+    return { results, count };
   }
 
   /**
@@ -166,7 +171,7 @@ class AdminAPI {
    * Get all used bike listings with filtering
    */
   async getAllUsedBikes(params?: {
-    status?: "pending" | "approved" | "rejected";
+    status?: "pending" | "active" | "rejected" | "sold";
     search?: string;
     condition?: string;
     sort?: "newest" | "price_asc" | "price_desc";
@@ -178,8 +183,11 @@ class AdminAPI {
       return { results: [], count: 0 };
     }
 
+    // api-service request() wrapper already extracts 'results' from paginated responses
+    const rawData = Array.isArray(response.data) ? response.data : (response.data.results || []);
+
     // Transform API response to match UsedBikeListing interface
-    const results = (response.data.results || []).map((item: any) => ({
+    const results = rawData.map((item: any) => ({
       id: item.id,
       bike_model: item.bike_model_name || item.title || "Unknown Model",
       brand: item.brand_name || item.custom_brand || "Unknown Brand",
@@ -191,14 +199,15 @@ class AdminAPI {
       mileage: item.mileage || 0,
       condition: item.condition || "good",
       status: item.status || "pending",
-      image_url: item.image_url || (item.images && item.images.length > 0 ? item.images[0].url : ""),
+      image_url: item.image_url || item.images?.[0]?.url || "",
       description: item.description || "",
       created_at: item.created_at || new Date().toISOString(),
       seller_id: item.seller || 0,
+      category: item.category || "",
     }));
 
     return {
-      count: response.data.count || 0,
+      count: response.meta?.total || results.length,
       results: results as UsedBikeListing[],
     };
   }
@@ -269,14 +278,17 @@ class AdminAPI {
       }
       return { results: [], count: 0 };
     }
-    return response.data;
+    // api-service request() wrapper already extracts 'results' from paginated responses
+    const results = Array.isArray(response.data) ? response.data : (response.data.results || []);
+    const count = response.meta?.total || results.length;
+    return { results, count };
   }
 
   /**
    * Get single article
    */
   async getArticle(id: string | number) {
-    const response = await api.get(`/news/${id}/`);
+    const response = await api.get(`/news/admin/${id}/`);
     if (!response.success) {
       throw new Error(response.error?.message || "Failed to fetch article");
     }
@@ -304,7 +316,7 @@ class AdminAPI {
    */
   async updateArticle(id: string | number, data: FormData) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await api.patch<any>(`/news/${id}/`, data, {
+    const response = await api.patch<any>(`/news/admin/${id}/`, data, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
@@ -319,7 +331,7 @@ class AdminAPI {
    * Delete article
    */
   async deleteArticle(id: string | number) {
-    const response = await api.delete(`/news/${id}/`);
+    const response = await api.delete(`/news/admin/${id}/`);
     if (!response.success) {
       throw new Error(response.error?.message || "Failed to delete article");
     }
@@ -371,7 +383,7 @@ class AdminAPI {
     if (!response.success || !response.data) {
       return { count: 0 };
     }
-    return { count: response.data.count || 0 };
+    return { count: response.meta?.total || (Array.isArray(response.data) ? response.data.length : 0) };
   }
 
   /**
@@ -389,7 +401,10 @@ class AdminAPI {
       return [];
     }
 
-    return (response.data.results || []).map((item: any) => ({
+    // api-service request() wrapper already extracts 'results' from paginated responses
+    const rawData = Array.isArray(response.data) ? response.data : (response.data.results || []);
+
+    return rawData.map((item: any) => ({
       id: item.id,
       bike_model: item.bike_model_name || item.title || "Unknown Model",
       brand: item.brand_name || item.custom_brand || "Unknown Brand",
@@ -401,7 +416,7 @@ class AdminAPI {
       mileage: item.mileage || 0,
       condition: item.condition || "good",
       status: item.status || "pending",
-      image_url: item.image_url || (item.images?.[0]?.get_best_url) || "",
+      image_url: item.image_url || item.images?.[0]?.url || "",
       description: item.description || "",
       created_at: item.created_at || new Date().toISOString(),
       seller_id: item.seller || 0,
@@ -440,7 +455,7 @@ class AdminAPI {
    * Search bikes and listings
    */
   async search(query: string, type: "bikes" | "used-bikes" = "bikes") {
-    const endpoint = type === "bikes" ? "/bikes/" : "/used-bikes/";
+    const endpoint = type === "bikes" ? "/bikes/" : "/marketplace/listings/";
     const response = await api.get(endpoint, {
       params: { search: query },
     });
@@ -475,7 +490,7 @@ class AdminAPI {
    * Create brand
    */
   async createBrand(data: { name: string; logo_url?: string }) {
-    const response = await api.post("/brands/", data);
+    const response = await api.post("/bikes/brands/", data);
     return response.data;
   }
 
@@ -483,7 +498,7 @@ class AdminAPI {
    * Update brand
    */
   async updateBrand(id: number, data: { name?: string; logo_url?: string }) {
-    const response = await api.patch(`/brands/${id}/`, data);
+    const response = await api.patch(`/bikes/brands/${id}/`, data);
     return response.data;
   }
 
@@ -491,7 +506,7 @@ class AdminAPI {
    * Delete brand
    */
   async deleteBrand(id: number) {
-    await api.delete(`/brands/${id}/`);
+    await api.delete(`/bikes/brands/${id}/`);
   }
 
   // ===== REPORTS & ANALYTICS =====

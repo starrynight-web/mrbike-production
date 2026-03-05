@@ -27,7 +27,7 @@ class EmotionalRecommendationEngine:
                 self.redis_client = None  # Disable for this instance lifetime
         
         try:
-            base_bike = BikeModel.objects.select_related('brand', 'category').get(slug=bike_slug)
+            base_bike = BikeModel.objects.select_related('brand').get(slug=bike_slug)
         except BikeModel.DoesNotExist:
             return []
 
@@ -177,7 +177,7 @@ class EmotionalRecommendationEngine:
 
             img_url = None
             if primary_img:
-                img_url = primary_img.get_best_url()
+                img_url = primary_img.get_best_url
 
             # Build bike name defensively
             bike_model = getattr(listing, 'bike_model', None)
@@ -185,6 +185,9 @@ class EmotionalRecommendationEngine:
             brand_obj = getattr(bike_model, 'brand', None) if bike_model else None
             brand_name = getattr(brand_obj, 'name', '') if brand_obj else (listing.custom_brand or 'Unknown')
             bike_name = f"{brand_name} {model_name}".strip()
+
+            # Score boost for same model/brand if we have base_bike context (optional improvement)
+            # For now, just fix the primary bug reported.
 
             result.append({
                 'id': str(listing.id),

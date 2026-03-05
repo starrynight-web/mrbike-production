@@ -155,40 +155,13 @@ class ListingImage(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Override save to process image on upload
-        Converts to WebP and creates compressed JPEG version
+        Override save to persist the image record.
+        
+        NOTE: Image processing (WebP/compressed conversion) is handled in
+        the serializer's create() method where raw file bytes are available.
+        CloudinaryField values are URLs/resource objects AFTER upload, not
+        raw file data, so PIL cannot open them here.
         """
-        
-        # Determine whether we should (re)process the original image
-        should_process = False
-        old_original = None
-        if self.pk:
-            old_original = ListingImage.objects.filter(pk=self.pk).values_list('original_image', flat=True).first()
-
-        # Process if creating a new instance or if original_image has changed
-        if self.original_image and (not self.pk or (old_original != getattr(self.original_image, 'name', old_original))):
-            should_process = True
-
-        if should_process:
-            try:
-                # Process image (compress & convert)
-                processed = ImageProcessingService.compress_and_convert(
-                    self.original_image
-                )
-                
-                # Save WebP and Compressed versions to Cloudinary
-                # Note: CloudinaryField expects the actual file or a URL
-                if processed.get('webp'):
-                    self.webp_image = processed['webp']['content']
-                
-                if processed.get('compressed'):
-                    self.compressed_image = processed['compressed']['content']
-                    
-            except Exception as e:
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.error("Image processing failed for %s: %s", getattr(self.listing, 'id', 'unknown'), e)
-        
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -204,15 +177,17 @@ class ListingImage(models.Model):
     @property
     def get_best_url(self):
         """Get best image format for current browser (WebP preferred)"""
-        try:
-            if self.webp_image and self.webp_image.name:
-                return self.webp_image.url
-            elif self.compressed_image and self.compressed_image.name:
-                return self.compressed_image.url
-            elif self.original_image and self.original_image.name:
-                return self.original_image.url
-        except Exception:
-            pass
+        for field in [self.webp_image, self.compressed_image, self.original_image]:
+            if field:
+                try:
+                    if hasattr(field, 'url'):
+                        return field.url
+                    elif isinstance(field, str) and field:
+                        # Field is a raw Cloudinary public_id string
+                        import cloudinary.utils
+                        return cloudinary.utils.cloudinary_url(field)[0]
+                except Exception:
+                    continue
         return None
     
     @property

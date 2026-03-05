@@ -1,7 +1,6 @@
 from rest_framework import generics, permissions, parsers
 from .models import Article
 from .serializers import ArticleSerializer
-from apps.core.permissions import IsSuperAdminOnly
 
 class ArticleListCreateView(generics.ListCreateAPIView):
     serializer_class = ArticleSerializer
@@ -14,7 +13,7 @@ class ArticleListCreateView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            return [IsSuperAdminOnly()]
+            return [permissions.IsAdminUser()]
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
@@ -33,10 +32,7 @@ class ArticleDetailView(generics.RetrieveAPIView):
 class ArticleAdminUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_class_list = [IsSuperAdminOnly]
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
     
-    def get_permissions(self):
-        return [permission() for permission in self.permission_class_list]
-        
     parser_classes = (parsers.MultiPartParser, parsers.FormParser)
     lookup_field = 'pk'

@@ -22,6 +22,7 @@ from .serializers import (
     PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
     RegisterSerializer, EmailLoginSerializer
 )
+from apps.core.responses import StandardResponse
 from apps.marketplace.models import UsedBikeListing
 from apps.interactions.models import Review, Wishlist
 from .models import Notification, EmailVerificationToken
@@ -32,6 +33,25 @@ from django.utils.encoding import force_bytes, force_str
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
+
+
+# Throttle Classes
+class OTPRateThrottle(UserRateThrottle):
+    """Rate limit OTP requests to 3 per minute per phone/IP"""
+    scope = 'otp_send'
+    rate = '3/min'
+
+
+class LoginThrottle(UserRateThrottle):
+    """Rate limit login attempts to 5 per minute"""
+    scope = 'login'
+    rate = '5/min'
+
+
+class RegisterThrottle(UserRateThrottle):
+    """Rate limit registration to 10 per hour"""
+    scope = 'register'
+    rate = '10/hour'
 
 
 def generate_unique_username(identifier: str, UserModel, max_attempts: int = 10) -> str:
@@ -53,6 +73,7 @@ def generate_unique_username(identifier: str, UserModel, max_attempts: int = 10)
 
 class GoogleAuthView(generics.GenericAPIView):
     permission_classes = [AllowAny]
+    throttle_classes = [LoginThrottle]
     serializer_class = GoogleAuthSerializer
 
     def post(self, request, *args, **kwargs):
@@ -102,12 +123,6 @@ class GoogleAuthView(generics.GenericAPIView):
             'user': UserSerializer(user).data,
             'created': created,
         })
-
-class OTPRateThrottle(UserRateThrottle):
-    """Rate limit OTP requests to 3 per minute per phone/IP"""
-    scope = 'otp_send'
-    rate = '3/min'
-
 
 class SendOTPView(APIView):
     """
@@ -266,18 +281,6 @@ class NotificationListView(generics.ListAPIView):
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user)
 
-class LoginThrottle(UserRateThrottle):
-    """Rate limit login attempts to 5 per minute"""
-    scope = 'login'
-    rate = '5/min'
-
-
-class RegisterThrottle(UserRateThrottle):
-    """Rate limit registration to 10 per hour"""
-    scope = 'register'
-    rate = '10/hour'
-
-
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
@@ -395,6 +398,7 @@ class EmailVerifyView(APIView):
 class ResendVerificationView(APIView):
     """Resend email verification link"""
     permission_classes = [AllowAny]
+    throttle_classes = [RegisterThrottle]
 
     def post(self, request):
         email = request.data.get('email')
@@ -428,6 +432,7 @@ class ResendVerificationView(APIView):
 
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [LoginThrottle]
     serializer_class = PasswordResetRequestSerializer
 
     def post(self, request):
@@ -480,8 +485,21 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return StandardResponse.success(data=serializer.data, message="Profile retrieved successfully")
 
-from apps.marketplace.models import UsedBikeListing
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return StandardResponse.success(data=serializer.data, message="Profile updated successfully")
+
+
+
 from apps.news.models import Article
 
 class GlobalAdminStatsView(APIView):
@@ -511,7 +529,7 @@ class GlobalAdminStatsView(APIView):
         # Location breakdown
         location_stats = UsedBikeListing.objects.values('location').annotate(count=Count('id')).order_by('-count')[:5]
 
-        return Response({
+        data = {
             "users": {
                 "total": total_users,
                 "verified": verified_users,
@@ -527,5 +545,6 @@ class GlobalAdminStatsView(APIView):
                 "published_articles": published_news,
                 "draft_articles": draft_news,
             },
-            "last_updated": timezone.now()
-        })
+            "last_updated": timezone.now().isoformat()
+        }
+        return StandardResponse.success(data=data, message="Admin statistics retrieved successfully")

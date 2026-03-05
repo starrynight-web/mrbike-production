@@ -45,17 +45,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { adminAPI, UsedBikeListing } from "@/lib/admin-api";
+
+const BIKE_CATEGORIES = [
+  { value: "sports", label: "Sports" },
+  { value: "naked", label: "Naked Sport" },
+  { value: "cruiser", label: "Cruiser" },
+  { value: "commuter", label: "Commuter" },
+  { value: "scooter", label: "Scooter" },
+  { value: "adventure", label: "Adventure" },
+  { value: "cafe_racer", label: "Cafe Racer" },
+  { value: "offroad", label: "Off-Road" },
+];
 
 export default function UsedBikesModeration() {
   const [listings, setListings] = useState<UsedBikeListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<
-    "all" | "pending" | "approved" | "rejected"
-  >("all");
+    "all" | "pending" | "active" | "rejected" | "sold"
+  >("pending");
   const [approvingId, setApprovingId] = useState<number | null>(null);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -68,18 +86,28 @@ export default function UsedBikesModeration() {
     id: null,
     reason: "",
   });
+  const [approveDialog, setApproveDialog] = useState<{
+    open: boolean;
+    id: number | null;
+    category: string;
+  }>({
+    open: false,
+    id: null,
+    category: "commuter",
+  });
 
   useEffect(() => {
-    loadListings();
+    loadListings("pending");
   }, []);
 
-  const loadListings = async () => {
+  const loadListings = async (status?: string) => {
     try {
       setLoading(true);
       const response = await adminAPI.getAllUsedBikes({
         limit: 100,
         offset: 0,
         sort: "newest",
+        status: (status === "all" ? undefined : status) as "pending" | "active" | "rejected" | "sold" | undefined,
       });
       setListings(response.results || response);
     } catch (error) {
@@ -90,14 +118,19 @@ export default function UsedBikesModeration() {
     }
   };
 
-  const handleApprove = async (id: number) => {
+  const handleApproveSubmit = async () => {
+    if (!approveDialog.id) return;
+
     try {
-      setApprovingId(id);
-      await adminAPI.approveListing(id, "Approved by admin");
+      setApprovingId(approveDialog.id);
+      await adminAPI.approveListing(approveDialog.id, approveDialog.category);
       toast.success("Listing approved successfully");
       setListings(
-        listings.map((l) => (l.id === id ? { ...l, status: "approved" } : l)),
+        listings.map((l) =>
+          l.id === approveDialog.id ? { ...l, status: "active" } : l,
+        ),
       );
+      setApproveDialog({ open: false, id: null, category: "commuter" });
     } catch (error) {
       console.error("Failed to approve listing:", error);
       toast.error("Failed to approve listing");
@@ -191,31 +224,40 @@ export default function UsedBikesModeration() {
               <Button
                 variant={filterStatus === "all" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setFilterStatus("all")}
+                onClick={() => {
+                  setFilterStatus("all");
+                  loadListings("all");
+                }}
               >
                 All
               </Button>
               <Button
                 variant={filterStatus === "pending" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setFilterStatus("pending")}
+                onClick={() => {
+                  setFilterStatus("pending");
+                  loadListings("pending");
+                }}
                 className={cn(
                   filterStatus === "pending" &&
-                    "bg-yellow-600 hover:bg-yellow-700",
+                  "bg-yellow-600 hover:bg-yellow-700",
                 )}
               >
                 Pending
               </Button>
               <Button
-                variant={filterStatus === "approved" ? "default" : "outline"}
+                variant={filterStatus === "active" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setFilterStatus("approved")}
+                onClick={() => {
+                  setFilterStatus("active");
+                  loadListings("active");
+                }}
                 className={cn(
-                  filterStatus === "approved" &&
-                    "bg-green-600 hover:bg-green-700",
+                  filterStatus === "active" &&
+                  "bg-green-600 hover:bg-green-700",
                 )}
               >
-                Approved
+                Active
               </Button>
             </div>
           </div>
@@ -301,11 +343,11 @@ export default function UsedBikesModeration() {
                           <Badge
                             className={cn(
                               listing.status === "pending" &&
-                                "bg-yellow-100 text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400",
-                              listing.status === "approved" &&
-                                "bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400",
+                              "bg-yellow-100 text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400",
+                              listing.status === "active" &&
+                              "bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400",
                               listing.status === "rejected" &&
-                                "bg-red-100 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400",
+                              "bg-red-100 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400",
                             )}
                           >
                             {listing.status.charAt(0).toUpperCase() +
@@ -320,7 +362,13 @@ export default function UsedBikesModeration() {
                                   size="icon"
                                   variant="outline"
                                   className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                  onClick={() => handleApprove(listing.id)}
+                                  onClick={() =>
+                                    setApproveDialog({
+                                      open: true,
+                                      id: listing.id,
+                                      category: listing.category || "commuter",
+                                    })
+                                  }
                                   disabled={approvingId === listing.id}
                                 >
                                   {approvingId === listing.id ? (
@@ -462,6 +510,75 @@ export default function UsedBikesModeration() {
                   </>
                 ) : (
                   "Reject"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Approve Dialog */}
+      <Dialog
+        open={approveDialog.open}
+        onOpenChange={(open) => {
+          if (!open)
+            setApproveDialog({ open: false, id: null, category: "commuter" });
+          else setApproveDialog({ ...approveDialog, open: true });
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Approve Listing</DialogTitle>
+            <DialogDescription>
+              Select a category for this bike before approving.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={approveDialog.category}
+                onValueChange={(val) =>
+                  setApproveDialog({ ...approveDialog, category: val })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {BIKE_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setApproveDialog({
+                    open: false,
+                    id: null,
+                    category: "commuter",
+                  })
+                }
+                disabled={approvingId === approveDialog.id}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+                onClick={handleApproveSubmit}
+                disabled={approvingId === approveDialog.id}
+              >
+                {approvingId === approveDialog.id ? (
+                  <>
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />{" "}
+                    Approving...
+                  </>
+                ) : (
+                  "Approve & Publish"
                 )}
               </Button>
             </div>

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import UserProfile, Notification
+from apps.core.validators import DataValidator
 
 User = get_user_model()
 
@@ -13,6 +14,12 @@ class UserSerializer(serializers.ModelSerializer):
             'date_joined', 'last_login'
         ]
         read_only_fields = ['username', 'date_joined', 'last_login', 'role', 'is_email_verified']
+
+    def validate_phone(self, value):
+        return DataValidator.validate_phone(value)
+
+    def validate(self, data):
+        return DataValidator.sanitize_dict(data)
 
 class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -36,6 +43,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("A user with this email already exists.")
         return value
+
+    def validate_phone(self, value):
+        return DataValidator.validate_phone(value)
+
+    def validate(self, data):
+        return DataValidator.sanitize_dict(data)
 
     def create(self, validated_data):
         from .views import generate_unique_username

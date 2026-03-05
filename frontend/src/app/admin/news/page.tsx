@@ -88,12 +88,12 @@ interface Article {
   is_published?: boolean;
 }
 
-const categories = [
-  { value: "launch", label: "Launch News" },
-  { value: "review", label: "Reviews" },
-  { value: "comparison", label: "Comparisons" },
-  { value: "industry", label: "Industry Updates" },
-  { value: "tips", label: "Riding Tips" },
+const CATEGORIES = [
+  { label: "Launch", value: "launch" },
+  { label: "Review", value: "review" },
+  { label: "Feature", value: "feature" },
+  { label: "Tips", value: "tips" },
+  { label: "News", value: "news" },
 ];
 
 export default function AdminNewsPage() {
@@ -115,7 +115,7 @@ export default function AdminNewsPage() {
   );
   const [newArticle, setNewArticle] = useState({
     title: "",
-    category: "launch",
+    category: "news",
     excerpt: "",
     content: "",
     author: "Admin User",
@@ -128,7 +128,7 @@ export default function AdminNewsPage() {
   const resetForm = () => {
     setNewArticle({
       title: "",
-      category: "launch",
+      category: "news",
       excerpt: "",
       content: "",
       author: "Admin User",
@@ -304,7 +304,7 @@ export default function AdminNewsPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {categories.map((cat) => (
+                            {CATEGORIES.map((cat: { label: string; value: string }) => (
                               <SelectItem key={cat.value} value={cat.value}>
                                 {cat.label}
                               </SelectItem>
@@ -508,7 +508,7 @@ export default function AdminNewsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((cat) => (
+                  {CATEGORIES.map((cat: { label: string; value: string }) => (
                     <SelectItem key={cat.value} value={cat.value}>
                       {cat.label}
                     </SelectItem>
