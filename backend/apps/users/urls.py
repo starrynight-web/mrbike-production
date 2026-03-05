@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    GoogleAuthView, SendOTPView, VerifyOTPView, UserProfileView,
+    GoogleAuthView, UserProfileView,
     NotificationListView, RegisterView, PasswordResetRequestView,
     PasswordResetConfirmView, UserDashboardStatsView,
     EmailLoginView, EmailVerifyView, ResendVerificationView,
@@ -14,8 +14,6 @@ urlpatterns = [
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/verify-email/', EmailVerifyView.as_view(), name='verify-email'),
     path('auth/resend-verification/', ResendVerificationView.as_view(), name='resend-verification'),
-    path('auth/otp/send/', SendOTPView.as_view(), name='send-otp'),
-    path('auth/verify-phone/', VerifyOTPView.as_view(), name='verify-phone'),
     path('auth/google/', GoogleAuthView.as_view(), name='google-auth'),
     path('auth/password-reset/', PasswordResetRequestView.as_view(), name='password-reset'),
     path('auth/password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),

@@ -177,16 +177,29 @@ class ListingImage(models.Model):
     @property
     def get_best_url(self):
         """Get best image format for current browser (WebP preferred)"""
+        import cloudinary.utils
         for field in [self.webp_image, self.compressed_image, self.original_image]:
             if field:
                 try:
-                    if hasattr(field, 'url'):
+                    # CloudinaryField returns a CloudinaryResource object
+                    if hasattr(field, 'url') and field.url:
+                        # Ensure we use HTTPS
+                        if field.url.startswith('http:'):
+                            return field.url.replace('http:', 'https:')
                         return field.url
-                    elif isinstance(field, str) and field:
-                        # Field is a raw Cloudinary public_id string
-                        import cloudinary.utils
-                        return cloudinary.utils.cloudinary_url(field)[0]
-                except Exception:
+                    # Fallback for public_id strings
+                    public_id = str(field)
+                    if public_id and public_id != 'None':
+                        url, options = cloudinary.utils.cloudinary_url(
+                            public_id, 
+                            secure=True,
+                            format='webp' if field == self.webp_image else None
+                        )
+                        return url
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Error resolving Cloudinary URL: {e}")
                     continue
         return None
     

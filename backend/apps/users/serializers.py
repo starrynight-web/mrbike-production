@@ -40,12 +40,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'password', 'first_name', 'last_name', 'phone']
     
     def validate_email(self, value):
+        if not value:
+            raise serializers.ValidationError("An email address is required.")
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("A user with this email already exists.")
         return value
 
     def validate_phone(self, value):
-        return DataValidator.validate_phone(value)
+        if value:
+            return DataValidator.validate_phone(value)
+        return value
 
     def validate(self, data):
         return DataValidator.sanitize_dict(data)
@@ -63,7 +67,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
-            phone=validated_data.get('phone') or None,
+            phone=validated_data.get('phone'),
         )
         return user
 

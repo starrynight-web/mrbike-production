@@ -7,6 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.cache import cache
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
+from django.conf import settings
+from django.contrib.auth import get_user_model, authenticate
 from django.utils import timezone
 import secrets
 import hmac
@@ -124,137 +126,7 @@ class GoogleAuthView(generics.GenericAPIView):
             'created': created,
         })
 
-class SendOTPView(APIView):
-    """
-    Sends OTP via Firebase/SMS.
-    In production, this would call Firebase Auth or an SMS gateway.
-    """
-    permission_classes = [AllowAny]
-    throttle_classes = [OTPRateThrottle]
-    
-    def post(self, request):
-        phone = request.data.get('phone')
-        if not phone:
-            return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Check for lockout (too many failed attempts)
-        attempts_key = f"otp_attempts_{phone}"
-        attempts = cache.get(attempts_key, 0)
-        if attempts >= 5:
-            logger.warning("OTP request lockout for phone after failed attempts")
-            return Response(
-                {"error": "Too many failed attempts. Please try again later."},
-                status=status.HTTP_429_TOO_MANY_REQUESTS
-            )
-        
-        # Generate a cryptographically secure 6-digit OTP
-        otp = str(secrets.randbelow(900000) + 100000)
-        
-        # Store OTP in cache for 5 minutes
-        cache.set(f"otp_{phone}", otp, timeout=300)
-        
-        # Log OTP send event (without exposing OTP in production logs)
-        logger.debug("OTP sent for phone (masked)")
-        
-        # Only return OTP in development if DEBUG_OTP flag is explicitly enabled
-        response_data = {"message": "OTP sent successfully", "phone": phone}
-        if getattr(settings, 'DEBUG_OTP', False):
-            response_data["dev_otp"] = otp
-        
-        return Response(response_data)
-
-class VerifyOTPView(APIView):
-    """
-    Verifies the OTP provided by the user.
-    Implements constant-time comparison and attempt tracking.
-    """
-    permission_classes = [AllowAny]
-    def post(self, request):
-        phone = request.data.get('phone')
-        otp = request.data.get('otp')
-        
-        if not phone or not otp:
-            return Response({"error": "Phone and OTP are required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Check attempt lockout
-        attempts_key = f"otp_attempts_{phone}"
-        attempts = cache.get(attempts_key, 0)
-        if attempts >= 5:
-            logger.warning("OTP verification blocked due to too many attempts for phone")
-            return Response(
-                {"error": "Too many failed attempts. Please request a new OTP."},
-                status=status.HTTP_429_TOO_MANY_REQUESTS
-            )
-        
-        cached_otp = cache.get(f"otp_{phone}")
-        
-        # Master OTP for development/demo (only if DEBUG is True)
-        is_demo = False
-        is_admin_debug = False
-        
-        if settings.DEBUG and otp == "123456":
-            if phone == "01711111111":
-                is_demo = True
-                logger.info("Demo login attempt with master OTP detected")
-            elif phone == "01999999999":
-                is_admin_debug = True
-                logger.info("Admin debug login attempt with master OTP detected")
-        
-        if is_demo or is_admin_debug or (cached_otp and hmac.compare_digest(cached_otp, otp)):
-            # Successful verification: delete OTP and reset attempts
-            if not (is_demo or is_admin_debug):
-                cache.delete(f"otp_{phone}")
-            cache.delete(attempts_key)
-            logger.info("OTP verification successful")
-
-            # Find or create user
-            user = User.objects.filter(phone=phone).first()
-            created = False
-            if not user:
-                # Generate unique username using phone as identifier
-                username = generate_unique_username(phone, User)
-                # For phone-only accounts avoid setting a real email address; set email=None
-                user = User.objects.create(
-                    phone=phone,
-                    username=username,
-                    email=None,
-                    is_phone_verified=True
-                )
-                created = True
-            
-            # Ensure demo user is assigned a limited demo role (do NOT grant superuser)
-            if is_demo:
-                user.is_staff = False
-                user.is_superuser = False
-                user.role = 'demo'
-                user.save()
-            
-            # For admin debug, ALWAYS ensure they have access and correct role
-            if is_admin_debug:
-                if not user.is_staff or not user.is_superuser or user.role != 'admin':
-                    user.is_staff = True
-                    user.is_superuser = True
-                    user.role = 'admin'
-                    user.save()
-            
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                "success": True,
-                "refresh": str(refresh),
-                "access": str(refresh.access_token),
-                "user": UserSerializer(user).data,
-                "created": created,
-                "message": "Phone verified successfully"
-            })
-        
-        # Failed attempt: increment counter with 5-min TTL tied to OTP timeout
-        cache.set(attempts_key, attempts + 1, timeout=300)
-        logger.warning(f"Failed OTP verification attempt {attempts + 1} for phone")
-        
-        return Response(
-            {"success": False, "error": "Invalid or expired OTP"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+# Legacy SendOTPView and VerifyOTPView removed as per requirements (Email-only auth)
 
 
 class UserDashboardStatsView(APIView):
@@ -295,7 +167,7 @@ class RegisterView(generics.CreateAPIView):
         # Create verification token and send email
         token = EmailVerificationToken.objects.create(
             user=user,
-            expires_at=timezone.now() + timezone.timedelta(hours=24)
+            expires_at=timezone.now() + timezone.timedelta(minutes=10)
         )
         email_service.send_verification_email(
             to_email=user.email,
@@ -420,7 +292,7 @@ class ResendVerificationView(APIView):
         # Create new token
         token = EmailVerificationToken.objects.create(
             user=user,
-            expires_at=timezone.now() + timezone.timedelta(hours=24)
+            expires_at=timezone.now() + timezone.timedelta(minutes=10)
         )
         email_service.send_verification_email(
             to_email=user.email,

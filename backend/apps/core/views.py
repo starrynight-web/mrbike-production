@@ -59,3 +59,24 @@ class AdminAnalyticsView(APIView):
             "listings_over_time": list(daily_listings),
             "user_growth": [] # Mocked for now
         })
+class AdminSettingsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        # Default settings - in production these would be in a DB
+        settings_data = {
+            "site_name": "MrBikeBD",
+            "site_description": "The largest motorcycle marketplace in Bangladesh.",
+            "contact_email": "support@mrbikebd.com",
+            "contact_phone": "+880 123456789",
+            "maintenance_mode": False,
+            "enable_registration": True,
+            "require_email_verification": True,
+            "max_listing_images": 10,
+            "listing_expiry_days": 90,
+        }
+        return Response(settings_data)
+
+    def patch(self, request):
+        # Update settings logic here
+        return Response({"message": "Settings updated successfully"})

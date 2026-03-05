@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django_filters',
     
     # Local apps
+    'apps.core',
     'apps.users',
     'apps.bikes',
     'apps.marketplace',
@@ -88,37 +89,40 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Fallback: Local SQLite for development or when remote DB is unreachable
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
 if DATABASE_URL:
     try:
         import dj_database_url
-        DATABASES = {
-            'default': dj_database_url.config(
-                default=DATABASE_URL,
-                conn_max_age=600,
-                conn_health_checks=True,
-            )
-        }
-        print("[OK] Using PostgreSQL/Supabase database")
+        DATABASES['default'] = dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+        print("[OK] Using PostgreSQL/Supabase database as default")
     except ImportError:
-        # Fallback if dj-database-url is not installed but DATABASE_URL is present
         print("[WARNING] dj-database-url not installed. Falling back to SQLite.")
-        DATABASE_URL = None
 
-if not DATABASE_URL:
-    # Use SQLite as primary local database
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-            'CONN_MAX_AGE': 0,
-            'CONN_HEALTH_CHECKS': False,
-            'OPTIONS': {
-                'timeout': 20,
-                'check_same_thread': False,
-            }
+# MongoDB Settings
+MONGODB_URI = os.getenv("MONGODB_URI")
+if MONGODB_URI:
+    DATABASES['mongodb'] = {
+        'ENGINE': 'djongo',
+        'NAME': os.getenv("MONGODB_DATABASE", "mrbikebd"),
+        'ENFORCE_SCHEMA': False,
+        'CLIENT': {
+            'host': MONGODB_URI,
         }
     }
-    print("[WARN] ⚠️ Using SQLite — NOT suitable for production. Set DATABASE_URL for PostgreSQL.")
+    print("[OK] MongoDB configuration added")
+
+# Database Routers
+DATABASE_ROUTERS = ['core.db_routers.DatabaseRouter']
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

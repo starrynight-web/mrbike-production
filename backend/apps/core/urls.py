@@ -1,8 +1,6 @@
 from django.urls import path
-from .views import AdminStatsView, AdminFilterOptionsView, AdminAnalyticsView
+from .views import AdminSettingsView
 
 urlpatterns = [
-    path('stats/', AdminStatsView.as_view(), name='admin-stats'),
-    path('filter-options/', AdminFilterOptionsView.as_view(), name='admin-filters'),
-    path('analytics/', AdminAnalyticsView.as_view(), name='admin-analytics'),
+    path('settings/', AdminSettingsView.as_view(), name='admin-settings'),
 ]

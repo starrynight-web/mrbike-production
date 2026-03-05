@@ -86,6 +86,13 @@ export default function UsedBikesModeration() {
     id: null,
     reason: "",
   });
+  const [previewDialog, setPreviewDialog] = useState<{
+    open: boolean;
+    listing: UsedBikeListing | null;
+  }>({
+    open: false,
+    listing: null,
+  });
   const [approveDialog, setApproveDialog] = useState<{
     open: boolean;
     id: number | null;
@@ -356,6 +363,19 @@ export default function UsedBikesModeration() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/5"
+                              onClick={() =>
+                                setPreviewDialog({
+                                  open: true,
+                                  listing: listing,
+                                })
+                              }
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                             {listing.status === "pending" && (
                               <>
                                 <Button
@@ -412,8 +432,8 @@ export default function UsedBikesModeration() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem disabled>
-                                  <Eye className="mr-2 h-4 w-4" /> View Details
+                                <DropdownMenuItem onClick={() => setPreviewDialog({ open: true, listing: listing })}>
+                                  <Eye className="mr-2 h-4 w-4" /> Preview Full Ad
                                 </DropdownMenuItem>
                                 <DropdownMenuItem disabled>
                                   <Users className="mr-2 h-4 w-4" /> Contact

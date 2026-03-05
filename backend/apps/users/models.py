@@ -70,7 +70,7 @@ class EmailVerificationToken(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.expires_at:
-            self.expires_at = timezone.now() + timezone.timedelta(hours=24)
+            self.expires_at = timezone.now() + timezone.timedelta(minutes=10)
         super().save(*args, **kwargs)
 
     @property

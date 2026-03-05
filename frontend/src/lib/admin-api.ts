@@ -542,6 +542,17 @@ class AdminAPI {
     });
     return response.data;
   }
+  // ===== SETTINGS MANAGEMENT =====
+
+  async getSettings() {
+    const response = await api.get("/admin/settings/");
+    return response.data;
+  }
+
+  async updateSettings(data: any) {
+    const response = await api.patch("/admin/settings/", data);
+    return response.data;
+  }
 }
 
 // Export singleton instance
