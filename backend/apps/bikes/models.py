@@ -37,11 +37,11 @@ class BikeModel(models.Model):
 
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='bikes')
     name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=250, unique=True, blank=True)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    slug = models.SlugField(max_length=250, unique=True, blank=True, db_index=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, db_index=True)
     
     # Engine & Performance (Basic)
-    engine_capacity = models.IntegerField(help_text="Engine capacity in CC")
+    engine_capacity = models.IntegerField(help_text="Engine capacity in CC", db_index=True)
     engine_type = models.CharField(max_length=200, blank=True, null=True)
     max_power = models.CharField(max_length=100, blank=True, null=True)
     max_torque = models.CharField(max_length=100, blank=True, null=True)
@@ -59,7 +59,7 @@ class BikeModel(models.Model):
     tyre_type = models.CharField(max_length=100, default="Tubeless")
     
     # Price
-    price = models.DecimalField(max_digits=12, decimal_places=2, help_text="Current official price in BDT")
+    price = models.DecimalField(max_digits=12, decimal_places=2, help_text="Current official price in BDT", db_index=True)
     is_available = models.BooleanField(default=True)
     
     # Media & Social
@@ -83,7 +83,7 @@ class BikeVariant(models.Model):
     bike_model = models.ForeignKey(BikeModel, on_delete=models.CASCADE, related_name='variants')
     variant_name = models.CharField(max_length=200)
     variant_key = models.CharField(max_length=50) # e.g. 'std', 'abs'
-    price = models.DecimalField(max_digits=12, decimal_places=2)
+    price = models.DecimalField(max_digits=12, decimal_places=2, db_index=True)
     is_default = models.BooleanField(default=False)
     
     # Features as a list or specific fields

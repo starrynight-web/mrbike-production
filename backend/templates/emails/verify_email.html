@@ -1,42 +1,197 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - MrBikeBD</title>
     <style>
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-        .header { background: #1a73e8; color: white; padding: 32px 20px; text-align: center; }
-        .header h1 { margin: 0; font-size: 24px; font-weight: 700; }
-        .content { padding: 32px; background: #ffffff; }
-        .button { 
-            display: inline-block; 
-            padding: 12px 32px; 
-            background: #1a73e8; 
-            color: white !important; 
-            text-decoration: none; 
-            border-radius: 6px; 
-            font-weight: 600;
-            margin: 24px 0;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .footer { padding: 24px; text-align: center; color: #6b7280; font-size: 14px; background: #f9fafb; }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #f4f4f5;
+            padding: 40px 20px;
+            color: #18181b;
+        }
+
+        .wrapper {
+            max-width: 580px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px 16px 0 0;
+            padding: 36px 32px 24px;
+            text-align: center;
+        }
+
+        .logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .logo-text {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-dot {
+            color: #3b82f6;
+        }
+
+        .header-tag {
+            color: #94a3b8;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .body {
+            background: #ffffff;
+            padding: 40px 36px;
+        }
+
+        .greeting {
+            font-size: 28px;
+            font-weight: 700;
+            color: #18181b;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .paragraph {
+            font-size: 16px;
+            color: #52525b;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .cta-wrapper {
+            text-align: center;
+            margin: 36px 0;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid #e4e4e7;
+            margin: 28px 0;
+        }
+
+        .url-label {
+            font-size: 13px;
+            color: #71717a;
+            margin-bottom: 8px;
+        }
+
+        .url-box {
+            background: #f4f4f5;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #3b82f6;
+            word-break: break-all;
+        }
+
+        .expiry-note {
+            font-size: 14px;
+            color: #71717a;
+            margin-top: 20px;
+            background: #fef3c7;
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+
+        .expiry-note strong {
+            color: #92400e;
+        }
+
+        .footer {
+            background: #f9fafb;
+            border-radius: 0 0 16px 16px;
+            padding: 24px 32px;
+            text-align: center;
+        }
+
+        .footer p {
+            font-size: 13px;
+            color: #a1a1aa;
+            line-height: 1.6;
+        }
+
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
     </style>
 </head>
+
 <body>
-    <div class="container">
+    <div class="wrapper">
         <div class="header">
-            <h1>Verify Your Email</h1>
-        </div>
-        <div class="content">
-            <p>Hello {{ name }},</p>
-            <p>Welcome to MrBikeBD! We're excited to have you join our community. Please verify your email address to get started:</p>
-            <div style="text-align: center;">
-                <a href="{{ verify_url }}" class="button">Verify My Email</a>
+            <div class="logo-row">
+                <span class="logo-text">MrBike<span class="logo-dot">BD</span></span>
             </div>
-            <p>This link will expire in <strong>10 minutes</strong> for your security.</p>
-            <p>If you didn't create an account, you can safely ignore this email.</p>
+            <p class="header-tag">Bangladesh&apos;s #1 Bike Community</p>
         </div>
+
+        <div class="body">
+            <h1 class="greeting">Verify your email, {{ name }}! 👋</h1>
+            <p class="paragraph">
+                Welcome to MrBikeBD! You&apos;re just one step away from joining Bangladesh&apos;s largest motorcycle
+                community. Please verify your email address to activate your account.
+            </p>
+
+            <div class="cta-wrapper">
+                <a href="{{ verify_url }}" class="cta-button">✅ Verify My Email</a>
+            </div>
+
+            <hr class="divider">
+
+            <p class="url-label">Or copy and paste this link into your browser:</p>
+            <div class="url-box">{{ verify_url }}</div>
+
+            <p class="expiry-note">
+                ⏰ This link will expire in <strong>24 hours</strong>. If it expires, you can request a new one from the
+                login page.
+            </p>
+
+            <p class="paragraph" style="margin-top: 24px; font-size: 14px; color: #71717a;">
+                If you didn&apos;t create an account with MrBikeBD, you can safely ignore this email. No account will be
+                created without verification.
+            </p>
+        </div>
+
         <div class="footer">
-            <p>&copy; 2026 MrBikeBD. All rights reserved.</p>
+            <p>&copy; 2026 MrBikeBD. All rights reserved.<br>
+                <a href="{{ verify_url }}">mrbikebd.com</a>
+            </p>
         </div>
     </div>
 </body>
+
 </html>

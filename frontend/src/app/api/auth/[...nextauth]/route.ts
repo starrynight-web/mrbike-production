@@ -91,51 +91,6 @@ export const authOptions: AuthOptions = {
       },
     }),
     CredentialsProvider({
-      id: "otp",
-      name: "OTP",
-      credentials: {
-        phone: { label: "Phone", type: "text" },
-        otp: { label: "OTP", type: "text" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.phone || !credentials?.otp) {
-          return null;
-        }
-
-        try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/users/auth/verify-phone/`,
-            {
-              method: "POST",
-              body: JSON.stringify({
-                phone: credentials.phone,
-                otp: credentials.otp,
-              }),
-              headers: { "Content-Type": "application/json" },
-            }
-          );
-
-          const data = await res.json();
-
-          if (res.ok && data) {
-            return {
-              id: data.user.id.toString(),
-              name: `${data.user.first_name || ""} ${data.user.last_name || ""}`.trim() || data.user.username,
-              email: data.user.email,
-              image: data.user.profile_image,
-              role: data.user.role,
-              accessToken: data.access,
-              refreshToken: data.refresh,
-            };
-          }
-          throw new Error(data.error || data.detail || "Invalid OTP");
-        } catch (e: any) {
-          console.error("Auth error:", e);
-          throw new Error(e.message || "OTP verification failed");
-        }
-      },
-    }),
-    CredentialsProvider({
       id: "verify-token",
       name: "Email Verification Token",
       credentials: {

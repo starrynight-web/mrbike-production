@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import BaseUserManager
 from django.utils import timezone
 import uuid
+from djongo import models as dj_models
 
 class CustomUserManager(BaseUserManager):
     """Custom manager for User model with email-based authentication"""
@@ -42,8 +43,6 @@ class User(AbstractUser):
     ]
     
     email = models.EmailField(_('email address'), unique=True, null=True, blank=True)
-    phone = models.CharField(max_length=20, blank=True, null=True, unique=True)
-    is_phone_verified = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
     whatsapp_number = models.CharField(max_length=20, blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)
@@ -52,13 +51,22 @@ class User(AbstractUser):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
     updated_at = models.DateTimeField(auto_now=True)
     
+    def save(self, *args, **kwargs):
+        # Automatically set is_staff for administrative roles
+        if self.role in ['admin', 'moderator']:
+            self.is_staff = True
+        elif self.role == 'user' and not self.is_superuser:
+            # Only demote if not a superuser (to prevent accidental lockout)
+            self.is_staff = False
+        super().save(*args, **kwargs)
+    
     # Required for custom user model
     objects = CustomUserManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
     def __str__(self):
-        return self.email or self.phone or f"User {self.pk}"
+        return self.email or self.username or f"User {self.pk}"
 
 class EmailVerificationToken(models.Model):
     """Token for email verification flow"""
@@ -70,7 +78,7 @@ class EmailVerificationToken(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.expires_at:
-            self.expires_at = timezone.now() + timezone.timedelta(minutes=10)
+            self.expires_at = timezone.now() + timezone.timedelta(hours=24)  # 24h default
         super().save(*args, **kwargs)
 
     @property
@@ -88,11 +96,15 @@ class EmailVerificationToken(models.Model):
         ordering = ['-created_at']
 
 class UserProfile(models.Model):
+    id = models.BigAutoField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     points = models.IntegerField(default=0)
     member_since = models.DateTimeField(auto_now_add=True)
     is_dealer = models.BooleanField(default=False)
     
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Profile of {self.user.email}"
 

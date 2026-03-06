@@ -1,0 +1,121 @@
+Traceback (most recent call last):
+  File "E:\mr\backend\venv\Lib\site-packages\djongo\sql2mongo\query.py", line 857, in parse
+    return handler(self, statement)
+  File "E:\mr\backend\venv\Lib\site-packages\djongo\sql2mongo\query.py", line 929, in _insert
+    query.execute()
+    ~~~~~~~~~~~~~^^
+  File "E:\mr\backend\venv\Lib\site-packages\djongo\sql2mongo\query.py", line 400, in execute
+    res = self.db[self.left_table].insert_many(docs, ordered=False)
+  File "E:\mr\backend\venv\Lib\site-packages\pymongo\_csot.py", line 125, in csot_wrapper
+    return func(self, *args, **kwargs)
+  File "E:\mr\backend\venv\Lib\site-packages\pymongo\synchronous\collection.py", line 959, in insert_many
+    raise TypeError("documents must be a non-empty list")
+TypeError: documents must be a non-empty list
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\mr\backend\venv\Lib\site-packages\djongo\cursor.py", line 51, in execute
+    self.result = Query(
+                  ~~~~~^
+        self.client_conn,
+        ^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        sql,
+        ^^^^
+        params)
+        ^^^^^^^
+  File "E:\mr\backend\venv\Lib\site-packages\djongo\sql2mongo\query.py", line 784, in __init__
+    self._query = self.parse()
+                  ~~~~~~~~~~^^
+  File "E:\mr\backend\venv\Lib\site-packages\djongo\sql2mongo\query.py", line 885, in parse
+    raise exe from e
+djongo.exceptions.SQLDecodeError: 
+
+	Keyword: None
+	Sub SQL: None
+	FAILED SQL: INSERT INTO "marketplace_usedbikelisting" ("seller_id", "bike_model_id", "custom_brand", "custom_model", "title", "price", "mileage", "manufacturing_year", "registration_year", "condition", "description", "location", "contact_number", "category", "is_verified", "status", "rejection_reason", "reviewed_at", "reviewed_by_id", "is_featured", "is_urgent", "views_count", "created_at", "updated_at") VALUES (%(0)s, %(1)s, %(2)s, %(3)s, %(4)s, %(5)s, %(6)s, %(7)s, %(8)s, %(9)s, %(10)s, %(11)s, %(12)s, %(13)s, %(14)s, %(15)s, %(16)s, %(17)s, %(18)s, %(19)s, %(20)s, %(21)s, %(22)s, %(23)s)
+	Params: [1, None, None, None, 'Test Bike', 200000.0, 10000, 2020, None, 'good', 'Test description', 'Test Location', None, 'commuter', False, 'pending', None, None, None, False, False, 0, datetime.datetime(2026, 3, 6, 12, 46, 25, 865220), datetime.datetime(2026, 3, 6, 12, 46, 25, 865243)]
+	Version: 1.3.7
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "E:\mr\backend\venv\Lib\site-packages\djongo\cursor.py", line 59, in execute
+    raise db_exe from e
+djongo.database.DatabaseError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\mr\backend\test_mongo_insert.py", line 57, in test_insert
+    listing.save()
+    ~~~~~~~~~~~~^^
+  File "E:\mr\backend\apps\marketplace\models.py", line 85, in save
+    super().save(*args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\models\base.py", line 814, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\models\base.py", line 877, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\models\base.py", line 1020, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\models\base.py", line 1061, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\models\query.py", line 1810, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1822, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\backends\utils.py", line 102, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "E:\mr\backend\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "E:\mr\backend\venv\Lib\site-packages\djongo\cursor.py", line 59, in execute
+    raise db_exe from e
+django.db.utils.DatabaseError

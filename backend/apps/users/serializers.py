@@ -9,14 +9,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'first_name', 'last_name', 'phone', 'is_phone_verified',
+            'id', 'username', 'email', 'first_name', 'last_name',
             'is_email_verified', 'location', 'profile_image', 'bio', 'role',
             'date_joined', 'last_login'
         ]
         read_only_fields = ['username', 'date_joined', 'last_login', 'role', 'is_email_verified']
 
-    def validate_phone(self, value):
-        return DataValidator.validate_phone(value)
 
     def validate(self, data):
         return DataValidator.sanitize_dict(data)
@@ -37,7 +35,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'phone']
+        fields = ['username', 'email', 'password', 'first_name', 'last_name']
     
     def validate_email(self, value):
         if not value:
@@ -46,10 +44,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A user with this email already exists.")
         return value
 
-    def validate_phone(self, value):
-        if value:
-            return DataValidator.validate_phone(value)
-        return value
 
     def validate(self, data):
         return DataValidator.sanitize_dict(data)
@@ -67,7 +61,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
-            phone=validated_data.get('phone'),
         )
         return user
 

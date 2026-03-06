@@ -1,49 +1,44 @@
 import os
-import psycopg2
-from dotenv import load_dotenv
+import django
+import sys
 
-load_dotenv()
+# Set up Django environment
+sys.path.append(os.getcwd())
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+django.setup()
 
-def test_connection(url, label):
-    with open("test_db.log", "a") as f:
-        f.write(f"\n--- Testing {label} ---\n")
-        f.write(f"Host: {url.split('@')[-1]}\n")
-        try:
-            conn = psycopg2.connect(url)
-            f.write("SUCCESS!\n")
-            conn.close()
-            return True
-        except Exception as e:
-            f.write(f"FAILED: {e}\n")
-            return False
+from apps.marketplace.models import UsedBikeListing
+from apps.interactions.models import Review, Wishlist
+from apps.bikes.models import BikeModel
 
-# Clear log
-with open("test_db.log", "w") as f:
-    f.write("DB CONNECTION TEST RESULTS\n")
+def test_connections():
+    print("--- Testing Database Connectivity ---")
+    
+    try:
+        bike_count = BikeModel.objects.count()
+        print(f"[OK] Postgres (Bikes): {bike_count} bikes found.")
+    except Exception as e:
+        print(f"[FAIL] Postgres error: {e}")
 
-# Try qualified username on Pooler 6543
-url1 = os.getenv("DATABASE_URL")
-test_connection(url1, "Qualified Username + Pooler 6543")
+    try:
+        listing_count = UsedBikeListing.objects.count()
+        print(f"[OK] MongoDB (Marketplace): {listing_count} listings found.")
+    except Exception as e:
+        print(f"[FAIL] MongoDB Marketplace error: {e}")
 
-# Try qualified username on Pooler 5432
-if url1:
-    url2 = url1.replace(":6543/", ":5432/")
-    test_connection(url2, "Qualified Username + Pooler 5432")
+    try:
+        review_count = Review.objects.count()
+        print(f"[OK] MongoDB (Interactions): {review_count} reviews found.")
+    except Exception as e:
+        print(f"[FAIL] MongoDB Interactions error: {e}")
 
-# Try project ref as dbname on Pooler 6543
-url5 = "postgresql://postgres.lpuzoyordbojecpgupwm:Uif2ivVo11HHmQJ5@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?sslmode=require"
-test_connection(url5, "Qualified User + Pooler 6543 (Double check)")
+    print("--- Testing List Request ---")
+    try:
+        listings = UsedBikeListing.objects.all()[:5]
+        for l in listings:
+            print(f"Listing: {l.title}, Price: {l.price}, Model ID: {l.bike_model_id}")
+    except Exception as e:
+        print(f"[FAIL] List request failed: {e}")
 
-url6 = "postgresql://postgres:Uif2ivVo11HHmQJ5@aws-0-ap-south-1.pooler.supabase.com:6543/lpuzoyordbojecpgupwm?sslmode=require"
-test_connection(url6, "Unqualified User + ProjectRef as DBName")
-
-# Try project in options
-url8 = "postgresql://postgres:Uif2ivVo11HHmQJ5@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?sslmode=require&options=project%3Dlpuzoyordbojecpgupwm"
-test_connection(url8, "Unqualified User + options=project (Pooler 6543)")
-
-url9 = "postgresql://postgres.lpuzoyordbojecpgupwm:Uif2ivVo11HHmQJ5@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?sslmode=require&options=project%3Dlpuzoyordbojecpgupwm"
-test_connection(url9, "Qualified User + options=project (Pooler 6543)")
-
-# Try direct host on pooler port
-url10 = "postgresql://postgres:Uif2ivVo11HHmQJ5@db.lpuzoyordbojecpgupwm.supabase.co:6543/postgres?sslmode=require"
-test_connection(url10, "Direct Host + Pooler Port 6543")
+if __name__ == "__main__":
+    test_connections()

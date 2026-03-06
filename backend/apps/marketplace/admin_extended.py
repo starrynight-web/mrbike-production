@@ -86,7 +86,8 @@ class UsedBikeListingAdmin(admin.ModelAdmin):
         }),
         ('🏍️ Bike Information', {
             'fields': (
-                'bike_model',
+                'bike_model_id',
+                'bike_model_display',
                 ('custom_brand', 'custom_model'),
                 'manufacturing_year',
                 'registration_year',
@@ -119,18 +120,29 @@ class UsedBikeListingAdmin(admin.ModelAdmin):
     inlines = [ListingImageInline]
     
     readonly_fields = [
-        'seller',
         'views_count',
         'created_at',
         'updated_at',
-        'primary_image_thumbnail'
+        'primary_image_thumbnail',
+        'bike_model_display'
     ]
     
-    # Filtering
     def get_queryset(self, request):
         """Optimize queryset with select_related"""
         qs = super().get_queryset(request)
-        return qs.select_related('seller', 'bike_model__brand')
+        return qs.select_related('seller')
+    
+    def bike_model_display(self, obj):
+        """Display bike model name from Postgres"""
+        if not obj.bike_model_id:
+            return obj.custom_model or "-"
+        try:
+            from apps.bikes.models import BikeModel
+            bike = BikeModel.objects.get(pk=obj.bike_model_id)
+            return bike.name
+        except Exception:
+            return f"ID: {obj.bike_model_id} (Not found)"
+    bike_model_display.short_description = 'Bike Model (Postgres)'
     
     # Custom actions
     actions = [

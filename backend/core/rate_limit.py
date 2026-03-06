@@ -25,6 +25,7 @@ class RateLimitMiddleware:
             '/api/recommendations/': 10,  # Max 10 recommendation requests per minute
             '/api/marketplace/': 30,      # Max 30 marketplace requests per minute
             '/api/bikes/': 60,            # Max 60 bike catalog requests per minute
+            '/api/users/auth/': 5,        # Max 5 auth attempts per minute
         }
     
     def __call__(self, request):

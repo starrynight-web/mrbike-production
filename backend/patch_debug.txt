@@ -1,0 +1,9 @@
+Alias: mongodb, Engine: djongo
+Original SQL:
+INSERT INTO "marketplace_usedbikelisting" ("seller_id", "bike_model_id", "custom_brand", "custom_model", "title", "price", "mileage", "manufacturing_year", "registration_year", "condition", "description", "location", "contact_number", "category", "is_verified", "status", "rejection_reason", "reviewed_at", "reviewed_by_id", "is_featured", "is_urgent", "views_count", "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+
+Params:
+[1, None, None, None, 'Test Bike', 200000.0, 10000, 2020, None, 'good', 'Test description', 'Test Location', None, 'commuter', False, 'pending', None, None, None, False, False, 0, datetime.datetime(2026, 3, 6, 12, 32, 0, 732873), datetime.datetime(2026, 3, 6, 12, 32, 0, 732893)]
+
+Patched SQL:
+INSERT INTO "marketplace_usedbikelisting" ("seller_id", "bike_model_id", "custom_brand", "custom_model", "title", "price", "mileage", "manufacturing_year", "registration_year", "condition", "description", "location", "contact_number", "category", "is_verified", "status", "rejection_reason", "reviewed_at", "reviewed_by_id", "is_featured", "is_urgent", "views_count", "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)

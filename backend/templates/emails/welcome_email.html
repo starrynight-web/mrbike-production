@@ -1,99 +1,188 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to MrBikeBD!</title>
     <style>
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            line-height: 1.6;
-            color: #1f2937;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 0;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #f4f4f5;
+            padding: 40px 20px;
+            color: #18181b;
+        }
+
+        .wrapper {
+            max-width: 580px;
+            margin: 0 auto;
         }
 
         .header {
-            background: #10b981;
-            color: white;
-            padding: 32px 20px;
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            border-radius: 16px 16px 0 0;
+            padding: 36px 32px 24px;
             text-align: center;
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 700;
+        .logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 8px;
         }
 
-        .content {
-            padding: 32px;
+        .logo-text {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-dot {
+            color: #10b981;
+        }
+
+        .header-tag {
+            color: #6ee7b7;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .body {
             background: #ffffff;
+            padding: 40px 36px;
         }
 
-        .button {
-            display: inline-block;
-            padding: 12px 32px;
-            background: #1a73e8;
-            color: white !important;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            margin: 24px 0;
+        .greeting {
+            font-size: 28px;
+            font-weight: 700;
+            color: #18181b;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .paragraph {
+            font-size: 16px;
+            color: #52525b;
+            line-height: 1.7;
+            margin-bottom: 16px;
         }
 
         .features {
             background: #f0fdf4;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 24px 0;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 28px 0;
+            border: 1px solid #dcfce7;
         }
 
-        .features ul {
-            margin: 0;
-            padding-left: 20px;
+        .feature-title {
+            font-weight: 700;
+            color: #065f46;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-item {
+            margin-bottom: 8px;
+            color: #166534;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cta-wrapper {
+            text-align: center;
+            margin: 36px 0;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
         }
 
         .footer {
-            padding: 24px;
-            text-align: center;
-            color: #6b7280;
-            font-size: 14px;
             background: #f9fafb;
+            border-radius: 0 0 16px 16px;
+            padding: 24px 32px;
+            text-align: center;
+        }
+
+        .footer p {
+            font-size: 13px;
+            color: #a1a1aa;
+            line-height: 1.6;
+        }
+
+        .footer a {
+            color: #10b981;
+            text-decoration: none;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
+    <div class="wrapper">
         <div class="header">
-            <h1>Welcome to MrBikeBD!</h1>
+            <div class="logo-row">
+                <span class="logo-text">MrBike<span class="logo-dot">BD</span></span>
+            </div>
+            <p class="header-tag">The ultimate ride awaits</p>
         </div>
-        <div class="content">
-            <p>Hello {{ name }},</p>
-            <p>Your email has been verified and your account is now ready. We're thrilled to have you as part of the
-                most vibrant bike community in Bangladesh!</p>
+
+        <div class="body">
+            <h1 class="greeting">Verified & Ready, {{ name }}! 🚀</h1>
+            <p class="paragraph">
+                Your email has been successfully verified! You&apos;re now a full member of MrBikeBD. We&apos;re
+                thrilled to have you with us.
+            </p>
+
             <div class="features">
-                <strong style="color: #065f46;">What can you do now?</strong>
-                <ul>
-                    <li>Browse detailed bike specs & compare</li>
-                    <li>List your used bike for sale for free</li>
-                    <li>Join discussions and write reviews</li>
+                <strong class="feature-title">What&apos;s next?</strong>
+                <ul class="feature-list">
+                    <li class="feature-item">🏁 Browse detailed bike specs & comparisons</li>
+                    <li class="feature-item">💰 List your used bike for sale for free</li>
+                    <li class="feature-item">💬 Join discussions & write reviews</li>
                 </ul>
             </div>
-            <div style="text-align: center;">
-                <a href="{{ login_url }}" class="button">Visit Marketplace</a>
+
+            <div class="cta-wrapper">
+                <a href="{{ login_url }}" class="cta-button">🛍️ Start Exploring</a>
             </div>
+
+            <p class="paragraph" style="font-size: 14px; text-align: center; color: #71717a;">
+                See you on the road!<br>
+                <strong>The MrBikeBD Team</strong>
+            </p>
         </div>
+
         <div class="footer">
-            <p>&copy; 2026 MrBikeBD. All rights reserved.</p>
+            <p>&copy; 2026 MrBikeBD. All rights reserved.<br>
+                <a href="https://mrbikebd.com">mrbikebd.com</a>
+            </p>
         </div>
     </div>
 </body>

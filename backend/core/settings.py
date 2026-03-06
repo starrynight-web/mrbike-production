@@ -1,15 +1,64 @@
-"""
-Django settings for core project.
-"""
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
+
+import sys
+import types
+
+# 1. Bridge the 'six' gap (removed in Django 3.0+)
+try:
+    import django.utils
+    if not hasattr(django.utils, 'six'):
+        import six
+        django.utils.six = six
+        sys.modules['django.utils.six'] = six
+except ImportError:
+    # If six is not installed, provide a minimal shim for djongo's needs
+    from django.utils import encoding
+    six_shim = types.ModuleType('six')
+    six_shim.string_types = (str,)
+    six_shim.text_type = str
+    six_shim.integer_types = (int,)
+    django.utils.six = six_shim
+    sys.modules['django.utils.six'] = six_shim
+
+# 2. Bridge pymongo 4+ truth testing (removed Database.__bool__)
+try:
+    from pymongo.database import Database
+    def database_bool(self):
+        return True
+    Database.__bool__ = database_bool
+except ImportError:
+    pass
+
+# 3. Fix djongo KeyError: 'ObjectIdField'
+try:
+    from djongo.operations import DatabaseOperations
+    from djongo.introspection import DatabaseIntrospection
+    
+    # Patch for integer_field_max_value lookup
+    if not hasattr(DatabaseOperations, '_patched'):
+        def patched_integer_field_definition(self, field):
+            return 'ObjectIdField'
+        DatabaseOperations.integer_field_definition = patched_integer_field_definition
+        DatabaseOperations._patched = True
+        
+    # Patch for data_types_reverse
+    if 'ObjectIdField' not in DatabaseIntrospection.data_types_reverse:
+        DatabaseIntrospection.data_types_reverse['ObjectIdField'] = 'ObjectIdField'
+
+except Exception as e:
+    # Important: if this fails, we want to know, but not crash settings
+    if "DEBUG" in os.environ:
+        print(f"[WARN] Djongo monkeypatch failed: {e}")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -20,9 +69,6 @@ if not SECRET_KEY:
         from django.core.exceptions import ImproperlyConfigured
         raise ImproperlyConfigured("The SECRET_KEY setting must not be empty in production.")
 
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 

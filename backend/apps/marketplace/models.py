@@ -10,6 +10,7 @@ from .image_processor import ImageProcessingService
 from cloudinary.models import CloudinaryField
 
 class UsedBikeListing(models.Model):
+    # id/ _id will be handled automatically by Djongo/MongoDB
     CONDITION_CHOICES = [
         ('excellent', 'Excellent'),
         ('good', 'Good'),
@@ -26,14 +27,14 @@ class UsedBikeListing(models.Model):
     ]
 
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='listings')
-    bike_model = models.ForeignKey(BikeModel, on_delete=models.SET_NULL, null=True, blank=True)
+    bike_model_id = models.IntegerField(null=True, blank=True, help_text="Reference ID to BikeModel in PostgreSQL")
     
     # If not in our official list
     custom_brand = models.CharField(max_length=100, blank=True, null=True)
     custom_model = models.CharField(max_length=100, blank=True, null=True)
     
     title = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=12, decimal_places=2)
+    price = models.FloatField()
     mileage = models.IntegerField(help_text="Total kilometers driven")
     manufacturing_year = models.IntegerField()
     registration_year = models.IntegerField(null=True, blank=True)
@@ -75,8 +76,13 @@ class UsedBikeListing(models.Model):
 
     def save(self, *args, **kwargs):
         # Sync category from bike_model if available
-        if self.bike_model and not self.category:
-            self.category = self.bike_model.category
+        if self.bike_model_id and not self.category:
+            try:
+                from apps.bikes.models import BikeModel
+                bike = BikeModel.objects.get(pk=self.bike_model_id)
+                self.category = bike.category
+            except Exception:
+                pass
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -89,10 +95,13 @@ class UsedBikeListing(models.Model):
             models.Index(fields=['seller', '-created_at']),
             models.Index(fields=['category', 'status']),
             models.Index(fields=['location']),
+            models.Index(fields=['price']),
+            models.Index(fields=['bike_model_id']),
         ]
 
 
 class ListingImage(models.Model):
+    id = models.BigAutoField(primary_key=True)
     """
     Image model for used bike listings
     Automatically processes images:

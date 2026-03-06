@@ -2,6 +2,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status, viewsets, filters, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from apps.core.responses import StandardResponse
 from apps.core.permissions import IsSuperAdminOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
@@ -29,7 +30,7 @@ class ImageUploadThrottle(UserRateThrottle):
 class UsedBikeListingViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     throttle_classes = [ImageUploadThrottle]
-    filterset_fields = ['bike_model__brand', 'condition', 'location', 'status']
+    filterset_fields = ['condition', 'location', 'status']
     search_fields = ['title', 'description', 'location']
     ordering_fields = ['price', 'created_at', 'mileage']
     
@@ -107,7 +108,9 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         listing.reviewed_by = request.user
         listing.reviewed_at = timezone.now()
         listing.save()
-        return Response({"status": "active", "message": "Listing has been approved and is now active."})
+        
+        data = {"status": "active", "id": listing.id}
+        return StandardResponse.success(data=data, message="Listing has been approved and is now active.")
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
@@ -139,11 +142,11 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
                 to_name=seller.first_name or seller.username
             )
         
-        # Create in-app notification
         Notification.objects.create(
             user=seller,
             title="Listing Not Approved",
             message=f'Your listing "{listing.title}" was not approved. Reason: {reason}'
         )
         
-        return Response({"status": "rejected", "message": "Listing has been rejected and seller has been notified."})
+        data = {"status": "rejected", "id": listing.id}
+        return StandardResponse.success(data=data, message="Listing has been rejected and seller has been notified.")

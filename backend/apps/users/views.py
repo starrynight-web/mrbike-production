@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
+from apps.core.responses import StandardResponse
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -25,8 +26,7 @@ from .serializers import (
     RegisterSerializer, EmailLoginSerializer
 )
 from apps.core.responses import StandardResponse
-from apps.marketplace.models import UsedBikeListing
-from apps.interactions.models import Review, Wishlist
+# marketplace and interactions imports are done lazily inside views to avoid Djongo import-time SQL errors
 from .models import Notification, EmailVerificationToken
 from .services.email_service import email_service
 from django.contrib.auth.tokens import default_token_generator
@@ -38,12 +38,6 @@ logger = logging.getLogger(__name__)
 
 
 # Throttle Classes
-class OTPRateThrottle(UserRateThrottle):
-    """Rate limit OTP requests to 3 per minute per phone/IP"""
-    scope = 'otp_send'
-    rate = '3/min'
-
-
 class LoginThrottle(UserRateThrottle):
     """Rate limit login attempts to 5 per minute"""
     scope = 'login'
@@ -126,8 +120,6 @@ class GoogleAuthView(generics.GenericAPIView):
             'created': created,
         })
 
-# Legacy SendOTPView and VerifyOTPView removed as per requirements (Email-only auth)
-
 
 class UserDashboardStatsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -164,10 +156,10 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
-        # Create verification token and send email
+        # Create verification token (24h expiry - industry standard)
         token = EmailVerificationToken.objects.create(
             user=user,
-            expires_at=timezone.now() + timezone.timedelta(minutes=10)
+            expires_at=timezone.now() + timezone.timedelta(hours=24)
         )
         email_service.send_verification_email(
             to_email=user.email,
@@ -175,10 +167,13 @@ class RegisterView(generics.CreateAPIView):
             to_name=user.first_name or user.username
         )
         
-        return Response({
-            'message': 'Registration successful! Please check your email to verify your account.',
+        data = {
             'email': user.email,
-        }, status=status.HTTP_201_CREATED)
+        }
+        return Response(
+            {'message': 'Registration successful! Please check your email to verify your account.', 'email': user.email},
+            status=status.HTTP_201_CREATED
+        )
 
 
 class EmailLoginView(generics.GenericAPIView):
@@ -223,6 +218,29 @@ class EmailLoginView(generics.GenericAPIView):
             'access': str(refresh.access_token),
             'user': UserSerializer(user).data,
         })
+
+
+class LogoutView(APIView):
+    """Logout by blacklisting the refresh token"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserSessionView(APIView):
+    """Get currently authenticated user info for session persistence"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class EmailVerifyView(APIView):
@@ -289,10 +307,10 @@ class ResendVerificationView(APIView):
         # Invalidate old tokens
         EmailVerificationToken.objects.filter(user=user, used=False).update(used=True)
         
-        # Create new token
+        # Create new token (24h expiry)
         token = EmailVerificationToken.objects.create(
             user=user,
-            expires_at=timezone.now() + timezone.timedelta(minutes=10)
+            expires_at=timezone.now() + timezone.timedelta(hours=24)
         )
         email_service.send_verification_email(
             to_email=user.email,
@@ -372,7 +390,6 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
 
 
-from apps.news.models import Article
 
 class GlobalAdminStatsView(APIView):
     """
@@ -382,24 +399,27 @@ class GlobalAdminStatsView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
     def get(self, request):
+        # Lazy imports to avoid Djongo SQL errors at module import time
+        from apps.marketplace.models import UsedBikeListing
+        from apps.news.models import Article
+        from django.db.models import Count
+
         total_users = User.objects.count()
         verified_users = User.objects.filter(is_email_verified=True).count()
-        
+
         # Marketplace stats
         active_listings = UsedBikeListing.objects.filter(status='active').count()
         pending_listings = UsedBikeListing.objects.filter(status='pending').count()
         total_listings = UsedBikeListing.objects.count()
-        
+
         # News stats
         published_news = Article.objects.filter(is_published=True).count()
         draft_news = Article.objects.filter(is_published=False).count()
-        
-        # Category breakdown for used bikes
-        from django.db.models import Count
-        category_stats = UsedBikeListing.objects.values('category').annotate(count=Count('id')).order_by('-count')
-        
+
         # Location breakdown
-        location_stats = UsedBikeListing.objects.values('location').annotate(count=Count('id')).order_by('-count')[:5]
+        location_stats = list(
+            UsedBikeListing.objects.values('location').annotate(count=Count('id')).order_by('-count')[:5]
+        )
 
         data = {
             "users": {
@@ -410,7 +430,6 @@ class GlobalAdminStatsView(APIView):
                 "total": total_listings,
                 "active": active_listings,
                 "pending": pending_listings,
-                "categories": category_stats,
                 "locations": location_stats,
             },
             "content": {
@@ -420,3 +439,4 @@ class GlobalAdminStatsView(APIView):
             "last_updated": timezone.now().isoformat()
         }
         return StandardResponse.success(data=data, message="Admin statistics retrieved successfully")
+

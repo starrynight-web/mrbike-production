@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions, parsers
 from .models import Article
 from .serializers import ArticleSerializer
+from apps.core.responses import StandardResponse
 
 class ArticleListCreateView(generics.ListCreateAPIView):
     serializer_class = ArticleSerializer
@@ -17,7 +18,18 @@ class ArticleListCreateView(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        article = serializer.save(author=self.request.user)
+        # Wrap create response in success() if we want to customize, but usually 201 is better handled.
+        # However, for consistency with our FE ApiService:
+        pass
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        return StandardResponse.success(
+            data=response.data, 
+            message="Article created successfully",
+            status_code=status.HTTP_201_CREATED
+        )
 
 class ArticleDetailView(generics.RetrieveAPIView):
     serializer_class = ArticleSerializer

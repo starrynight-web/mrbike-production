@@ -3,7 +3,8 @@ from django.conf import settings
 from apps.bikes.models import BikeModel
 
 class Review(models.Model):
-    bike = models.ForeignKey(BikeModel, on_delete=models.CASCADE, related_name='reviews')
+    id = models.BigAutoField(primary_key=True)
+    bike_id = models.IntegerField(help_text="Reference ID to BikeModel in PostgreSQL")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
     
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
@@ -14,15 +15,16 @@ class Review(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('bike', 'user')
+        unique_together = ('bike_id', 'user')
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user.username} - {self.bike.name} ({self.rating}/5)"
+        return f"{self.user.username} - Bike {self.bike_id} ({self.rating}/5)"
 
 class Wishlist(models.Model):
+    id = models.BigAutoField(primary_key=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='wishlist')
-    bikes = models.ManyToManyField(BikeModel, related_name='wishlisted_by', blank=True)
+    bike_ids = models.JSONField(default=list, blank=True)
     
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -30,6 +32,7 @@ class Wishlist(models.Model):
         return f"{self.user.username}'s Wishlist"
 
 class Inquiry(models.Model):
+    id = models.BigAutoField(primary_key=True)
     INQUIRY_TYPES = [
         ('general', 'General Inquiry'),
         ('support', 'Technical Support'),

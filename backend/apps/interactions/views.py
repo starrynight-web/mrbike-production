@@ -23,23 +23,29 @@ class BikeReviewListView(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        bike = get_object_or_404(BikeModel, pk=self.kwargs['bike_id'])
-        serializer.save(user=self.request.user, bike=bike)
+        # Verify bike exists in Postgres
+        get_object_or_404(BikeModel, pk=self.kwargs['bike_id'])
+        serializer.save(user=self.request.user, bike_id=self.kwargs['bike_id'])
 
 class WishlistToggleView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, bike_id):
-        bike = get_object_or_404(BikeModel, pk=bike_id)
+        # Verify bike exists
+        get_object_or_404(BikeModel, pk=bike_id)
         wishlist, created = Wishlist.objects.get_or_create(user=request.user)
         
-        if wishlist.bikes.filter(pk=bike_id).exists():
-            wishlist.bikes.remove(bike)
+        if not isinstance(wishlist.bike_ids, list):
+            wishlist.bike_ids = []
+
+        if bike_id in wishlist.bike_ids:
+            wishlist.bike_ids.remove(bike_id)
             status_msg = "removed"
         else:
-            wishlist.bikes.add(bike)
+            wishlist.bike_ids.append(bike_id)
             status_msg = "added"
             
+        wishlist.save()
         return Response({"status": status_msg}, status=status.HTTP_200_OK)
 
 class UserWishlistView(generics.RetrieveAPIView):

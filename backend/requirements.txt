@@ -18,3 +18,4 @@ django-filter
 djangorestframework-simplejwt
 google-auth
 Pillow
+sqlparse==0.2.4

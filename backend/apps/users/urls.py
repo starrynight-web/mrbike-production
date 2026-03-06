@@ -4,7 +4,7 @@ from .views import (
     NotificationListView, RegisterView, PasswordResetRequestView,
     PasswordResetConfirmView, UserDashboardStatsView,
     EmailLoginView, EmailVerifyView, ResendVerificationView,
-    GlobalAdminStatsView,
+    GlobalAdminStatsView, LogoutView, UserSessionView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -21,4 +21,6 @@ urlpatterns = [
     path('me/stats/', UserDashboardStatsView.as_view(), name='user-stats'),
     path('admin/stats/', GlobalAdminStatsView.as_view(), name='admin-stats'),
     path('notifications/', NotificationListView.as_view(), name='notifications'),
+    path('auth/logout/', LogoutView.as_view(), name='logout'),
+    path('auth/me/', UserSessionView.as_view(), name='auth-me'),
 ]

@@ -93,16 +93,28 @@ class ApiService {
   private async request<T>(promise: Promise<AxiosResponse>): Promise<ApiResponse<T>> {
     try {
       const response = await promise;
+      const responseData = response.data;
+
+      // Handle backend's StandardResponse format { success, data, message, ... }
+      let extractedData = responseData;
+      if (responseData && typeof responseData === 'object' && 'success' in responseData) {
+        extractedData = responseData.data !== undefined ? responseData.data : responseData;
+      }
+
+      // Handle DRF pagination { results, count, ... }
+      const results = extractedData?.results || (Array.isArray(extractedData) ? extractedData : []);
+      const count = extractedData?.count || (Array.isArray(extractedData) ? extractedData.length : 0);
+
       return {
         success: true,
-        data: response.data.results || response.data,
-        meta: response.data.count !== undefined ? {
-          total: response.data.count,
-          page: 1, // Fallback, hooks should handle pagination normalization
+        data: extractedData?.results !== undefined ? extractedData.results : extractedData,
+        meta: extractedData?.count !== undefined ? {
+          total: extractedData.count,
+          page: 1,
           limit: 20,
-          totalPages: Math.ceil(response.data.count / 20),
-          hasPrevPage: !!response.data.previous,
-          hasNextPage: !!response.data.next,
+          totalPages: Math.ceil(extractedData.count / 20),
+          hasPrevPage: !!extractedData.previous,
+          hasNextPage: !!extractedData.next,
           currentPage: 1
         } : undefined
       };

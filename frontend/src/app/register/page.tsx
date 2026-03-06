@@ -132,6 +132,8 @@ function RegisterContent() {
     last_name: "",
   });
   const [isRegistered, setIsRegistered] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -165,19 +167,54 @@ function RegisterContent() {
 
       if (res.ok) {
         setIsRegistered(true);
-        toast.success("Account created successfully!");
+        toast.success("Account created! Check your email for the verification link.");
       } else {
-        const errorMsg = data.detail ||
-          (data.email ? data.email[0] : null) ||
-          (data.username ? data.username[0] : null) ||
-          "Registration failed";
+        // Handle both flat errors and StandardResponse format
+        const errorMsg =
+          data?.error?.message ||
+          data?.detail ||
+          (data?.email ? (Array.isArray(data.email) ? data.email[0] : data.email) : null) ||
+          (data?.username ? (Array.isArray(data.username) ? data.username[0] : data.username) : null) ||
+          (data?.password ? (Array.isArray(data.password) ? data.password[0] : data.password) : null) ||
+          "Registration failed. Please try again.";
         toast.error(errorMsg);
       }
     } catch (error: unknown) {
       console.error("Registration error:", error);
-      toast.error("An error occurred during registration");
+      toast.error("Network error. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (resendCooldown > 0) return;
+    setIsResendingEmail(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/auth/resend-verification/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: formData.email }),
+        }
+      );
+      if (res.ok) {
+        toast.success("Verification email resent! Check your inbox.");
+        setResendCooldown(60);
+        const interval = setInterval(() => {
+          setResendCooldown((c) => {
+            if (c <= 1) { clearInterval(interval); return 0; }
+            return c - 1;
+          });
+        }, 1000);
+      } else {
+        toast.error("Failed to resend. Please try again.");
+      }
+    } catch {
+      toast.error("Network error.");
+    } finally {
+      setIsResendingEmail(false);
     }
   };
 
@@ -225,26 +262,53 @@ function RegisterContent() {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-primary/5 rounded-2xl p-8 border border-primary/20 text-center space-y-6"
           >
-            <div className="bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto text-primary">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 12 }}
+              className="bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto text-primary"
+            >
               <Mail className="h-10 w-10" />
-            </div>
+            </motion.div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold">Check your email!</h2>
+              <h2 className="text-2xl font-bold">Check your inbox!</h2>
               <p className="text-muted-foreground">
-                We&apos;ve sent a verification link to <span className="text-foreground font-semibold">{formData.email}</span>.
+                We&apos;ve sent a verification link to{" "}
+                <span className="text-foreground font-semibold">{formData.email}</span>.
               </p>
             </div>
-            <p className="text-sm">
-              Please click the link in the email to verify your identity and activate your account.
-            </p>
-            <div className="pt-4">
+            <div className="bg-background rounded-xl p-4 text-sm text-left space-y-2 border border-border">
+              <p className="font-semibold text-foreground">📋 Next steps:</p>
+              <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                <li>Open your email inbox</li>
+                <li>Click <strong>Verify My Email</strong> in the email</li>
+                <li>You&apos;ll be automatically logged in</li>
+              </ol>
+              <p className="text-xs text-muted-foreground mt-2">The link expires in <strong>24 hours</strong>. Check your spam folder if you don&apos;t see it.</p>
+            </div>
+            <div className="flex flex-col gap-3 pt-2">
               <Link href="/login" passHref>
-                <Button className="w-full h-12 text-lg font-semibold">
+                <Button className="w-full h-12 text-base font-semibold">
                   Back to Login
                 </Button>
               </Link>
+              <Button
+                variant="ghost"
+                className="w-full h-12 text-sm"
+                onClick={handleResendEmail}
+                disabled={isResendingEmail || resendCooldown > 0}
+              >
+                {isResendingEmail ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending...</>
+                ) : resendCooldown > 0 ? (
+                  `Resend in ${resendCooldown}s`
+                ) : (
+                  `Didn't receive it? Resend email`
+                )}
+              </Button>
             </div>
           </motion.div>
+
         ) : (
           <motion.div key="form-view">
             <form onSubmit={handleRegister} className="space-y-4">

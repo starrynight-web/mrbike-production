@@ -139,7 +139,7 @@ class EmotionalRecommendationEngine:
             status='active',
             price__gte=min_price,
             price__lte=max_price
-        ).select_related('bike_model', 'bike_model__brand').prefetch_related('images')
+        ).prefetch_related('images')
 
         scored_candidates = []
         for listing in candidates:
@@ -180,10 +180,19 @@ class EmotionalRecommendationEngine:
                 img_url = primary_img.get_best_url
 
             # Build bike name defensively
-            bike_model = getattr(listing, 'bike_model', None)
-            model_name = getattr(bike_model, 'name', '') if bike_model else (listing.custom_model or '')
-            brand_obj = getattr(bike_model, 'brand', None) if bike_model else None
-            brand_name = getattr(brand_obj, 'name', '') if brand_obj else (listing.custom_brand or 'Unknown')
+            model_name = listing.custom_model or ''
+            brand_name = listing.custom_brand or 'Unknown'
+            
+            if listing.bike_model_id:
+                try:
+                    from apps.bikes.models import BikeModel
+                    bike = BikeModel.objects.select_related('brand').get(pk=listing.bike_model_id)
+                    model_name = bike.name
+                    if bike.brand:
+                        brand_name = bike.brand.name
+                except Exception:
+                    pass
+                    
             bike_name = f"{brand_name} {model_name}".strip()
 
             # Score boost for same model/brand if we have base_bike context (optional improvement)

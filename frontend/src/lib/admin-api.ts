@@ -300,9 +300,7 @@ class AdminAPI {
    */
   async createArticle(data: FormData) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await api.post<any>("/news/", data, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await api.post<any>("/news/", data);
 
     if (!response.success) {
       throw new Error(response.error?.message || "Failed to create article");
@@ -316,9 +314,7 @@ class AdminAPI {
    */
   async updateArticle(id: string | number, data: FormData) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await api.patch<any>(`/news/admin/${id}/`, data, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await api.patch<any>(`/news/admin/${id}/`, data);
 
     if (!response.success) {
       throw new Error(response.error?.message || "Failed to update article");
@@ -435,9 +431,7 @@ class AdminAPI {
     formData.append("image", file);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await api.post<any>("/bikes/upload-image/", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await api.post<any>("/bikes/upload-image/", formData);
 
     return response.data;
   }
