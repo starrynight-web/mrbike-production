@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useForm, useWatch, SubmitHandler } from "react-hook-form";
+import { useForm, useWatch, SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useSession, signIn } from "next-auth/react";
@@ -56,7 +56,7 @@ const formSchema = z.object({
       VALIDATION.price.min,
       `Price must be at least ৳${VALIDATION.price.min}`,
     ),
-  condition: z.enum(["excellent", "good", "fair", "poor"] as const),
+  condition: z.enum(["excellent", "good", "fair", "need_work"] as const),
   description: z
     .string()
     .min(20, "Description must be at least 20 characters")
@@ -133,7 +133,27 @@ export function SellBikeWizard() {
   const handleNext = async () => {
     if (currentStep === 2) {
       const valid = await form.trigger();
-      if (!valid) return;
+      if (!valid) {
+        // Find first error and scroll to it
+        const errors = form.formState.errors;
+        const firstErrorKey = Object.keys(errors)[0] as keyof typeof errors;
+        if (firstErrorKey) {
+          const element = document.getElementById(firstErrorKey);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            // Fallback for custom components that might not have ID on the root
+            const fieldElement = document.querySelector(
+              `[name="${firstErrorKey}"]`,
+            );
+            fieldElement?.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }
+        }
+        return;
+      }
     }
     if (currentStep === 3 && images.length === 0) {
       toast.error("Please upload at least one photo");
@@ -302,28 +322,34 @@ export function SellBikeWizard() {
                 {/* Brand */}
                 <div className="space-y-2">
                   <Label htmlFor="brand">Brand</Label>
-                  <Select
-                    onValueChange={(val) => form.setValue("brand", val)}
-                    defaultValue={form.getValues("brand")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Brand" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {brands?.map(
-                        (b: {
-                          id: string | number;
-                          slug: string;
-                          name: string;
-                        }) => (
-                          <SelectItem key={b.id} value={b.slug}>
-                            {b.name}
-                          </SelectItem>
-                        ),
-                      )}
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="brand"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger id="brand">
+                          <SelectValue placeholder="Select Brand" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {brands?.map(
+                            (b: {
+                              id: string | number;
+                              slug: string;
+                              name: string;
+                            }) => (
+                              <SelectItem key={b.id} value={b.slug}>
+                                {b.name}
+                              </SelectItem>
+                            ),
+                          )}
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {form.formState.errors.brand && (
                     <p className="text-red-500 text-sm">
                       {form.formState.errors.brand.message}
@@ -419,46 +445,53 @@ export function SellBikeWizard() {
                 {/* Condition */}
                 <div className="space-y-2">
                   <Label htmlFor="condition">Condition</Label>
-                  <Select
-                    onValueChange={(val) =>
-                      form.setValue(
-                        "condition",
-                        val as "excellent" | "good" | "fair" | "poor",
-                      )
-                    }
-                    defaultValue={form.getValues("condition")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Condition" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {BIKE_CONDITIONS.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>
-                          {c.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="condition"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger id="condition">
+                          <SelectValue placeholder="Select Condition" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {BIKE_CONDITIONS.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>
+                              {c.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
 
                 {/* Location */}
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
-                  <Select
-                    onValueChange={(val) => form.setValue("location", val)}
-                    defaultValue={form.getValues("location")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select District/City" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {BD_CITIES.map((city) => (
-                        <SelectItem key={city} value={city}>
-                          {city}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="location"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger id="location">
+                          <SelectValue placeholder="Select District/City" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {BD_CITIES.map((city) => (
+                            <SelectItem key={city} value={city}>
+                              {city}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {form.formState.errors.location && (
                     <p className="text-red-500 text-sm">
                       {form.formState.errors.location.message}
@@ -506,7 +539,9 @@ export function SellBikeWizard() {
 
               {/* Contact Number */}
               <div className="space-y-2">
-                <Label htmlFor="contactNumber">Contact Number (For Buyers)</Label>
+                <Label htmlFor="contactNumber">
+                  Contact Number (For Buyers)
+                </Label>
                 <Input
                   id="contactNumber"
                   placeholder="e.g. 01XXXXXXXXX"

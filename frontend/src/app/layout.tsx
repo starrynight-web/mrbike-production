@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
 import { Header, Footer, MobileNav } from "@/components/layout";
+import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { CompareBar } from "@/components/bikes";
 import { APP_CONFIG, SEO_DEFAULTS } from "@/config/constants";
 
@@ -116,6 +117,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-screen flex flex-col`}
       >
         <Providers>
+          <ScrollToTop />
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />

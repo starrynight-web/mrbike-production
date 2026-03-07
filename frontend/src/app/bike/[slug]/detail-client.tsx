@@ -17,6 +17,7 @@ import {
   X,
   Bike,
   ImageOff,
+  GitCompareArrows,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -672,7 +673,11 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
               disabled={!bike || !storesReady}
               className="gap-2"
             >
-              <Check className={cn("h-4 w-4", !isInCompare && "opacity-0")} />
+              {isInCompare ? (
+                <Check className="h-4 w-4 fill-current" />
+              ) : (
+                <GitCompareArrows className="h-4 w-4" />
+              )}
               {isInCompare ? "In Compare" : "Add to Compare"}
             </Button>
           </div>
