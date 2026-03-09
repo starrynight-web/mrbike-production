@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Phone, MapPin, Clock, Send, MessageSquare } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Send, MessageSquare, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,15 +46,13 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    try {
-      await api.sendInquiry(formData);
-      toast.success("Message sent! We'll get back to you soon.");
+    
+    // Simulate API delay
+    setTimeout(() => {
+      toast.success("Message sent! We'll get back to you soon. (Demo Mode)");
       setFormData({ name: "", email: "", subject: "", message: "" });
-    } catch {
-      toast.error("Failed to send message. Please try again.");
-    } finally {
       setIsSubmitting(false);
-    }
+    }, 1000);
   };
 
   return (
@@ -177,9 +175,15 @@ export default function ContactPage() {
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Send a Message</CardTitle>
+                <div className="flex items-center justify-between gap-4 mb-2">
+                  <CardTitle>Send a Message</CardTitle>
+                  <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    Demo Mode
+                  </Badge>
+                </div>
                 <CardDescription>
-                  We usually respond within 24 hours.
+                  This form is currently for demonstration purposes. Messages will not be sent to our team during the preview.
                 </CardDescription>
               </CardHeader>
               <CardContent>

@@ -92,8 +92,12 @@ export default function AboutPage() {
               </p>
               <div className="flex items-center gap-6 pt-4 text-center">
                 <div>
-                  <p className="text-3xl font-bold">10k+</p>
-                  <p className="text-sm text-muted-foreground">Active Users</p>
+                  <Button variant="ghost" asChild>
+                    <Link href="/support">Contact Support</Link>
+                  </Button>
+                  <Button variant="ghost" asChild>
+                    <Link href="/faqs">Browse FAQs</Link>
+                  </Button>
                 </div>
                 <div>
                   <p className="text-3xl font-bold">300+</p>
@@ -125,7 +129,7 @@ export default function AboutPage() {
         </div>
         <div className="flex flex-wrap items-center justify-center gap-4">
           <Button size="lg" className="h-12 px-8" asChild>
-            <Link href="/support/contact">
+            <Link href="/support">
               <MessageSquare className="mr-2 h-5 w-5" /> Contact Support
             </Link>
           </Button>

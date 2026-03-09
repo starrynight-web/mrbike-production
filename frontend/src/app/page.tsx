@@ -20,7 +20,8 @@ import { api } from "@/lib/api-service";
 import { sanitizeImageUrl, mapBike, mapUsedBike } from "@/lib/data-utils";
 import { HeroSearch } from "@/components/layout/hero-search";
 import { PopularBikesCarousel } from "@/components/bikes/popular-bikes-carousel";
-import { CompareYourChoiceSection } from "@/components/bikes/compare-your-choice-section";
+import { HomepageNewsSection } from "@/components/bikes/homepage-news-section";
+import type { Brand, NewsArticle } from "@/types";
 import { UsedBikesCarousel } from "@/components/used-bikes/used-bikes-carousel";
 import { CategoryShowcase } from "@/components/bikes/category-showcase";
 
@@ -66,33 +67,38 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col">
       {/* ==================== HERO SECTION ==================== */}
-      <section className="relative overflow-hidden bg-linear-to-br from-background via-background to-accent py-16 md:py-24">
+      <section className="relative overflow-hidden bg-neutral-950 py-16 md:py-24">
+        {/* Dark Overlay */}
+        {/* <div className="absolute inset-0 z-10 bg-black/60" /> */}
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 z-10 bg-gradient-to-b from-transparent via-black/20 to-black/80" />
         {/* Background decoration */}
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/hero.webp"
             alt="Hero Background"
             fill
-            className="object-cover opacity-30"
+            className="object-cover"
+            // style={{ opacity: 0.9 }}
             priority
           />
         </div>
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
 
-        <div className="w-full px-4 md:px-8 relative">
+        <div className="w-full px-4 md:px-8 relative z-20">
           <div className="max-w-3xl mx-auto text-center">
             {/* <Badge variant="secondary" className="mb-4">
               <Zap className="w-3 h-3 mr-1" />
               Bangladesh&apos;s #1 Motorcycle Platform
             </Badge> */}
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-              Find Your <span className="text-gradient">Perfect</span> Motor
-              <span className="text-gradient">cycle</span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-white">
+              Find Your <span className="text-primary">Perfect</span> Motor
+              <span className="text-primary">cycle</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
               Discover, compare, and buy used motorcycles. Explore 300+ bikes,
               read reviews, and find the best deals in Bangladesh.
             </p>
@@ -144,11 +150,13 @@ export default async function HomePage() {
       </section>
 
       {/* ==================== USED BIKES SECTION ==================== */}
-      <section className="py-12 md:py-16 bg-muted/40">
-        <div className="w-full px-4 md:px-8">
-          <UsedBikesCarousel bikes={usedBikes} />
-        </div>
-      </section>
+      {usedBikes.length > 0 && (
+        <section className="py-12 md:py-16 bg-muted/40">
+          <div className="w-full px-4 md:px-8">
+            <UsedBikesCarousel bikes={usedBikes} />
+          </div>
+        </section>
+      )}
 
       {/* ==================== CATEGORIES SECTION ==================== */}
       <section className="py-12 md:py-16">
@@ -160,13 +168,25 @@ export default async function HomePage() {
       {/* ==================== BRANDS SECTION ==================== */}
       <section className="py-12 md:py-16 bg-muted/40">
         <div className="w-full px-4 md:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">
-              Popular Brands
-            </h2>
-            <p className="text-muted-foreground">
-              Explore motorcycles from top manufacturers
-            </p>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+            <div className="space-y-2">
+              <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5">
+                <BikeIcon className="w-3 h-3 mr-1" />
+                Manufacturers
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                Popular <span className="text-primary">Brands</span>
+              </h2>
+              <p className="text-muted-foreground">
+                Explore motorcycles from top manufacturers in Bangladesh.
+              </p>
+            </div>
+            <Button variant="ghost" asChild className="hidden md:flex group">
+              <Link href="/brands">
+                All Brands
+                <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
           </div>
 
           <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
@@ -192,7 +212,7 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex justify-center md:hidden">
             <Link
               href="/brands"
               className="inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-10 px-6"
@@ -203,8 +223,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ==================== COMPARE YOUR CHOICE ==================== */}
-      <CompareYourChoiceSection />
+      {/* ==================== LATEST NEWS SECTION ==================== */}
+      <HomepageNewsSection />
 
       {/* ==================== CTA SECTION ==================== */}
       <section className="py-16 md:py-24 bg-muted/40">

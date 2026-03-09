@@ -10,7 +10,9 @@ import {
   Twitter,
   Mail,
 } from "lucide-react";
+import { toast } from "sonner";
 import { APP_CONFIG } from "@/config/constants";
+import { useState } from "react";
 
 const footerLinks = {
   company: [
@@ -45,6 +47,16 @@ const socialLinks = [
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState("");
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    // Simulate API call
+    toast.success("Thank you for subscribing! Check your email for updates.");
+    setEmail("");
+  };
 
   return (
     <footer className="border-t bg-muted/40">
@@ -102,6 +114,22 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href="/support"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Support
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/faqs"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  FAQs
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -145,13 +173,15 @@ export function Footer() {
             <p className="text-sm text-muted-foreground mb-3">
               Get the latest bike news and updates.
             </p>
-            <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex gap-2" onSubmit={handleSubscribe}>
               <div className="relative flex-1">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="email"
                   placeholder="Your email"
                   className="w-full h-10 pl-9 pr-3 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <button

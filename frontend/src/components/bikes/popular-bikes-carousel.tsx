@@ -2,8 +2,9 @@
 
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { BikeCard } from "@/components/bikes/bike-card";
 import type { Bike } from "@/types";
 
@@ -60,16 +61,25 @@ export function PopularBikesCarousel({
 
   return (
     <div className="relative">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold">Popular Bikes</h2>
-          <p className="text-muted-foreground mt-1">
-            Most searched motorcycles this month
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+        <div className="space-y-2">
+          <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5">
+            <Flame className="w-3 h-3 mr-1" />
+            Most Popular
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+            Popular <span className="text-primary">Bikes</span>
+          </h2>
+          <p className="text-muted-foreground">
+            Most searched motorcycles this month in Bangladesh.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild className="hidden sm:flex mr-2">
-            <Link href="/bikes">View All</Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="ghost" asChild className="hidden sm:flex group">
+            <Link href="/bikes">
+              View All
+              <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
           </Button>
           <Button
             variant="outline"

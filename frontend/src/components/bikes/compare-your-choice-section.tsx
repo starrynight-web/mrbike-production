@@ -26,7 +26,11 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-export function CompareYourChoiceSection() {
+interface CompareYourChoiceSectionProps {
+  hideCompareCta?: boolean;
+}
+
+export function CompareYourChoiceSection({ hideCompareCta = false }: CompareYourChoiceSectionProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -187,8 +191,7 @@ export function CompareYourChoiceSection() {
                     key={id}
                     className="relative rounded-xl border bg-card overflow-hidden group"
                   >
-                    <Link
-                      href={`/bike/${bike.slug}`}
+                    <div
                       className="block aspect-[4/3] relative bg-muted"
                     >
                       <Image
@@ -197,7 +200,7 @@ export function CompareYourChoiceSection() {
                         fill
                         className="object-cover"
                       />
-                    </Link>
+                    </div>
                     <div className="p-3">
                       <p className="font-medium text-sm truncate">
                         {bike.name}
@@ -230,7 +233,7 @@ export function CompareYourChoiceSection() {
             })}
           </div>
 
-          {bikes.length >= 2 && (
+          {bikes.length >= 2 && !hideCompareCta && (
             <div className="text-center">
               <Button size="lg" asChild className="rounded-full px-8">
                 <Link

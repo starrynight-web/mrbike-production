@@ -13,8 +13,10 @@ import {
   Mountain,
   Plug,
   Bike as BikeIcon,
+  LayoutGrid,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { BIKE_CATEGORIES } from "@/config/constants";
 
 export function CategoryShowcase() {
@@ -66,18 +68,22 @@ export function CategoryShowcase() {
   return (
     <div className="w-full">
       {/* Header with Arrows for Desktop */}
-      <div className="flex items-center justify-between mb-8 md:mb-10">
-        <div className="text-center md:text-left w-full md:w-auto">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">
-            Browse by Category
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 md:mb-10">
+        <div className="space-y-2">
+          <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5">
+            <LayoutGrid className="w-3 h-3 mr-1" />
+            Categories
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+            Browse by <span className="text-primary">Category</span>
           </h2>
           <p className="text-muted-foreground">
-            Explore bikes by riding style and purpose
+            Explore bikes by riding style and purpose.
           </p>
         </div>
 
         {/* Desktop Controls */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="icon"

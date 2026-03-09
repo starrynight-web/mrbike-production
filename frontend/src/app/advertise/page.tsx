@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   ArrowRight,
   BarChart,
@@ -93,7 +94,6 @@ export default function AdvertisePage() {
         "Featured Bike Listing (Top 3)",
         "Social Media Mention",
         "Dedicated Support",
-        "Detailed Analytics Dashboard",
       ],
       popular: true,
     },
@@ -106,8 +106,6 @@ export default function AdvertisePage() {
         "Verified Dealer Badge",
         "Unlimited Featured Listings",
         "Priority Search Ranking",
-        "Custom Lead Generation Form",
-        "API Integration",
       ],
       popular: false,
     },
@@ -136,13 +134,11 @@ export default function AdvertisePage() {
               <Button
                 size="lg"
                 className="h-12 px-8"
-                onClick={() =>
-                  document
-                    .getElementById("contact-form")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
+                asChild
               >
-                Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                <Link href="#pricing">
+                  Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
               </Button>
             </div>
           </div>
@@ -169,7 +165,7 @@ export default function AdvertisePage() {
       </div>
 
       {/* Pricing Section (Reference: Expense Calculator Cards) */}
-      <div className="bg-muted/30 py-20">
+      <div id="pricing" className="bg-muted/30 py-20">
         <div className="w-full px-4 md:px-8">
           <div className="text-center mb-12 space-y-4">
             <h2 className="text-3xl font-bold tracking-tight">
@@ -227,8 +223,11 @@ export default function AdvertisePage() {
                     className="w-full"
                     variant={plan.popular ? "default" : "outline"}
                     size="lg"
+                    asChild
                   >
-                    Choose Plan
+                    <Link href={`/advertise/inquire?plan=${encodeURIComponent(plan.name)}`}>
+                      Choose Plan
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -237,104 +236,7 @@ export default function AdvertisePage() {
         </div>
       </div>
 
-      {/* Contact Form Section (Reference: Expense Calculator Form) */}
-      <div id="contact-form" className="w-full px-4 md:px-8 py-20">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold tracking-tight">
-                  Ready to Grow?
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Fill out the form and our advertising team will get back to
-                  you within 24 hours with a custom proposal.
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <Mail className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">Email Us Directly</h3>
-                    <p className="text-muted-foreground">ads@mrbikebd.com</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Inquire Now</CardTitle>
-                <CardDescription>
-                  Tell us about your campaign goals
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        placeholder="Your Name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="company">Company</Label>
-                      <Input
-                        id="company"
-                        name="company"
-                        placeholder="Your Company"
-                        value={formData.company}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="john@example.com"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      placeholder="Tell us about your advertising needs..."
-                      rows={4}
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    size="lg"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Sending..." : "Send Inquiry"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+      {/* Contact Form Section Removed - Migrated to /advertise/inquire */}
     </div>
   );
 }

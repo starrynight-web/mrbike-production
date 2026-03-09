@@ -343,22 +343,12 @@ export function ProfileClient() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground mb-4">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" /> Featured
-                    Badge on Listings
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" /> Priority
-                    Support
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" /> Extended
-                    Ad Duration (30 days)
-                  </li>
-                </ul>
-                <Button className="w-full" variant="default">
-                  View Plans
+                <p className="text-gray-600 mb-6">
+                  Unlock advanced search filters, priority listings, and
+                  detailed market insights.
+                </p>
+                <Button asChild className="w-full">
+                  <Link href="/used-bike/plans">View Plans</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -586,9 +576,13 @@ export function ProfileClient() {
               <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
                 <div>
                   <p className="font-semibold">Free Tier</p>
-                  <p className="text-sm text-muted-foreground">
-                    Basic selling features
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Get more features and priority support with our premium
+                    plans.
                   </p>
+                  <Button asChild>
+                    <Link href="/used-bike/plans">Upgrade to Premium</Link>
+                  </Button>
                 </div>
                 <Badge>Active</Badge>
               </div>
