@@ -32,6 +32,20 @@ export const ALLOWED_BRANDS = [
   { name: "Hero", slug: "hero", logo: "/Logos/hero.png" },
   { name: "TVS", slug: "tvs", logo: "/Logos/tvs.png" },
   { name: "Honda", slug: "honda", logo: "/Logos/Honda.png" },
+  { name: "KTM", slug: "ktm", logo: "/Logos/KTM.png" },
+  { name: "Aprilia", slug: "aprilia", logo: "/Logos/aprilia.png" },
+  { name: "Vespa", slug: "vespa", logo: "/Logos/vespa.png" },
+  { name: "Lifan", slug: "lifan", logo: "/Logos/lifan.png" },
+  { name: "Runner", slug: "runner", logo: "/Logos/runner.png" },
+  { name: "Akij", slug: "akij", logo: "/Logos/akij.png" },
+  { name: "QJ Motor", slug: "qj-motor", logo: "/Logos/qj_motor.png" },
+  { name: "GPX", slug: "gpx", logo: "/Logos/gpx.png" },
+  { name: "Hyosung", slug: "hyosung", logo: "/Logos/hyosung.png" },
+  { name: "Taro", slug: "taro", logo: "/Logos/taro.png" },
+  { name: "Yadea", slug: "yadea", logo: "/Logos/yadea.png" },
+  { name: "Revoo", slug: "revoo", logo: "/Logos/revoo.png" },
+  { name: "Zonsen", slug: "zonsen", logo: "/Logos/zonsen.png" },
+  { name: "Jedi Motor", slug: "jedi-motor", logo: "/Logos/jedi_motor.png" },
 ] as const;
 
 // -------------------- API ENDPOINTS --------------------

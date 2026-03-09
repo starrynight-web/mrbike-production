@@ -190,7 +190,7 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
-            {ALLOWED_BRANDS.map((brand) => (
+            {ALLOWED_BRANDS.slice(0, 8).map((brand) => (
               <Link
                 key={brand.slug}
                 href={`/brands/${brand.slug}`}

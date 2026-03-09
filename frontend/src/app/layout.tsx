@@ -111,7 +111,7 @@ export default function RootLayout({
           href="/favicon/apple-touch-icon.png"
         />
         <link rel="manifest" href="/favicon/site.webmanifest" />
-        <meta name="theme-color" content="#F97316" />
+        <meta name="theme-color" content="#ffffff" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-screen flex flex-col`}
