@@ -1,20 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Zap,
-  Wind,
-  Building2,
-  CircleDot,
-  Compass,
-  Mountain,
-  Plug,
-  Bike as BikeIcon,
-  LayoutGrid,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BIKE_CATEGORIES } from "@/config/constants";
@@ -51,26 +40,15 @@ export function CategoryShowcase() {
     });
   };
 
-  const getIcon = (categoryValue: string) => {
-    return (
-      {
-        sport: Zap,
-        naked: Wind,
-        commuter: Building2,
-        scooter: CircleDot,
-        cruiser: Compass,
-        adventure: Mountain,
-        electric: Plug,
-      }[categoryValue] || BikeIcon
-    );
-  };
-
   return (
     <div className="w-full">
       {/* Header with Arrows for Desktop */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 md:mb-10">
         <div className="space-y-2">
-          <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5">
+          <Badge
+            variant="outline"
+            className="text-primary border-primary/20 bg-primary/5"
+          >
             <LayoutGrid className="w-3 h-3 mr-1" />
             Categories
           </Badge>
@@ -112,15 +90,20 @@ export function CategoryShowcase() {
         {/* Mobile View: Grid */}
         <div className="grid grid-cols-2 gap-4 md:hidden">
           {BIKE_CATEGORIES.map((category) => {
-            const Icon = getIcon(category.value);
             return (
               <Link
                 key={category.value}
                 href={`/bikes?category=${category.value}`}
               >
                 <div className="group rounded-2xl p-4 bg-background border hover:border-primary/20 hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/15 transition-colors">
-                    <Icon className="h-6 w-6" />
+                  <div className="h-20 w-20 rounded-full bg-muted overflow-hidden relative border-2 border-transparent group-hover:border-primary/20 transition-all">
+                    <Image
+                      src={category.image}
+                      alt={category.label}
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                    />
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm font-semibold">{category.label}</p>
@@ -142,16 +125,21 @@ export function CategoryShowcase() {
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {BIKE_CATEGORIES.map((category) => {
-            const Icon = getIcon(category.value);
             return (
               <Link
                 key={category.value}
                 href={`/bikes?category=${category.value}`}
                 className="shrink-0"
               >
-                <div className="group w-40 h-44 rounded-2xl p-6 bg-background border hover:border-primary/20 hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-center text-center gap-4">
-                  <div className="h-14 w-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/15 transition-colors">
-                    <Icon className="h-7 w-7" />
+                <div className="group w-40 h-52 rounded-2xl p-6 bg-background border hover:border-primary/20 hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-center text-center gap-4">
+                  <div className="h-24 w-24 rounded-full bg-muted overflow-hidden relative border-2 border-transparent group-hover:border-primary/20 transition-all">
+                    <Image
+                      src={category.image}
+                      alt={category.label}
+                      fill
+                      className="object-cover"
+                      sizes="96px"
+                    />
                   </div>
                   <div className="space-y-1">
                     <p className="text-base font-semibold">{category.label}</p>

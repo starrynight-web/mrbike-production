@@ -48,6 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AdMediumRectangle } from "@/components/ads/ad-medium-rectangle";
 import { toast } from "sonner";
 
 interface BikeDetailClientProps {
@@ -889,7 +890,10 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
             <VariantComparison variants={variants} />
           </div>
           <div className="lg:col-span-1">
-            <SimilarNewBikes slug={slug} />
+            <div className="sticky top-24 space-y-6">
+              <SimilarNewBikes slug={slug} />
+              <AdMediumRectangle />
+            </div>
           </div>
         </div>
       </section>

@@ -24,6 +24,7 @@ import { HomepageNewsSection } from "@/components/bikes/homepage-news-section";
 import type { Brand, NewsArticle } from "@/types";
 import { UsedBikesCarousel } from "@/components/used-bikes/used-bikes-carousel";
 import { CategoryShowcase } from "@/components/bikes/category-showcase";
+import { AdBanner } from "@/components/ads/ad-banner";
 
 export default async function HomePage() {
   let featuredBikes: Bike[] = [];
@@ -137,6 +138,11 @@ export default async function HomePage() {
             </div> */}
           </div>
         </div>
+
+        {/* Banner Ad inside Hero at the bottom */}
+        <div className="absolute bottom-0 left-0 right-0 z-30">
+          <AdBanner fullWidth />
+        </div>
       </section>
 
       {/* ==================== POPULAR BIKES ==================== */}
@@ -158,6 +164,9 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ==================== BANNER AD 2 ==================== */}
+      <AdBanner fullWidth />
+
       {/* ==================== CATEGORIES SECTION ==================== */}
       <section className="py-12 md:py-16">
         <div className="w-full px-4 md:px-8">
@@ -170,7 +179,10 @@ export default async function HomePage() {
         <div className="w-full px-4 md:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
             <div className="space-y-2">
-              <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5">
+              <Badge
+                variant="outline"
+                className="text-primary border-primary/20 bg-primary/5"
+              >
                 <BikeIcon className="w-3 h-3 mr-1" />
                 Manufacturers
               </Badge>

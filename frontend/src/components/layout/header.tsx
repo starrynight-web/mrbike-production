@@ -37,6 +37,7 @@ const navLinks = [
   { href: "/compare", label: "Compare", icon: LayoutGrid },
   { href: "/brands", label: "Brands", icon: LayoutGrid },
   { href: "/dealers", label: "Dealers", icon: Store },
+  { href: "/ad-demo", label: "Ad Demo", icon: Store },
 ];
 
 export function Header() {

@@ -115,14 +115,50 @@ export const API_ENDPOINTS = {
 
 // -------------------- BIKE CATEGORIES --------------------
 export const BIKE_CATEGORIES = [
-  { value: "sports", label: "Sports", icon: "🏍️" },
-  { value: "naked", label: "Naked", icon: "💪" },
-  { value: "commuter", label: "Commuter", icon: "🛵" },
-  { value: "scooter", label: "Scooter", icon: "🛴" },
-  { value: "cruiser", label: "Cruiser", icon: "🏍️" },
-  { value: "adventure", label: "Adventure", icon: "🏔️" },
-  { value: "cafe_racer", label: "Café Racer", icon: "☕" },
-  { value: "offroad", label: "Off-Road", icon: "🏞️" },
+  { value: "sports", label: "Sports", icon: "🏍️", image: "/images/sports.png" },
+  { value: "naked", label: "Naked", icon: "💪", image: "/images/naked.png" },
+  {
+    value: "commuter",
+    label: "Commuter",
+    icon: "🛵",
+    image: "/images/commuter.png",
+  },
+  {
+    value: "scooter",
+    label: "Scooter",
+    icon: "🛴",
+    image: "/images/scooty.png",
+  },
+  {
+    value: "cruiser",
+    label: "Cruiser",
+    icon: "🏍️",
+    image: "/images/cruiser.png",
+  },
+  {
+    value: "adventure",
+    label: "Adventure",
+    icon: "🏔️",
+    image: "/images/adventure.png",
+  },
+  {
+    value: "cafe_racer",
+    label: "Café Racer",
+    icon: "☕",
+    image: "/images/cafe_racer.png",
+  },
+  {
+    value: "offroad",
+    label: "Off-Road",
+    icon: "🏞️",
+    image: "/images/off_road.png",
+  },
+  {
+    value: "electric",
+    label: "Electric",
+    icon: "⚡",
+    image: "/images/onlybike_dark.png",
+  },
 ] as const;
 
 // -------------------- BIKE CONDITIONS --------------------
