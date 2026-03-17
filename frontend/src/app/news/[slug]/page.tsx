@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { SEO_DEFAULTS } from "@/config/constants";
+import { notFound } from "next/navigation";
+import { SEO_DEFAULTS, APP_CONFIG } from "@/config/constants";
 import { NewsDetailClient } from "./news-detail-client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { apiServer } from "@/lib/api-server";
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -10,28 +12,105 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
+    const article = await apiServer.getArticle(slug);
 
-    // In real app, fetch article title here
-    const title = slug.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+    if (!article) {
+        return {
+            title: "Article Not Found",
+            description: "The requested news article could not be found."
+        };
+    }
+
+    const title = article.meta_title || article.title;
+    const description = article.meta_description || article.excerpt || article.summary || `Read full article about ${article.title} on MrBikeBD.`;
 
     return {
-        title: `${title} - MrBike News${SEO_DEFAULTS.titleSuffix}`,
-        description: `Read full article about ${title} on MrBikeBD.`,
+        title: `${title}${SEO_DEFAULTS.titleSuffix}`,
+        description: description,
         openGraph: {
-            title: `${title} - MrBike News`,
-            description: `Read full article about ${title} on MrBikeBD.`,
+            title: title,
+            description: description,
+            url: `${APP_CONFIG.url}/news/${slug}`,
             type: "article",
+            images: [
+                {
+                    url: article.thumbnail_url || article.image || SEO_DEFAULTS.defaultOgImage,
+                    width: 1200,
+                    height: 630,
+                    alt: title,
+                }
+            ]
         },
     };
 }
 
+export async function generateStaticParams() {
+    const slugs = await apiServer.getAllArticleSlugs();
+    return slugs.length > 0 ? slugs : [];
+}
+
 export default async function NewsDetailPage({ params }: Props) {
     const { slug } = await params;
+    
+    if (!slug) notFound();
+
+    const article = await apiServer.getArticle(slug);
+    if (!article) notFound();
+
+    // Structured Data (JSON-LD)
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": article.title,
+        "image": [
+            article.thumbnail_url || article.image || SEO_DEFAULTS.defaultOgImage
+        ],
+        "datePublished": article.published_at || article.created_at,
+        "dateModified": article.updated_at || article.published_at || article.created_at,
+        "author": [{
+            "@type": "Person",
+            "name": article.author?.username || "MrBike Editor",
+            "url": `${APP_CONFIG.url}/profile/${article.author?.username}`
+        }]
+    };
+
+    const breadcrumbLd = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": APP_CONFIG.url
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "News",
+                "item": `${APP_CONFIG.url}/news`
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": article.title,
+                "item": `${APP_CONFIG.url}/news/${slug}`
+            }
+        ]
+    };
 
     return (
         <main className="min-h-screen bg-background">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+            />
             <Suspense fallback={<NewsDetailSkeleton />}>
-                <NewsDetailClient slug={slug} />
+                <NewsDetailClient slug={slug} initialData={article} />
             </Suspense>
         </main>
     );

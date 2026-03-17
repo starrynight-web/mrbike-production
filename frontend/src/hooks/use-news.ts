@@ -22,7 +22,7 @@ export function useNews(filters?: { category?: string; page?: number; limit?: nu
     });
 }
 
-export function useNewsArticle(slug: string) {
+export function useNewsArticle(slug: string, initialData?: NewsArticle) {
     return useQuery({
         queryKey: ["news", "article", slug],
         queryFn: async () => {
@@ -30,6 +30,7 @@ export function useNewsArticle(slug: string) {
             if (!response.success) throw new Error(response.error?.message || "Failed to fetch article");
             return response.data as NewsArticle;
         },
+        initialData: initialData,
         enabled: !!slug,
         staleTime: 30 * 60 * 1000,
     });

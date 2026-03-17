@@ -22,10 +22,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface NewsDetailClientProps {
   slug: string;
+  initialData?: any;
 }
 
-export function NewsDetailClient({ slug }: NewsDetailClientProps) {
-  const { data: article, isLoading } = useNewsArticle(slug);
+export function NewsDetailClient({ slug, initialData }: NewsDetailClientProps) {
+  const { data: article, isLoading } = useNewsArticle(slug, initialData);
 
   if (isLoading) {
     return <LoadingState />;

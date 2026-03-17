@@ -17,6 +17,8 @@ class BrevoEmailService:
         self.api_key = os.getenv("BREVO_API_KEY", "")
         if not self.api_key:
             logger.warning("BREVO_API_KEY not set. Email functionality will be disabled.")
+        else:
+            logger.info(f"Brevo API initialized with key: {self.api_key[:5]}...{self.api_key[-5:]}")
         
         # Configure API key authorization
         self.configuration = sib_api_v3_sdk.Configuration()
@@ -24,6 +26,7 @@ class BrevoEmailService:
         
         self.from_email = os.getenv("DEFAULT_FROM_EMAIL", "noreply@mrbikebd.com")
         self.from_name = os.getenv("BREVO_FROM_NAME", "MrBikeBD")
+        logger.info(f"Emails will be sent from: {self.from_name} <{self.from_email}>")
 
     def get_api_instance(self):
         return sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(self.configuration))
@@ -61,10 +64,10 @@ class BrevoEmailService:
             logger.info(f"Email sent successfully to {to_email}. Message ID: {api_response.message_id}")
             return True
         except ApiException as e:
-            logger.error(f"Exception when calling TransactionalEmailsApi->send_transac_email: {e}")
+            logger.error(f"Brevo API Error: {e.status} {e.reason} - Body: {e.body}")
             return False
         except Exception as e:
-            logger.error(f"Error sending email to {to_email}: {str(e)}")
+            logger.error(f"Universal Email Error for {to_email}: {str(e)}", exc_info=True)
             return False
 
     def send_verification_email(self, to_email: str, token: str, to_name: Optional[str] = None) -> bool:
@@ -98,15 +101,35 @@ class BrevoEmailService:
         html_content = render_to_string('emails/welcome_email.html', context)
         return self.send_email(to_email, "Welcome to MrBikeBD!", html_content, to_name)
 
-    def send_rejection_email(self, to_email: str, listing_title: str, reason: str, to_name: Optional[str] = None) -> bool:
+    def send_rejection_email(self, to_email: str, listing_title: str, reason: str, listing_url: str = "", to_name: Optional[str] = None) -> bool:
         """Send listing rejection notification email"""
         context = {
             'name': to_name or to_email,
             'listing_title': listing_title,
-            'reason': reason
+            'reason': reason,
+            'listing_url': listing_url
         }
         html_content = render_to_string('emails/rejection_email.html', context)
         return self.send_email(to_email, f"Listing Update: {listing_title} - MrBikeBD", html_content, to_name)
+
+    def send_approval_email(self, to_email: str, listing_title: str, listing_url: str, to_name: Optional[str] = None) -> bool:
+        """Send listing approval notification email"""
+        context = {
+            'name': to_name or to_email,
+            'listing_title': listing_title,
+            'listing_url': listing_url
+        }
+        html_content = render_to_string('emails/approval_email.html', context)
+        return self.send_email(to_email, f"Listing Approved: {listing_title} - MrBikeBD", html_content, to_name)
+
+    def send_login_otp(self, to_email: str, otp_code: str, to_name: Optional[str] = None) -> bool:
+        """Send 2FA login OTP"""
+        context = {
+            'name': to_name or to_email,
+            'otp_code': otp_code
+        }
+        html_content = render_to_string('emails/login_otp.html', context)
+        return self.send_email(to_email, "Login Verification Code - MrBikeBD", html_content, to_name)
 
 # Singleton instance
 email_service = BrevoEmailService()

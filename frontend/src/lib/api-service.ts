@@ -152,6 +152,10 @@ class ApiService {
     return this.request<any[]>(this.client.get(API_ENDPOINTS.BRANDS));
   }
 
+  async resendVerificationEmail() {
+    return this.request<any>(this.client.post(API_ENDPOINTS.AUTH_RESEND_VERIFICATION));
+  }
+
   // Marketplace APIs
   async getUsedBikes(params: QueryParams = {}) {
     return this.request<any[]>(this.client.get(API_ENDPOINTS.USED_BIKES, { params }));

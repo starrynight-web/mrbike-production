@@ -85,15 +85,15 @@ export function BikeCard({
               disabled={!storesReady}
               className={cn(
                 "absolute top-3 right-3 z-20 p-2 rounded-full transition-all duration-200",
-                isFavorited
+                storesReady && isFavorited
                   ? "bg-red-500 text-white"
                   : "bg-white/80 text-gray-600 hover:bg-white hover:text-red-500",
               )}
               aria-label={
-                isFavorited ? "Remove from favorites" : "Add to favorites"
+                storesReady && isFavorited ? "Remove from favorites" : "Add to favorites"
               }
             >
-              <Heart className={cn("h-4 w-4", isFavorited && "fill-current")} />
+              <Heart className={cn("h-4 w-4", storesReady && isFavorited && "fill-current")} />
             </button>
 
             {/* Compare Checkbox */}

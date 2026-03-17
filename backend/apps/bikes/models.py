@@ -1,8 +1,11 @@
 from django.db import models
 from django.utils.text import slugify
 from cloudinary.models import CloudinaryField
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 
 class Brand(models.Model):
+# ... Brand remains same ...
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=120, unique=True, blank=True)
     logo = CloudinaryField('image', folder='mrbikebd/brands/', blank=True, null=True)
@@ -64,7 +67,19 @@ class BikeModel(models.Model):
     
     # Media & Social
     primary_image = CloudinaryField('image', folder='mrbikebd/official-bikes/', blank=True, null=True)
+    image1 = CloudinaryField('image', folder='mrbikebd/official-bikes/', blank=True, null=True)
+    image2 = CloudinaryField('image', folder='mrbikebd/official-bikes/', blank=True, null=True)
+    image3 = CloudinaryField('image', folder='mrbikebd/official-bikes/', blank=True, null=True)
+    image4 = CloudinaryField('image', folder='mrbikebd/official-bikes/', blank=True, null=True)
+    image5 = CloudinaryField('image', folder='mrbikebd/official-bikes/', blank=True, null=True)
+    
+    # SEO & Metadata
+    meta_title = models.CharField(max_length=255, blank=True, null=True)
+    meta_description = models.TextField(blank=True, null=True)
+    
     popularity_score = models.IntegerField(default=0)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    search_vector = SearchVectorField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -78,6 +93,12 @@ class BikeModel(models.Model):
 
     class Meta:
         ordering = ['-popularity_score', 'name']
+        indexes = [
+            models.Index(fields=['-popularity_score', 'name']),
+            models.Index(fields=['brand', 'category', 'is_available']),
+            models.Index(fields=['price', 'engine_capacity']),
+            GinIndex(fields=['search_vector']),
+        ]
 
 class BikeVariant(models.Model):
     bike_model = models.ForeignKey(BikeModel, on_delete=models.CASCADE, related_name='variants')
@@ -92,12 +113,25 @@ class BikeVariant(models.Model):
     
     # Specifics that might differ between variants
     braking_system = models.CharField(max_length=100, blank=True, null=True)
+    rear_brake_type = models.CharField(max_length=100, blank=True, null=True)
     tire_type = models.CharField(max_length=100, blank=True, null=True)
     mileage_company = models.CharField(max_length=50, blank=True, null=True)
     mileage_user = models.CharField(max_length=50, blank=True, null=True)
     topspeed_company = models.CharField(max_length=50, blank=True, null=True)
     topspeed_user = models.CharField(max_length=50, blank=True, null=True)
     
+    # Feature Additions
+    headlight_type = models.CharField(max_length=100, blank=True, null=True)
+    kerb_weight = models.CharField(max_length=50, blank=True, null=True)
+    mobile_connectivity = models.BooleanField(default=False)
+    instrument_console = models.CharField(max_length=100, blank=True, null=True)
+    gps_navigation = models.BooleanField(default=False)
+    riding_modes = models.BooleanField(default=False)
+    slipper_clutch = models.BooleanField(default=False)
+    traction_control = models.BooleanField(default=False)
+    quick_shifter = models.BooleanField(default=False)
+    seat_type = models.CharField(max_length=100, blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -127,6 +161,9 @@ class BikeSpecification(models.Model):
     fuel_tank_capacity = models.CharField(max_length=100, blank=True, null=True)
     reserve_fuel = models.CharField(max_length=100, blank=True, null=True)
     range_per_tank = models.CharField(max_length=100, blank=True, null=True)
+    mileage_city = models.CharField(max_length=100, blank=True, null=True)
+    mileage_highway = models.CharField(max_length=100, blank=True, null=True)
+    top_speed = models.CharField(max_length=100, blank=True, null=True)
     
     # Transmission
     clutch = models.CharField(max_length=255, blank=True, null=True)
@@ -156,6 +193,20 @@ class BikeSpecification(models.Model):
     kerb_weight = models.CharField(max_length=100, blank=True, null=True)
     dry_weight = models.CharField(max_length=100, blank=True, null=True)
     payload_capacity = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Engine Additions
+    gear_shift_pattern = models.CharField(max_length=100, blank=True, null=True)
+    spark_plugs = models.IntegerField(null=True, blank=True)
+    cooling_type = models.CharField(max_length=255, blank=True, null=True)
+    
+    # Features & Safety
+    usb_charging = models.BooleanField(default=False)
+    side_stand_cut_off = models.BooleanField(default=False)
+    projector_headlight = models.BooleanField(default=False)
+    drls = models.BooleanField(default=False)
+    gear_indicator = models.BooleanField(default=False)
+    distance_to_empty = models.BooleanField(default=False)
+    avg_fuel_consumption = models.BooleanField(default=False)
     
     # Wheels/Tyres
     tyres_front = models.CharField(max_length=100, blank=True, null=True)

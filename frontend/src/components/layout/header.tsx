@@ -182,7 +182,7 @@ export function Header() {
                       className="w-full text-xs"
                       asChild
                     >
-                      <Link href="/profile?tab=notifications">
+                      <Link href="/dashboard/notifications">
                         View All Notifications
                       </Link>
                     </Button>
@@ -227,14 +227,14 @@ export function Header() {
                       <DropdownMenuSeparator />
                     </>
                   )}
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile">My Profile</Link>
+                   <DropdownMenuItem asChild>
+                    <Link href="/dashboard">Dashboard</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/profile?tab=listings">My Listings</Link>
+                    <Link href="/dashboard/my-listings">My Listings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/profile?tab=wishlist">Wishlist</Link>
+                    <Link href="/dashboard/wishlist">Wishlist</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/sell-bike">Sell Bike</Link>

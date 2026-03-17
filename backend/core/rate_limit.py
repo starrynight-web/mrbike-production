@@ -23,14 +23,12 @@ class RateLimitMiddleware:
         # Rate limit configurations (requests per minute)
         self.rate_limits = {
             '/api/recommendations/': 10,  # Max 10 recommendation requests per minute
-            '/api/marketplace/': 30,      # Max 30 marketplace requests per minute
-            '/api/bikes/': 60,            # Max 60 bike catalog requests per minute
             '/api/users/auth/': 5,        # Max 5 auth attempts per minute
         }
     
     def __call__(self, request):
         # Check if path should be rate limited
-        client_ip = self.get_client_ip(request)
+        client_ip = get_client_ip(request)
         path = request.path
         
         for pattern, limit in self.rate_limits.items():
@@ -45,14 +43,6 @@ class RateLimitMiddleware:
         response = self.get_response(request)
         return response
     
-    def get_client_ip(self, request):
-        """Extract client IP from request"""
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        return ip
     
     def check_rate_limit(self, client_ip, endpoint, limit):
         """

@@ -32,24 +32,63 @@ class BrandViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
+    def get_object(self):
+        """Allow getting brand by ID or slug"""
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs.get(lookup_url_kwarg)
+
+        if lookup_value and not str(lookup_value).isdigit():
+            self.lookup_field = 'slug'
+            self.lookup_url_kwarg = 'pk'
+
+        return super().get_object()
+
+    @action(detail=True, methods=['get'])
+    def bikes(self, request, pk=None):
+        """Get all bike models for this brand"""
+        brand = self.get_object()
+        # Default to name sorting to ensure predictable results (Phase 1 Fix)
+        # Added select_related/prefetch_related for performance (Audit Gap)
+        bikes = BikeModel.objects.filter(brand=brand).select_related('brand').prefetch_related('variants').order_by('name')
+        
+        page = self.paginate_queryset(bikes)
+        if page is not None:
+            serializer = BikeModelSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = BikeModelSerializer(bikes, many=True)
+        return Response(serializer.data)
+
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminUser()]
         return [permissions.AllowAny()]
 
 class BikeModelViewSet(viewsets.ModelViewSet):
-    queryset = BikeModel.objects.all().order_by('-popularity_score', 'name')
     serializer_class = BikeModelSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'brand', 'engine_capacity']
     search_fields = ['name', 'brand__name']
     ordering_fields = ['price', 'popularity_score', 'engine_capacity']
 
-    @method_decorator(cache_page(60 * 10)) # 10 minutes
+    def get_queryset(self):
+        # Default to name sorting if no ordering is provided (Phase 1 Fix)
+        # Optimized with select_related and prefetch_related (Audit Gap)
+        queryset = BikeModel.objects.all().select_related('brand', 'detailed_specs').prefetch_related('variants').order_by('name')
+        
+        search_query = self.request.query_params.get('search')
+        if search_query:
+            from django.contrib.postgres.search import SearchVector
+            queryset = queryset.annotate(
+                search=SearchVector('name', 'brand__name', 'engine_type', 'category')
+            ).filter(search=search_query)
+            
+        return queryset
+
+    # Removed cache_page to fix Issue #1 (newly added bikes not appearing immediately)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @method_decorator(cache_page(60 * 10))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 

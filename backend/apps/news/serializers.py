@@ -31,8 +31,37 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        if instance.featured_image:
-            representation['featured_image'] = instance.featured_image.url
+        image_field = instance.featured_image
+        
+        if image_field:
+            if hasattr(image_field, 'url') and image_field.url:
+                url = image_field.url
+                if url.startswith('http://'): url = url.replace('http://', 'https://')
+                representation['featured_image'] = url
+            else:
+                public_id = str(image_field)
+                if public_id and public_id != 'None':
+                    if "image/upload/" in public_id:
+                        public_id = public_id.split("image/upload/")[-1]
+                        import re
+                        public_id = re.sub(r'^v\d+/', '', public_id)
+                    if '.' in public_id:
+                        public_id = public_id.rsplit('.', 1)[0]
+                    
+                    try:
+                        import cloudinary.utils
+                        url, _ = cloudinary.utils.cloudinary_url(
+                            public_id,
+                            secure=True,
+                            transformation=[{'quality': 'auto', 'fetch_format': 'auto'}]
+                        )
+                        representation['featured_image'] = url
+                    except Exception:
+                        pass
+                        
+        # Add summary for SEO fallback
+        representation['summary'] = instance.meta_description or instance.excerpt or (instance.content[:160] + '...' if instance.content else '')
+        
         return representation
 
     def create(self, validated_data):

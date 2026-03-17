@@ -86,7 +86,7 @@ export const useCompareStore = create<CompareState>()(
     persist(
       (set, get) => ({
         bikes: [],
-        maxBikes: 3,
+        maxBikes: 4,
         addBike: (bike) => {
           const { bikes, maxBikes } = get();
           if (bikes.length >= maxBikes) return false;

@@ -1,0 +1,22 @@
+# MrBikeBD - Bangladesh's #1 Motorcycle Ecosystem
+
+MrBikeBD is the most trusted platform for motorcycle enthusiasts in Bangladesh. It provides comprehensive bike specifications, real-time pricing, expert reviews, and a vibrant marketplace for used motorcycles.
+
+## Core Features
+- **Bike Catalog**: Detailed specs, mileage, and prices for all brands in Bangladesh (Yamaha, Honda, Suzuki, etc.).
+- **News & Reviews**: Latest motorcycle news, launch updates, and professional expert reviews.
+- **Used Marketplace**: A verified marketplace for buying and selling second-hand motorcycles with document verification.
+- **EMI Calculator**: Accurate EMI estimations based on current bank interest rates in Bangladesh.
+- **Comparison Tool**: Side-by-side comparison of up to 3 motorcycles.
+
+## API & Integration
+The platform uses a Next.js frontend with Incremental Static Regeneration (ISR) and a Django REST Framework backend.
+
+## SEO & Accessibility
+- **ISR**: Core content pages (/bike, /news, /used-bike) are pre-rendered server-side for maximum indexability.
+- **Structured Data**: Implements JSON-LD (Product, Article, Breadcrumb) for rich search results.
+- **Sitemap**: Dynamic sitemap available at /sitemap.xml.
+
+## Contact
+Email: contact@mrbikebd.com
+URL: https://mrbikebd.com

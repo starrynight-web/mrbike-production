@@ -13,6 +13,94 @@ interface Brand {
   logo_url?: string;
 }
 
+export interface BikeSpecification {
+  id?: number;
+  engine_type?: string;
+  displacement?: string;
+  max_power?: string;
+  max_torque?: string;
+  bore_stroke?: string;
+  compression_ratio?: string;
+  fuel_system?: string;
+  starting?: string;
+  cooling_system?: string;
+  valve_train?: string;
+  emission_standard?: string;
+  acceleration_0_60?: string;
+  acceleration_0_100?: string;
+  fuel_type?: string;
+  fuel_tank_capacity?: string;
+  reserve_fuel?: string;
+  range_per_tank?: string;
+  mileage_city?: string;
+  mileage_highway?: string;
+  top_speed?: string;
+  clutch?: string;
+  gearbox?: string;
+  gear_pattern?: string;
+  final_drive?: string;
+  brakes_front?: string;
+  brakes_rear?: string;
+  braking_system?: string;
+  length?: string;
+  width?: string;
+  height?: string;
+  wheelbase?: string;
+  ground_clearance?: string;
+  seat_height?: string;
+  frame_type?: string;
+  suspension_front?: string;
+  suspension_rear?: string;
+  kerb_weight?: string;
+  dry_weight?: string;
+  payload_capacity?: string;
+  tyres_front?: string;
+  tyres_rear?: string;
+  tyres_type?: string;
+  wheels_front?: string;
+  wheels_rear?: string;
+  lighting?: any;
+  instrument_cluster?: any;
+  battery?: any;
+  additional_features?: any[];
+  gear_shift_pattern?: string;
+  spark_plugs?: number;
+  cooling_type?: string;
+  usb_charging?: boolean;
+  side_stand_cut_off?: boolean;
+  projector_headlight?: boolean;
+  drls?: boolean;
+  gear_indicator?: boolean;
+  distance_to_empty?: boolean;
+  avg_fuel_consumption?: boolean;
+}
+
+export interface BikeVariant {
+  id?: number;
+  variant_name: string;
+  variant_key: string;
+  price: number;
+  is_default: boolean;
+  braking_system?: string;
+  rear_brake_type?: string;
+  tire_type?: string;
+  headlight_type?: string;
+  kerb_weight?: string;
+  seat_type?: string;
+  instrument_console?: string;
+  mileage_company?: string;
+  mileage_user?: string;
+  topspeed_company?: string;
+  topspeed_user?: string;
+  color_options?: string[];
+  mobile_connectivity?: boolean;
+  gps_navigation?: boolean;
+  riding_modes?: boolean;
+  slipper_clutch?: boolean;
+  traction_control?: boolean;
+  quick_shifter?: boolean;
+}
+
 export interface Bike {
   id: number;
   name: string;
@@ -31,17 +119,27 @@ export interface Bike {
   fuel_capacity?: number;
   seat_height?: number;
   tyre_type?: string;
+  image1?: string;
+  image2?: string;
+  image3?: string;
+  image4?: string;
+  image5?: string;
   is_available: boolean;
   description?: string;
   created_at?: string;
+  detailed_specs?: BikeSpecification;
+  variants?: BikeVariant[];
 }
 
 export interface UsedBikeListing {
   id: number;
+  title?: string;
   bike_model: string;
   brand: string;
   seller_name: string;
   seller_phone: string;
+  whatsapp_number?: string;
+  primary_contact_number?: string;
   seller_location: string;
   price: number;
   year: number;
@@ -50,9 +148,11 @@ export interface UsedBikeListing {
   status: "pending" | "active" | "rejected" | "sold";
   category?: string;
   image_url: string;
+  images?: any[];
   description: string;
   created_at: string;
   seller_id: number;
+  reports_count?: number;
 }
 
 export interface AdminStats {
@@ -123,16 +223,28 @@ class AdminAPI {
   /**
    * Create new bike
    */
-  async createBike(data: Partial<Bike>) {
-    const response = await api.post("/bikes/", data);
+  async createBike(data: Partial<Bike> | FormData) {
+    const isFormData = data instanceof FormData;
+    const response = await api.post<any>("/bikes/", data, 
+      isFormData ? { headers: { "Content-Type": "multipart/form-data" } } : undefined
+    );
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to create bike model");
+    }
     return response.data;
   }
 
   /**
    * Update existing bike
    */
-  async updateBike(id: number, data: Partial<Bike>) {
-    const response = await api.patch(`/bikes/${id}/`, data);
+  async updateBike(id: number, data: Partial<Bike> | FormData) {
+    const isFormData = data instanceof FormData;
+    const response = await api.patch<any>(`/bikes/${id}/`, data,
+      isFormData ? { headers: { "Content-Type": "multipart/form-data" } } : undefined
+    );
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to update bike model");
+    }
     return response.data;
   }
 
@@ -140,7 +252,10 @@ class AdminAPI {
    * Delete bike
    */
   async deleteBike(id: number) {
-    await api.delete(`/bikes/${id}/`);
+    const response = await api.delete<any>(`/bikes/${id}/`);
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to delete bike model");
+    }
   }
 
   /**
@@ -150,10 +265,13 @@ class AdminAPI {
     ids: number[],
     updates: { published?: boolean; featured?: boolean },
   ) {
-    const response = await api.post("/bikes/bulk-update/", {
+    const response = await api.post<any>("/bikes/bulk-update/", {
       ids,
       ...updates,
     });
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to bulk update bikes");
+    }
     return response.data;
   }
 
@@ -161,7 +279,10 @@ class AdminAPI {
    * Duplicate a bike
    */
   async duplicateBike(id: number) {
-    const response = await api.post(`/bikes/${id}/duplicate/`);
+    const response = await api.post<any>(`/bikes/${id}/duplicate/`);
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to duplicate bike model");
+    }
     return response.data;
   }
 
@@ -189,21 +310,25 @@ class AdminAPI {
     // Transform API response to match UsedBikeListing interface
     const results = rawData.map((item: any) => ({
       id: item.id,
+      title: item.title,
       bike_model: item.bike_model_name || item.title || "Unknown Model",
       brand: item.brand_name || item.custom_brand || "Unknown Brand",
       seller_name: item.seller_name || "Unknown Seller",
       seller_phone: item.seller_phone || "",
-      seller_location: item.location || "",
+      seller_location: typeof item.location === 'object' ? (item.location.full || item.location.city || "") : (item.location || ""),
       price: Number(item.price) || 0,
       year: item.manufacturing_year || new Date().getFullYear(),
       mileage: item.mileage || 0,
       condition: item.condition || "good",
       status: item.status || "pending",
       image_url: item.image_url || item.images?.[0]?.url || "",
+      images: item.images || [],
       description: item.description || "",
       created_at: item.created_at || new Date().toISOString(),
       seller_id: item.seller || 0,
       category: item.category || "",
+      whatsapp_number: item.whatsapp_number || "",
+      reports_count: item.reports_count || 0,
     }));
 
     return {
@@ -223,8 +348,11 @@ class AdminAPI {
   /**
    * Approve used bike listing
    */
-  async approveListing(id: number, reason?: string) {
-    const response = await api.post(`/marketplace/listings/${id}/approve/`, { reason });
+  async approveListing(id: number, category: string) {
+    const response = await api.post<any>(`/marketplace/listings/${id}/approve/`, { category });
+    if (!response.success) {
+        throw new Error(response.error?.message || "Failed to approve listing");
+    }
     return response.data;
   }
 
@@ -232,7 +360,10 @@ class AdminAPI {
    * Reject used bike listing
    */
   async rejectListing(id: number, reason: string) {
-    const response = await api.post(`/marketplace/listings/${id}/reject/`, { reason });
+    const response = await api.post<any>(`/marketplace/listings/${id}/reject/`, { reason });
+    if (!response.success) {
+        throw new Error(response.error?.message || "Failed to reject listing");
+    }
     return response.data;
   }
 
@@ -240,26 +371,34 @@ class AdminAPI {
    * Delete used bike listing
    */
   async deleteUsedBike(id: number) {
-    await api.delete(`/marketplace/listings/${id}/`);
+    const response = await api.delete<any>(`/marketplace/listings/${id}/`);
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to delete listing");
+    }
   }
 
   /**
    * Mark listing as featured
    */
   async markFeatured(id: number, featured: boolean) {
-    const response = await api.patch(`/marketplace/listings/${id}/`, { is_featured: featured });
+    const response = await api.patch<any>(`/marketplace/listings/${id}/`, { is_featured: featured });
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to update featured status");
+    }
     return response.data;
   }
 
   /**
-   * Send verification email to seller (using the new resend-verification if needed or specific marketplace logic)
+   * Send verification email to seller
    */
   async sendVerificationEmail(id: number) {
-    // This is often for the listing itself if there's a specific logic, 
-    // but the backend uses Brevo for user verification now.
-    const response = await api.post(`/marketplace/listings/${id}/send-verification/`);
+    const response = await api.post<any>(`/marketplace/listings/${id}/send-verification/`);
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to send verification email");
+    }
     return response.data;
   }
+
 
   // ===== NEWS MANAGEMENT =====
 
@@ -300,7 +439,9 @@ class AdminAPI {
    */
   async createArticle(data: FormData) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await api.post<any>("/news/", data);
+    const response = await api.post<any>("/news/", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
     if (!response.success) {
       throw new Error(response.error?.message || "Failed to create article");
@@ -314,7 +455,9 @@ class AdminAPI {
    */
   async updateArticle(id: string | number, data: FormData) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await api.patch<any>(`/news/admin/${id}/`, data);
+    const response = await api.patch<any>(`/news/admin/${id}/`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
     if (!response.success) {
       throw new Error(response.error?.message || "Failed to update article");
@@ -402,36 +545,42 @@ class AdminAPI {
 
     return rawData.map((item: any) => ({
       id: item.id,
+      title: item.title,
       bike_model: item.bike_model_name || item.title || "Unknown Model",
       brand: item.brand_name || item.custom_brand || "Unknown Brand",
       seller_name: item.seller_name || "Unknown Seller",
       seller_phone: item.seller_phone || "",
-      seller_location: item.location || "",
+      seller_location: typeof item.location === 'object' ? (item.location.full || item.location.city || "") : (item.location || ""),
       price: Number(item.price) || 0,
       year: item.manufacturing_year || new Date().getFullYear(),
       mileage: item.mileage || 0,
       condition: item.condition || "good",
       status: item.status || "pending",
       image_url: item.image_url || item.images?.[0]?.url || "",
+      images: item.images || [],
       description: item.description || "",
       created_at: item.created_at || new Date().toISOString(),
       seller_id: item.seller || 0,
+      reports_count: item.reports_count || 0,
     }));
   }
 
   // ===== IMAGE MANAGEMENT =====
 
-  /**
-   * Upload image with compression preview
-   */
   async uploadImage(
     file: File,
   ): Promise<{ url: string; size: number; originalSize: number }> {
     const formData = new FormData();
     formData.append("image", file);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await api.post<any>("/bikes/upload-image/", formData);
+    // Using the same endpoint but ensuring it's handled properly
+    const response = await api.post<any>("/bikes/upload_image/", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || "Failed to upload image to server");
+    }
 
     return response.data;
   }

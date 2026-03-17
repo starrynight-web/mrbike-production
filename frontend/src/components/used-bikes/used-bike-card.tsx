@@ -23,7 +23,7 @@ export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
       {/* Image Section */}
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         <Link
-          href={`/used-bike/${bike.id}`}
+          href={`/used-bike/${bike.slug}`}
           className="block h-full w-full relative"
         >
           {bike.thumbnailUrl ? (
@@ -75,7 +75,7 @@ export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
         <div className="text-xs text-muted-foreground mb-1">
           {bike.brandName}
         </div>
-        <Link href={`/used-bike/${bike.id}`} className="block">
+        <Link href={`/used-bike/${bike.slug}`} className="block">
           <h3 className="font-semibold line-clamp-1 mb-2 group-hover:text-primary transition-colors">
             {bike.bikeName}
           </h3>

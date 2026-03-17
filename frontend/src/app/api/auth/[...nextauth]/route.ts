@@ -5,7 +5,7 @@ import { AuthOptions } from "next-auth";
 
 async function refreshAccessToken(token: any) {
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/users/auth/refresh/`;
+    const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/refresh/`;
 
     const response = await fetch(url, {
       method: "POST",
@@ -56,7 +56,7 @@ export const authOptions: AuthOptions = {
 
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/users/auth/login/`,
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/login/`,
             {
               method: "POST",
               body: JSON.stringify({
@@ -78,6 +78,7 @@ export const authOptions: AuthOptions = {
               role: data.user.role,
               accessToken: data.access,
               refreshToken: data.refresh,
+              isEmailVerified: data.user.is_email_verified,
             };
           } else if (res.status === 403 && data.needs_verification) {
             throw new Error("EMAIL_NOT_VERIFIED");
@@ -103,7 +104,7 @@ export const authOptions: AuthOptions = {
 
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/users/auth/verify-email/`,
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/verify-email/`,
             {
               method: "POST",
               body: JSON.stringify({
@@ -124,6 +125,7 @@ export const authOptions: AuthOptions = {
               role: data.user.role,
               accessToken: data.access,
               refreshToken: data.refresh,
+              isEmailVerified: data.user.is_email_verified,
             };
           }
           throw new Error(data.error || "Verification failed");
@@ -133,13 +135,59 @@ export const authOptions: AuthOptions = {
         }
       },
     }),
+    CredentialsProvider({
+      id: "verify-2fa",
+      name: "Two-Factor Authentication",
+      credentials: {
+        totp_session: { label: "Session", type: "text" },
+        code: { label: "Code", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.totp_session || !credentials?.code) {
+          return null;
+        }
+
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/verify-2fa/`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                totp_session: credentials.totp_session,
+                code: credentials.code,
+              }),
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+
+          const data = await res.json();
+
+          if (res.ok && data) {
+            return {
+              id: data.user.id.toString(),
+              name: `${data.user.first_name || ""} ${data.user.last_name || ""}`.trim() || data.user.username,
+              email: data.user.email,
+              image: data.user.profile_image,
+              role: data.user.role,
+              accessToken: data.access,
+              refreshToken: data.refresh,
+              isEmailVerified: data.user.is_email_verified,
+            };
+          }
+          throw new Error(data.error || "2FA verification failed");
+        } catch (e: any) {
+          console.error("2FA auth error:", e);
+          throw new Error(e.message || "2FA verification failed");
+        }
+      },
+    }),
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google" && account.id_token) {
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/users/auth/google/`,
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/google/`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -153,6 +201,7 @@ export const authOptions: AuthOptions = {
             (user as any).accessToken = data.access;
             (user as any).refreshToken = data.refresh;
             (user as any).role = data.user.role;
+            (user as any).isEmailVerified = data.user.is_email_verified;
             return true;
           }
           console.error("Backend Google auth failed:", data);
@@ -171,6 +220,7 @@ export const authOptions: AuthOptions = {
         session.accessToken = token.accessToken as string;
         session.refreshToken = token.refreshToken as string | undefined;
         session.user.role = token.role || "user";
+        (session.user as any).isEmailVerified = token.isEmailVerified;
         // @ts-expect-error - Custom property
         session.error = token.error;
       }
@@ -180,11 +230,10 @@ export const authOptions: AuthOptions = {
       // Initial sign in
       if (user) {
         token.role = (user as any).role || "user";
-        if ((user as any).accessToken) {
-          token.accessToken = (user as any).accessToken;
-          token.refreshToken = (user as any).refreshToken;
-          token.accessTokenExpires = Date.now() + 60 * 60 * 1000; // 60 minutes
-        }
+        token.accessToken = (user as any).accessToken;
+        token.refreshToken = (user as any).refreshToken;
+        token.isEmailVerified = (user as any).isEmailVerified;
+        token.accessTokenExpires = Date.now() + 60 * 60 * 1000; // 60 minutes
         return token;
       }
 

@@ -9,9 +9,8 @@ class IsSuperAdminOnly(permissions.BasePermission):
     SUPER_ADMIN_EMAIL = os.getenv('SUPER_ADMIN_EMAIL', 'admin_gr_s_n_r_t_e@unleft.space')
 
     def has_permission(self, request, view):
-        # Allow access if user is authenticated AND (is a superuser OR has the specific email)
-        return (
-            request.user and 
-            request.user.is_authenticated and 
-            (request.user.is_superuser or request.user.email == self.SUPER_ADMIN_EMAIL)
-        )
+        if not (request.user and request.user.is_authenticated):
+            return False
+            
+        # Allow any superuser OR the specific designated admin email
+        return request.user.is_superuser or request.user.email == self.SUPER_ADMIN_EMAIL

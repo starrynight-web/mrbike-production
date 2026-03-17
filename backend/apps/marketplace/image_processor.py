@@ -48,8 +48,15 @@ class ImageProcessingService:
                 rgb_img.paste(img)
             img = rgb_img
         
-        # Resize if too large (maintain aspect ratio)
+        # 2. Resize and Strip EXIF (Section 7.3)
         img.thumbnail((cls.MAX_WIDTH, cls.MAX_HEIGHT), Image.Resampling.LANCZOS)
+        
+        # Strip metadata by re-encoding into a new RGB image object if needed, 
+        # but PIL's save() to a buffer already strips EXIF unless 'exif' param is provided.
+        # To be absolutely sure, we can do:
+        clean_img = Image.new(img.mode, img.size)
+        clean_img.paste(img)
+        img = clean_img
         
         # Get base filename without extension
         base_name = os.path.splitext(image_file.name)[0]

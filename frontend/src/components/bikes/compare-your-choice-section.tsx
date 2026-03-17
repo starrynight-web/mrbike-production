@@ -13,7 +13,7 @@ import { useCompareStore } from "@/store";
 import type { Bike } from "@/types";
 import { cn } from "@/lib/utils";
 
-const MAX_COMPARE = 3;
+const MAX_COMPARE = 4;
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -180,8 +180,8 @@ export function CompareYourChoiceSection({ hideCompareCta = false }: CompareYour
             )}
           </div>
 
-          {/* Slots: up to 3 bikes */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          {/* Slots: up to 4 bikes */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {Array.from({ length: maxBikes }).map((_, i) => {
               const bike = bikes[i];
               if (bike) {

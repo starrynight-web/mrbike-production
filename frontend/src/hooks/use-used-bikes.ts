@@ -43,18 +43,19 @@ export function useUsedBikes(filters?: UsedBikeFilters) {
 }
 
 /**
- * Fetch single used bike by ID
+ * Fetch single used bike by ID or Slug
  */
-export function useUsedBike(id: string) {
+export function useUsedBike(slug: string, initialData?: UsedBike) {
   return useQuery({
-    queryKey: usedBikeQueryKeys.detail(id),
+    queryKey: usedBikeQueryKeys.detail(slug),
     queryFn: async () => {
-      const response = await api.getUsedBike(id);
+      const response = await api.getUsedBike(slug);
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch used bike");
       return mapUsedBike(response.data);
     },
+    initialData: initialData,
     staleTime: 5 * 60 * 1000,
-    enabled: !!id,
+    enabled: !!slug,
   });
 }
 

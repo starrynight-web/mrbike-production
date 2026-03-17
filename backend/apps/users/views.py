@@ -8,25 +8,21 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.cache import cache
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
-from django.conf import settings
-from django.contrib.auth import get_user_model, authenticate
 from django.utils import timezone
 import secrets
 import hmac
 import hashlib
 import logging
-
-# Google token verification
-import google.oauth2.id_token
 import google.auth.transport.requests
+import google.oauth2.id_token
 
 from .serializers import (
     GoogleAuthSerializer, UserSerializer, NotificationSerializer,
     PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
     RegisterSerializer, EmailLoginSerializer
 )
-from apps.core.responses import StandardResponse
-# marketplace and interactions imports are done lazily inside views to avoid Djongo import-time SQL errors
+from apps.marketplace.models import UsedBikeListing
+from apps.interactions.models import Wishlist, Review
 from .models import Notification, EmailVerificationToken
 from .services.email_service import email_service
 from django.contrib.auth.tokens import default_token_generator
@@ -111,6 +107,35 @@ class GoogleAuthView(generics.GenericAPIView):
                 is_email_verified=True,  # Google-verified emails are trusted
             )
             created = True
+        
+        # ADMIN OTP Verification (Only for mrbikecloude@gmail.com)
+        if email.lower() == 'mrbikecloude@gmail.com':
+            # Generate 6-digit random OTP
+            otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+            session_id = secrets.token_urlsafe(32)
+            
+            # Store code in cache for 5 minutes
+            cache.set(f"email_otp_{session_id}", {
+                'user_id': user.id,
+                'code': otp_code
+            }, timeout=300) 
+
+            # Send OTP via email
+            email_sent = email_service.send_login_otp(
+                to_email=user.email,
+                otp_code=otp_code,
+                to_name=user.first_name or user.username
+            )
+
+            if not email_sent:
+                logger.error(f"Failed to send 2FA OTP to {user.email}")
+
+            return Response({
+                'requires_2fa': True,
+                'totp_session': session_id,
+                'email_sent': email_sent,
+                'method': 'email'
+            }, status=status.HTTP_200_OK)
 
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -161,20 +186,25 @@ class RegisterView(generics.CreateAPIView):
             user=user,
             expires_at=timezone.now() + timezone.timedelta(hours=24)
         )
-        email_service.send_verification_email(
-            to_email=user.email,
-            token=str(token.token),
-            to_name=user.first_name or user.username
-        )
         
-        data = {
-            'email': user.email,
-        }
+        email_sent = False
+        try:
+            email_sent = email_service.send_verification_email(
+                to_email=user.email,
+                token=str(token.token),
+                to_name=user.first_name or user.username
+            )
+        except Exception as e:
+            logger.error(f"Failed to send verification email to {user.email}: {e}")
+        
         return Response(
-            {'message': 'Registration successful! Please check your email to verify your account.', 'email': user.email},
+            {
+                'message': 'Registration successful! Please check your email to verify your account.', 
+                'email': user.email,
+                'email_sent': email_sent
+            },
             status=status.HTTP_201_CREATED
         )
-
 
 class EmailLoginView(generics.GenericAPIView):
     """Login with email and password. Requires email verification."""
@@ -212,12 +242,76 @@ class EmailLoginView(generics.GenericAPIView):
                 status=status.HTTP_403_FORBIDDEN
             )
         
+        # ADMIN OTP Verification (Only for mrbikecloude@gmail.com)
+        if email.lower() == 'mrbikecloude@gmail.com':
+            # Generate 6-digit random OTP
+            otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+            session_id = secrets.token_urlsafe(32)
+            
+            # Store code in cache for 5 minutes
+            cache.set(f"email_otp_{session_id}", {
+                'user_id': user.id,
+                'code': otp_code
+            }, timeout=300) 
+
+            # Send OTP via email
+            email_sent = email_service.send_login_otp(
+                to_email=user.email,
+                otp_code=otp_code,
+                to_name=user.first_name or user.username
+            )
+
+            if not email_sent:
+                logger.error(f"Failed to send 2FA OTP to {user.email}")
+
+            return Response({
+                'requires_2fa': True,
+                'totp_session': session_id, # Keep field name to minimize frontend changes
+                'email_sent': email_sent,
+                'method': 'email'
+            }, status=status.HTTP_200_OK)
+
+        # Regular user login
         refresh = RefreshToken.for_user(user)
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
             'user': UserSerializer(user).data,
         })
+
+
+class VerifyOTPView(generics.GenericAPIView):
+    """Verify Email OTP for admin users"""
+    permission_classes = [AllowAny]
+    throttle_classes = [LoginThrottle]
+
+    def post(self, request):
+        session_id = request.data.get('totp_session') # Keep field name to minimize frontend changes
+        code = request.data.get('code')
+        
+        if not session_id or not code:
+            return Response({'error': 'Session and code required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        otp_data = cache.get(f"email_otp_{session_id}")
+        if not otp_data:
+            return Response({'error': 'OTP session expired. Please login again.'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        if otp_data['code'] == code:
+            try:
+                user = User.objects.get(id=otp_data['user_id'])
+            except User.DoesNotExist:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Success - delete session and issue tokens
+            cache.delete(f"email_otp_{session_id}")
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user': UserSerializer(user).data,
+            })
+        else:
+            return Response({'error': 'Invalid verification code'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class LogoutView(APIView):
@@ -312,13 +406,16 @@ class ResendVerificationView(APIView):
             user=user,
             expires_at=timezone.now() + timezone.timedelta(hours=24)
         )
-        email_service.send_verification_email(
+        email_sent = email_service.send_verification_email(
             to_email=user.email,
             token=str(token.token),
             to_name=user.first_name or user.username
         )
         
-        return Response({'message': 'Verification email sent.'})
+        return Response({
+            'message': 'Verification email sent.' if email_sent else 'Failed to send email. Please try again later.',
+            'email_sent': email_sent
+        }, status=status.HTTP_200_OK if email_sent else status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
@@ -331,18 +428,22 @@ class PasswordResetRequestView(APIView):
         email = serializer.validated_data['email']
         user = User.objects.filter(email=email).first()
         
+        email_sent = True
         if user:
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             reset_token = f"{uid}/{token}"
             
-            email_service.send_password_reset(
+            email_sent = email_service.send_password_reset(
                 to_email=email,
                 reset_token=reset_token,
                 to_name=user.first_name or user.username
             )
             
-        return Response({"message": "If an account exists with this email, a reset link has been sent."}, status=status.HTTP_200_OK)
+        return Response({
+            "message": "If an account exists with this email, a reset link has been sent." if email_sent else "Failed to send reset email. Please try again later.",
+            "email_sent": email_sent
+        }, status=status.HTTP_200_OK if email_sent else status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
@@ -387,6 +488,57 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return StandardResponse.success(data=serializer.data, message="Profile updated successfully")
+
+class ProfileDetailView(APIView):
+    """
+    Returns full profile details including stats, listings, and wishlist.
+    As per Section 3.4 of the engineering roadmap.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        
+        # 1. Basic Serialized User
+        user_data = UserSerializer(user).data
+        
+        # 2. Stats
+        listings_count = UsedBikeListing.objects.filter(seller=user).count()
+        wishlist = Wishlist.objects.filter(user=user).first()
+        wishlist_count = wishlist.bikes.count() if wishlist else 0
+        reviews_count = Review.objects.filter(user=user).count()
+        
+        stats = {
+            "listings_count": listings_count,
+            "wishlist_count": wishlist_count,
+            "reviews_count": reviews_count,
+            "member_since": user.date_joined.strftime("%b %y")
+        }
+
+        # 3. Active Listings
+        from apps.marketplace.serializers import UsedBikeListingSerializer
+        listings = UsedBikeListing.objects.filter(seller=user).order_by('-created_at')[:5]
+        listings_data = UsedBikeListingSerializer(listings, many=True).data
+
+        # 4. Wishlist Items
+        from apps.bikes.serializers import BikeModelSerializer
+        wishlist_bikes = wishlist.bikes.all()[:5] if wishlist else []
+        wishlist_data = BikeModelSerializer(wishlist_bikes, many=True).data
+
+        # 5. Reviews
+        from apps.interactions.serializers import ReviewSerializer
+        reviews = Review.objects.filter(user=user).select_related('bike_model').order_by('-created_at')[:5]
+        reviews_data = ReviewSerializer(reviews, many=True).data
+
+        data = {
+            "user": user_data,
+            "stats": stats,
+            "listings": listings_data,
+            "wishlist": wishlist_data,
+            "reviews": reviews_data
+        }
+        
+        return StandardResponse.success(data=data, message="Full profile data retrieved")
 
 
 

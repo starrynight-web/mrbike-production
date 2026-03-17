@@ -23,29 +23,30 @@ class BikeReviewListView(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        # Verify bike exists in Postgres
-        get_object_or_404(BikeModel, pk=self.kwargs['bike_id'])
-        serializer.save(user=self.request.user, bike_id=self.kwargs['bike_id'])
+        bike = get_object_or_404(BikeModel, pk=self.kwargs['bike_id'])
+        # If user already reviewed this bike, update the existing review
+        existing_review = Review.objects.filter(user=self.request.user, bike=bike).first()
+        if existing_review:
+            # Update the existing instance
+            serializer.instance = existing_review
+            serializer.save(user=self.request.user, bike=bike)
+        else:
+            serializer.save(user=self.request.user, bike=bike)
 
 class WishlistToggleView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, bike_id):
-        # Verify bike exists
-        get_object_or_404(BikeModel, pk=bike_id)
+        bike = get_object_or_404(BikeModel, pk=bike_id)
         wishlist, created = Wishlist.objects.get_or_create(user=request.user)
         
-        if not isinstance(wishlist.bike_ids, list):
-            wishlist.bike_ids = []
-
-        if bike_id in wishlist.bike_ids:
-            wishlist.bike_ids.remove(bike_id)
+        if wishlist.bikes.filter(id=bike_id).exists():
+            wishlist.bikes.remove(bike)
             status_msg = "removed"
         else:
-            wishlist.bike_ids.append(bike_id)
+            wishlist.bikes.add(bike)
             status_msg = "added"
             
-        wishlist.save()
         return Response({"status": status_msg}, status=status.HTTP_200_OK)
 
 class UserWishlistView(generics.RetrieveAPIView):
@@ -61,4 +62,15 @@ class UserReviewListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        return Review.objects.filter(user=self.request.user)
+
+class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """View to handle individual review actions (retrieve, update, delete)"""
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Users can only see/edit/delete their own reviews via this detail view for security
+        # Note: BikeReviewListView handles public viewing of approved reviews
         return Review.objects.filter(user=self.request.user)

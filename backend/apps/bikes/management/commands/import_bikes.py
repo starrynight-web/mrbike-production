@@ -7,13 +7,8 @@ from django.conf import settings
 from apps.bikes.models import Brand, BikeModel, BikeVariant, BikeSpecification
 from apps.marketplace.models import UsedBikeListing
 from django.contrib.auth import get_user_model
-from pymongo import MongoClient
-import logging
-
-logger = logging.getLogger(__name__)
-
 class Command(BaseCommand):
-    help = 'Import bike data from nested db.json structure and sync to MongoDB'
+    help = 'Import bike data from nested db.json structure to PostgreSQL'
 
     def add_arguments(self, parser):
         parser.add_argument('json_file', type=str, help='Path to the JSON file')
@@ -22,16 +17,10 @@ class Command(BaseCommand):
             action='store_true',
             help='Run the script without committing changes to the database',
         )
-        parser.add_argument(
-            '--skip-mongo',
-            action='store_true',
-            help='Skip syncing data to MongoDB Atlas',
-        )
 
     def handle(self, *args, **options):
         file_path = options['json_file']
         dry_run = options['dry_run']
-        skip_mongo = options['skip_mongo']
 
         self.stdout.write(f"Loading JSON from: {os.path.abspath(file_path)}")
 
@@ -44,27 +33,7 @@ class Command(BaseCommand):
 
         if not isinstance(data, list):
             self.stderr.write(self.style.ERROR("Expected a list of bike objects in JSON"))
-            self.stdout.write(f"Found type: {type(data)}")
             return
-
-        # MongoDB Setup
-        mongo_collection = None
-        if not dry_run and not skip_mongo:
-            try:
-                if not settings.MONGODB_URI:
-                    raise Exception("MONGODB_URI not set in settings")
-                
-                mongo_client = MongoClient(
-                    settings.MONGODB_URI, 
-                    serverSelectionTimeoutMS=2000,
-                    connectTimeoutMS=2000
-                )
-                mongo_db = mongo_client[settings.MONGODB_DB_NAME]
-                mongo_collection = mongo_db['bike_details']
-                mongo_client.server_info()
-                self.stdout.write(self.style.SUCCESS("Connected to MongoDB Atlas"))
-            except Exception as e:
-                self.stdout.write(self.style.WARNING(f"MongoDB connection failed, skipping Mongo sync: {e}"))
 
         self.stdout.write(f"Found {len(data)} entries. Starting import...")
 
@@ -74,7 +43,6 @@ class Command(BaseCommand):
                     core = entry.get('core_identity', {})
                     slug = core.get('slug')
                     if not slug:
-                        self.stdout.write(self.style.WARNING(f"  Entry {i} missing slug, skipping..."))
                         continue
 
                     self.stdout.write(f"  Processing {slug}...")
@@ -89,11 +57,9 @@ class Command(BaseCommand):
                     raw_cc = quick_specs.get('engine_capacity', '0')
                     engine_cc = None
                     try:
-                        # Handle cases like "249 cc" or "249.0"
                         engine_cc = int(float(raw_cc.split()[0]))
-                    except (ValueError, TypeError) as e:
-                        logger.warning("Failed to parse engine_capacity '%s' for slug=%s: %s", raw_cc, slug, e)
-                        self.stderr.write(self.style.WARNING(f"    [WARN] Failed to parse engine_capacity for {slug}: {e}"))
+                    except (ValueError, TypeError):
+                        pass
 
                     visuals = entry.get('visual_assets', {})
                     gallery = visuals.get('gallery', [])
@@ -105,7 +71,6 @@ class Command(BaseCommand):
                     if not primary_image and gallery:
                         primary_image = gallery[0].get('url')
 
-                    # Main BikeModel
                     pricing = entry.get('pricing_financial', {})
                     on_road = pricing.get('on_road_breakdown', {})
                     price = on_road.get('ex_showroom', 0)
@@ -123,26 +88,14 @@ class Command(BaseCommand):
                     }
 
                     if not dry_run:
-                        bike, created = BikeModel.objects.update_or_create(
-                            slug=slug,
-                            defaults=defaults
-                        )
-                        verb = "Created" if created else "Updated"
-                        self.stdout.write(f"    [{verb}] Bike in PG")
-                        
-                        # Sync to MongoDB (full catalog entry)
-                        if mongo_collection is not None:
-                            try:
-                                mongo_entry = entry.copy()
-                                mongo_entry['bike_id'] = bike.id
-                                mongo_collection.update_one(
-                                    {'core_identity.slug': slug},
-                                    {'$set': mongo_entry},
-                                    upsert=True
-                                )
-                                self.stdout.write("    [OK] Synced to Mongo")
-                            except Exception as me:
-                                self.stdout.write(self.style.WARNING(f"    [WARN] Mongo sync failed for {slug}: {me}"))
+                        if BikeModel.objects.filter(slug=slug).exists():
+                            bike = BikeModel.objects.get(slug=slug)
+                        else:
+                            bike = BikeModel.objects.create(
+                                slug=slug,
+                                **defaults
+                            )
+                            self.stdout.write(f"    [Created] Bike in PG")
                     else:
                         self.stdout.write(f"    [Dry-Run] Would migrate {core.get('bike_name')}")
                         continue
@@ -151,23 +104,26 @@ class Command(BaseCommand):
                     variants_data = entry.get('variants', [])
                     for v in variants_data:
                         v_key = v.get('variant_key', 'std')
-                        BikeVariant.objects.update_or_create(
-                            bike_model=bike,
-                            variant_key=v_key,
-                            defaults={
-                                'variant_name': v.get('variant_name', 'Standard'),
-                                'price': v.get('price', bike.price),
-                                'is_default': v.get('is_default', False),
-                                'color_options': v.get('color_options', []),
-                                'features': v.get('features', []),
-                                'braking_system': v.get('braking_system'),
-                                'tire_type': v.get('tire_type'),
-                                'mileage_company': v.get('mileage_company'),
-                                'mileage_user': v.get('mileage_user'),
-                                'topspeed_company': v.get('topspeed_company'),
-                                'topspeed_user': v.get('topspeed_user'),
-                            }
-                        )
+                        if not BikeVariant.objects.filter(bike_model=bike, variant_key=v_key).exists():
+                            BikeVariant.objects.create(
+                                bike_model=bike,
+                                variant_key=v_key,
+                                **{
+                                    'variant_name': v.get('variant_name', 'Standard'),
+                                    'price': v.get('price', bike.price),
+                                    'is_default': v.get('is_default', False),
+                                    'color_options': v.get('color_options', []),
+                                    'features': v.get('features', []),
+                                    'braking_system': v.get('braking_system'),
+                                    'tire_type': v.get('tire_type'),
+                                    'mileage_company': v.get('mileage_company'),
+                                    'mileage_user': v.get('mileage_user'),
+                                    'topspeed_company': v.get('topspeed_company'),
+                                    'topspeed_user': v.get('topspeed_user'),
+                                }
+                            )
+                        else:
+                            self.stdout.write(f"    [SKIP] Variant {v_key} already exists")
                     self.stdout.write(f"    [OK] {len(variants_data)} variants added")
 
                     # Detailed Specs mapping

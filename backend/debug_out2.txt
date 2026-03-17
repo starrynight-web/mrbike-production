@@ -1,0 +1,12 @@
+[OK] Development: Using PostgreSQL/Supabase
+[OK] Development: Redis connection successful
+--- Testing New Bike Image URL ---
+Bike: Royal Enfield Meteor 350 (Supernova)
+Raw image field: None
+Serialized image_url: None
+
+--- Testing Used Bike Image URL ---
+No used bikes found.
+
+--- Testing News Article Image URL ---
+No articles found.

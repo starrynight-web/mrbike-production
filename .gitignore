@@ -3,17 +3,20 @@
 .env.local
 .env.*.local
 backend/.env
+frontend/.env
+frontend/.env.local
 .agent/
 
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
+*$pyclass
 *.so
 .Python
 env/
 
 venv/
+.venv/
 ENV/
 build/
 develop-eggs/
@@ -36,10 +39,12 @@ MANIFEST
 # Django
 *.log
 local_settings.py
-db.sqlite3
+db.sqlite3*
 db.sqlite3-journal
-/media
-/staticfiles
+/media/
+/staticfiles/
+backend/media/
+backend/staticfiles/
 
 # IDE
 .vscode/
@@ -53,8 +58,6 @@ db.sqlite3-journal
 frontend/node_modules/
 frontend/.next/
 frontend/out/
-frontend/.env.local
-frontend/.env.*.local
 
 # Testing
 .coverage

@@ -8,9 +8,10 @@ from django.conf import settings
 from apps.bikes.models import BikeModel
 from .image_processor import ImageProcessingService
 from cloudinary.models import CloudinaryField
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 
 class UsedBikeListing(models.Model):
-    # id/ _id will be handled automatically by Djongo/MongoDB
     CONDITION_CHOICES = [
         ('excellent', 'Excellent'),
         ('good', 'Good'),
@@ -27,7 +28,10 @@ class UsedBikeListing(models.Model):
     ]
 
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='listings')
-    bike_model_id = models.IntegerField(null=True, blank=True, help_text="Reference ID to BikeModel in PostgreSQL")
+    bike_model = models.ForeignKey(BikeModel, on_delete=models.SET_NULL, null=True, blank=True, related_name='marketplace_listings')
+    
+    # SEO & URL
+    slug = models.SlugField(max_length=350, unique=True, blank=True)
     
     # If not in our official list
     custom_brand = models.CharField(max_length=100, blank=True, null=True)
@@ -41,8 +45,28 @@ class UsedBikeListing(models.Model):
     
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
     description = models.TextField()
-    location = models.CharField(max_length=255)
-    contact_number = models.CharField(max_length=20, null=True, blank=True, help_text="Seller contact number for this listing")
+    
+    # Location Refinement (Section 4.5)
+    location = models.CharField(max_length=255, help_text="Full address or area")
+    location_city = models.CharField(max_length=100, db_index=True, null=True, blank=True)
+    location_area = models.CharField(max_length=100, null=True, blank=True)
+    location_division = models.CharField(max_length=100, null=True, blank=True)
+    
+    contact_number = models.CharField(max_length=20, null=True, blank=True, help_text="Seller contact number")
+    whatsapp_number = models.CharField(max_length=20, null=True, blank=True, help_text="Whatsapp number for quick contact")
+    
+    # Detailed Condition (Section 4.5)
+    has_accident_history = models.BooleanField(default=False)
+    engine_condition = models.CharField(max_length=100, null=True, blank=True)
+    body_condition = models.CharField(max_length=100, null=True, blank=True)
+    engine_cc = models.IntegerField(null=True, blank=True, help_text="Engine capacity in CC")
+    modifications = models.TextField(null=True, blank=True, help_text="List any modifications")
+    ownership_count = models.SmallIntegerField(default=1)
+    has_original_papers = models.BooleanField(default=True)
+    registration_type = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Expiry logic
+    expires_at = models.DateTimeField(null=True, blank=True)
     
     # Categorization
     category = models.CharField(
@@ -69,20 +93,45 @@ class UsedBikeListing(models.Model):
     is_featured = models.BooleanField(default=False)
     is_urgent = models.BooleanField(default=False)
     
+    # SEO & Metadata
+    meta_title = models.CharField(max_length=255, blank=True, null=True)
+    meta_description = models.TextField(blank=True, null=True)
+    
     # Metadata
-    views_count = models.IntegerField(default=0)
+    views_count = models.PositiveIntegerField(default=0)
+    search_vector = SearchVectorField(null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # Sync category from bike_model if available
-        if self.bike_model_id and not self.category:
-            try:
-                from apps.bikes.models import BikeModel
-                bike = BikeModel.objects.get(pk=self.bike_model_id)
-                self.category = bike.category
-            except Exception:
-                pass
+        from django.utils.text import slugify
+        from django.utils import timezone
+        import uuid
+
+        # 1. Sync category from bike_model if available
+        if self.bike_model and not self.category:
+            self.category = self.bike_model.category
+
+        # 2. Auto-generate slug (Section 9.1)
+        if not self.slug:
+            brand_name = self.bike_model.brand.name if self.bike_model else (self.custom_brand or "other")
+            model_name = self.bike_model.name if self.bike_model else (self.custom_model or "bike")
+            city = self.location_city or "dhaka-bangladesh"
+            # Ensure bangladesh is in city if not already
+            if "bangladesh" not in city.lower():
+                city = f"{city}-bangladesh"
+            base_slug = f"{brand_name}-{model_name}-{self.manufacturing_year}-{city}"
+            self.slug = slugify(base_slug)
+            
+            # Ensure uniqueness
+            if UsedBikeListing.objects.filter(slug=self.slug).exists():
+                self.slug = f"{self.slug}-{str(uuid.uuid4())[:8]}"
+
+        # 3. Set expiry (Section 9.4) - 15 days default
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timezone.timedelta(days=15)
+
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -91,12 +140,16 @@ class UsedBikeListing(models.Model):
     class Meta:
         ordering = ['-is_featured', '-created_at']
         indexes = [
-            models.Index(fields=['status', '-created_at']),
-            models.Index(fields=['seller', '-created_at']),
+            models.Index(fields=['status', 'is_verified']),
+            models.Index(fields=['location_city', 'category']),
+            models.Index(fields=['price', 'created_at']),
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['seller', 'created_at']),
             models.Index(fields=['category', 'status']),
-            models.Index(fields=['location']),
+            models.Index(fields=['status', 'location_city', 'created_at']),
             models.Index(fields=['price']),
-            models.Index(fields=['bike_model_id']),
+            models.Index(fields=['bike_model']),
+            GinIndex(fields=['search_vector']),
         ]
 
 
@@ -187,29 +240,62 @@ class ListingImage(models.Model):
     def get_best_url(self):
         """Get best image format for current browser (WebP preferred)"""
         import cloudinary.utils
-        for field in [self.webp_image, self.compressed_image, self.original_image]:
-            if field:
-                try:
-                    # CloudinaryField returns a CloudinaryResource object
-                    if hasattr(field, 'url') and field.url:
-                        # Ensure we use HTTPS
-                        if field.url.startswith('http:'):
-                            return field.url.replace('http:', 'https:')
-                        return field.url
-                    # Fallback for public_id strings
-                    public_id = str(field)
-                    if public_id and public_id != 'None':
-                        url, options = cloudinary.utils.cloudinary_url(
-                            public_id, 
-                            secure=True,
-                            format='webp' if field == self.webp_image else None
-                        )
-                        return url
-                except Exception as e:
-                    import logging
-                    logger = logging.getLogger(__name__)
-                    logger.error(f"Error resolving Cloudinary URL: {e}")
+        import re
+        
+        # Order of preference: WebP, Compressed, Original
+        candidates = [
+            (self.webp_image, True), # use_webp=True
+            (self.compressed_image, False),
+            (self.original_image, False)
+        ]
+        
+        for field, is_webp in candidates:
+            if not field:
+                continue
+            
+            # Case 1: Field has a direct .url attribute (typical for CloudinaryField)
+            try:
+                if hasattr(field, 'url') and field.url:
+                    url = field.url
+                    # Standardize to HTTPS
+                    if url.startswith('http://'):
+                        url = url.replace('http://', 'https://')
+                    return url
+                
+                # Case 2: Extract public_id and generate URL manually for better control
+                public_id = str(field)
+                if not public_id or public_id == 'None':
                     continue
+                
+                # Strip versions and paths if present in the string representation
+                if "image/upload/" in public_id:
+                    public_id = public_id.split("image/upload/")[-1]
+                
+                # Remove version prefix (v12345678/)
+                public_id = re.sub(r'^v\d+/', '', public_id)
+                
+                # Remove extension if present
+                if '.' in public_id:
+                    public_id = public_id.rsplit('.', 1)[0]
+                
+                # Generate secured URL with auto-optimization
+                url, _ = cloudinary.utils.cloudinary_url(
+                    public_id,
+                    secure=True,
+                    format='webp' if is_webp else None,
+                    transformation=[
+                        {'quality': 'auto', 'fetch_format': 'auto'}
+                    ] if not is_webp else [{'quality': 'auto'}]
+                )
+                
+                if url:
+                    return url
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error resolving Cloudinary URL for field {field}: {e}")
+                continue
+        
         return None
     
     @property
@@ -219,3 +305,26 @@ class ListingImage(models.Model):
             ratio = (1 - self.file_size_webp / self.file_size_original) * 100
             return round(ratio, 2)
         return None
+
+class ReportListing(models.Model):
+    REPORT_REASONS = [
+        ('fake_listing', 'Fake Listing/Fraud'),
+        ('wrong_information', 'Wrong Information'),
+        ('item_sold', 'Item Already Sold'),
+        ('offensive_content', 'Offensive Content'),
+        ('duplicate', 'Duplicate Listing'),
+        ('other', 'Other'),
+    ]
+
+    listing = models.ForeignKey(UsedBikeListing, on_delete=models.CASCADE, related_name='reports')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    reason = models.CharField(max_length=50, choices=REPORT_REASONS)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Report for {self.listing.title} - {self.reason}"
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Reported Listings"

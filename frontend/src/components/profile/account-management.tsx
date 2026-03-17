@@ -69,6 +69,7 @@ export function AccountManagement() {
             phone: updatedUser.phone || user.phone,
             location: updatedUser.location || user.location,
             image: updatedUser.profile_image || user.image,
+            isEmailVerified: updatedUser.is_email_verified ?? user.isEmailVerified,
           } as User);
         }
         toast.success("Profile updated successfully");
@@ -123,13 +124,14 @@ export function AccountManagement() {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              value={formData.email}
-              disabled
-              className="bg-muted"
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                id="email"
+                value={formData.email}
+                disabled
+                className="bg-muted flex-1"
+              />
+            </div>
             <p className="text-[0.8rem] text-muted-foreground">
               Email cannot be changed as it is linked to your account.
             </p>
@@ -164,6 +166,8 @@ export function AccountManagement() {
           </Button>
         </CardFooter>
       </Card>
+
+
 
       <Card>
         <CardHeader>

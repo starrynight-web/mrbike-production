@@ -5,46 +5,25 @@ from apps.bikes.serializers import BikeModelSerializer
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    bike_name = serializers.SerializerMethodField()
-    bike_slug = serializers.SerializerMethodField()
+    bike_name = serializers.ReadOnlyField(source='bike.name')
+    bike_slug = serializers.ReadOnlyField(source='bike.slug')
     
     class Meta:
         model = Review
-        fields = ['id', 'user', 'bike_id', 'bike_name', 'bike_slug', 'rating', 'comment', 'is_verified_purchase', 'created_at']
-
-    def get_bike_name(self, obj):
-        try:
-            from apps.bikes.models import BikeModel
-            bike = BikeModel.objects.get(pk=obj.bike_id)
-            return bike.name
-        except Exception:
-            return f"Bike {obj.bike_id}"
-
-    def get_bike_slug(self, obj):
-        try:
-            from apps.bikes.models import BikeModel
-            bike = BikeModel.objects.get(pk=obj.bike_id)
-            return bike.slug
-        except Exception:
-            return ""
+        fields = ['id', 'user', 'bike', 'bike_name', 'bike_slug', 'rating', 'comment', 'mileage_claimed', 'top_speed_claimed', 'is_verified_purchase', 'created_at']
+        read_only_fields = ['bike', 'bike_name', 'bike_slug', 'created_at']
 
 class WishlistSerializer(serializers.ModelSerializer):
     bikes = serializers.SerializerMethodField()
     
     class Meta:
         model = Wishlist
-        fields = ['bikes', 'updated_at']
+        fields = ['user', 'bikes', 'updated_at']
 
     def get_bikes(self, obj):
-        if not obj.bike_ids:
-            return []
-        try:
-            from apps.bikes.models import BikeModel
-            from apps.bikes.serializers import BikeModelSerializer
-            bikes = BikeModel.objects.filter(id__in=obj.bike_ids)
-            return BikeModelSerializer(bikes, many=True).data
-        except Exception:
-            return []
+        from apps.bikes.serializers import BikeModelSerializer
+        # obj.bikes is a Manager for the ManyToMany relationship
+        return BikeModelSerializer(obj.bikes.all(), many=True).data
 
 class InquirySerializer(serializers.ModelSerializer):
     class Meta:

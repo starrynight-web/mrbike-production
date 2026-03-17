@@ -68,6 +68,9 @@
                 <p style="margin: 0; color: #9a3412;">{{ reason }}</p>
             </div>
             <p>You can edit your listing from your dashboard and resubmit it for review.</p>
+            {% if listing_url %}
+            <a href="{{ listing_url }}" class="btn" style="background-color: #f97316; color: white !important;">Go to Dashboard</a>
+            {% endif %}
         </div>
         <div class="footer">
             <p>&copy; 2026 MrBikeBD. All rights reserved.</p>

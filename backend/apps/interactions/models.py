@@ -4,32 +4,47 @@ from apps.bikes.models import BikeModel
 
 class Review(models.Model):
     id = models.BigAutoField(primary_key=True)
-    bike_id = models.IntegerField(help_text="Reference ID to BikeModel in PostgreSQL")
+    bike = models.ForeignKey(BikeModel, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
     
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    title = models.CharField(max_length=255, blank=True, null=True)
     comment = models.TextField()
     
+    # New fields from Section 4.4 of Implementation Plan
+    mileage_claimed = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    top_speed_claimed = models.IntegerField(null=True, blank=True)
+    
     is_verified_purchase = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('bike_id', 'user')
+        unique_together = ('bike', 'user')
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user.username} - Bike {self.bike_id} ({self.rating}/5)"
+        return f"{self.user.username} - {self.bike.name} ({self.rating}/5)"
 
 class Wishlist(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='wishlist')
-    bike_ids = models.JSONField(default=list, blank=True)
+    bikes = models.ManyToManyField(BikeModel, through='WishlistItem', related_name='wishlisted_by')
     
     updated_at = models.DateTimeField(auto_now=True)
-
+ 
     def __str__(self):
         return f"{self.user.username}'s Wishlist"
+
+class WishlistItem(models.Model):
+    wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE)
+    bike = models.ForeignKey(BikeModel, on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('wishlist', 'bike')
+        ordering = ['-added_at']
 
 class Inquiry(models.Model):
     id = models.BigAutoField(primary_key=True)

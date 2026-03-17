@@ -87,7 +87,9 @@ export function ComparisonTable({ bikes, onRemove }: ComparisonTableProps) {
             "grid transition-all duration-300 bg-background border-b min-w-[600px] md:min-w-0",
             bikes.length === 2
               ? "grid-cols-[140px_1fr_1fr] md:grid-cols-[200px_1fr_1fr]"
-              : "grid-cols-[140px_1fr_1fr_1fr] md:grid-cols-[200px_1fr_1fr_1fr]",
+              : bikes.length === 3
+                ? "grid-cols-[140px_1fr_1fr_1fr] md:grid-cols-[200px_1fr_1fr_1fr]"
+                : "grid-cols-[140px_1fr_1fr_1fr_1fr] md:grid-cols-[200px_1fr_1fr_1fr_1fr]",
             "py-4",
           )}
         >
@@ -172,7 +174,9 @@ export function ComparisonTable({ bikes, onRemove }: ComparisonTableProps) {
             "grid divide-y min-w-[600px] md:min-w-0",
             bikes.length === 2
               ? "grid-cols-[140px_1fr_1fr] md:grid-cols-[200px_1fr_1fr]"
-              : "grid-cols-[140px_1fr_1fr_1fr] md:grid-cols-[200px_1fr_1fr_1fr]",
+              : bikes.length === 3
+                ? "grid-cols-[140px_1fr_1fr_1fr] md:grid-cols-[200px_1fr_1fr_1fr]"
+                : "grid-cols-[140px_1fr_1fr_1fr_1fr] md:grid-cols-[200px_1fr_1fr_1fr_1fr]",
           )}
         >
           {/* --- BASIC INFO --- */}

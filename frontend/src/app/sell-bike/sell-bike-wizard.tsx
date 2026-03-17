@@ -40,10 +40,12 @@ import {
 import { toast } from "sonner";
 import { BD_CITIES, BIKE_CONDITIONS, VALIDATION } from "@/config/constants";
 import { useBrands } from "@/hooks/use-bikes";
+import { compressImage } from "@/lib/image-utils";
 
 // --- Schema ---
 const formSchema = z.object({
   brand: z.string().min(1, "Brand is required"),
+  customBrandInput: z.string().optional(),
   model: z.string().min(2, "Model is required"),
   year: z.coerce
     .number()
@@ -64,11 +66,20 @@ const formSchema = z.object({
   location: z.string().min(1, "Location is required"),
   accidentHistory: z.boolean().default(false),
   contactNumber: z.string().min(11, "Valid contact number is required"),
+  whatsappNumber: z.string().optional(),
+  engineCC: z.coerce.number().min(50, "CC must be at least 50").max(2000, "Invalid CC"),
+  hasOriginalPapers: z.boolean().default(true),
+  registrationYear: z.coerce.number().optional(),
+  registrationType: z.string().optional(),
+  engineCondition: z.string().min(3, "Required"),
+  bodyCondition: z.string().min(3, "Required"),
+  modifications: z.string().optional(),
+  ownershipCount: z.coerce.number().min(1, "Required"),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
-const STEPS = ["Login Check", "Bike Details", "Upload Photos", "Review"];
+const STEPS = ["Login", "Bike Details", "Upload Photos", "Review"];
 
 export function SellBikeWizard() {
   const router = useRouter();
@@ -79,12 +90,12 @@ export function SellBikeWizard() {
   const [imageFiles, setImageFiles] = useState<File[]>([]); // Actual files
   const imagesRef = useRef<string[]>([]);
 
-  // Auto-advance if logged in
+  // Auto-advance if logged in and verified
   useEffect(() => {
     if (status === "authenticated" && currentStep === 1) {
       setCurrentStep(2);
     }
-  }, [status, currentStep]);
+  }, [status, session, currentStep]);
 
   // Update ref whenever images change
   useEffect(() => {
@@ -101,6 +112,85 @@ export function SellBikeWizard() {
   }, []);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const onSubmit: SubmitHandler<FormData> = async (_data) => {
+    if (!session) {
+      toast.error("You must be logged in to post an ad");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const toastId = toast.loading("Processing your listing...");
+
+    try {
+      const formData = new FormData();
+      
+      const isOther = _data.brand === "other";
+      const finalBrand = isOther ? (_data.customBrandInput || "Other") : _data.brand;
+
+      // Explicitly map fields to match backend expectations
+      formData.append("title", `${finalBrand} ${_data.model} ${_data.year}`);
+      formData.append("price", _data.price.toString());
+      formData.append("mileage", _data.kmDriven.toString());
+      formData.append("manufacturing_year", _data.year.toString());
+      formData.append("condition", _data.condition);
+      formData.append("description", _data.description);
+      formData.append("location", _data.location);
+      formData.append("custom_brand", finalBrand);
+      formData.append("custom_model", _data.model);
+      formData.append("contact_number", _data.contactNumber);
+      
+      if (_data.whatsappNumber) {
+        formData.append("whatsapp_number", _data.whatsappNumber);
+      }
+
+      formData.append("engine_cc", _data.engineCC.toString());
+      formData.append("has_original_papers", _data.hasOriginalPapers ? "true" : "false");
+      formData.append("registration_year", (_data.registrationYear || _data.year).toString());
+      if (_data.registrationType) {
+        formData.append("registration_type", _data.registrationType);
+      }
+      formData.append("engine_condition", _data.engineCondition);
+      formData.append("body_condition", _data.bodyCondition);
+      formData.append("modifications", _data.modifications || "None");
+      formData.append("ownership_count", _data.ownershipCount.toString());
+
+      // Compress and append images
+      toast.loading(`Compressing ${imageFiles.length} images...`, { id: toastId });
+      
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        try {
+          // Use slightly higher quality for 'premium' feel but keep size low
+          const compressedBlob = await compressImage(file, { 
+            quality: 0.85, 
+            maxWidth: 1600,
+            maxHeight: 1600 
+          });
+          const compressedFile = new File([compressedBlob], file.name, { type: "image/jpeg" });
+          formData.append("uploaded_images", compressedFile);
+        } catch (err) {
+          console.error("Compression failed for image", i, err);
+          formData.append("uploaded_images", file); // Fallback to original
+        }
+      }
+
+      toast.loading("Uploading to server...", { id: toastId });
+      const response = await api.createUsedBike(formData);
+      
+      if (!response.success) {
+        throw new Error(response.error?.message || "Failed to create listing");
+      }
+ 
+      toast.success("Ad posted successfully! It is under review.", { id: toastId });
+      router.push("/used-bikes");
+    } catch (error: any) {
+      console.error("Failed to post ad:", error);
+      toast.error(error.message || "Failed to post ad. Please try again.", { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const form = useForm<FormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(formSchema) as any,
@@ -115,6 +205,15 @@ export function SellBikeWizard() {
       description: "",
       location: "",
       contactNumber: "",
+      whatsappNumber: "",
+      engineCC: 150,
+      hasOriginalPapers: true,
+      registrationYear: new Date().getFullYear(),
+      registrationType: "Digital Plate",
+      engineCondition: "Solid Engine",
+      bodyCondition: "No Scratches",
+      modifications: "None",
+      ownershipCount: 1,
     },
   });
 
@@ -205,48 +304,6 @@ export function SellBikeWizard() {
     }
   }, [session, form]);
 
-  const onSubmit: SubmitHandler<FormData> = async (_data) => {
-    if (!session) {
-      toast.error("You must be logged in to post an ad");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const formData = new FormData();
-
-      // Explicitly map fields to match backend expectations
-      formData.append("title", `${_data.brand} ${_data.model} ${_data.year}`);
-      formData.append("price", _data.price.toString());
-      formData.append("mileage", _data.kmDriven.toString());
-      formData.append("manufacturing_year", _data.year.toString());
-      formData.append("condition", _data.condition);
-      formData.append("description", _data.description);
-      formData.append("location", _data.location);
-      formData.append("custom_brand", _data.brand);
-      formData.append("custom_model", _data.model);
-      formData.append("contact_number", _data.contactNumber);
-
-      // Default registration_year same as manufacturing_year if not specified
-      formData.append("registration_year", _data.year.toString());
-
-      // Append images
-      imageFiles.forEach((file) => {
-        formData.append("uploaded_images", file); // Django serializer expects uploaded_images
-      });
-
-      await api.createUsedBike(formData);
-
-      toast.success("Ad posted successfully! It is under review.");
-      router.push("/used-bikes");
-    } catch (error) {
-      console.error("Failed to post ad:", error);
-      toast.error("Failed to post ad. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="max-w-3xl mx-auto py-8">
@@ -295,24 +352,26 @@ export function SellBikeWizard() {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 max-w-xs mx-auto">
-                <Button onClick={handleLogin} className="w-full" size="lg">
-                  Continue with Google
-                </Button>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+              {status === "unauthenticated" ? (
+                <div className="flex flex-col gap-3 max-w-xs mx-auto">
+                  <Button onClick={handleLogin} className="w-full" size="lg">
+                    Continue with Google
+                  </Button>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or
+                      </span>
+                    </div>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Or
-                    </span>
-                  </div>
+                  <Button variant="outline" onClick={handleLogin}>
+                    Continue with Phone
+                  </Button>
                 </div>
-                <Button variant="outline" onClick={handleLogin}>
-                  Continue with Phone
-                </Button>
-              </div>
+              ) : null}
             </div>
           )}
 
@@ -345,6 +404,7 @@ export function SellBikeWizard() {
                               </SelectItem>
                             ),
                           )}
+                          <SelectItem value="gpx-demon">GPX Demon</SelectItem>
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
@@ -356,6 +416,23 @@ export function SellBikeWizard() {
                     </p>
                   )}
                 </div>
+
+                {/* Custom Brand Input (Conditional) */}
+                {watchedValues.brand === "other" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="customBrandInput">Custom Brand Name</Label>
+                    <Input
+                      id="customBrandInput"
+                      placeholder="Enter brand name (e.g. Gpx Demon, Lifan)"
+                      {...form.register("customBrandInput")}
+                    />
+                    {form.formState.errors.customBrandInput && (
+                      <p className="text-red-500 text-sm">
+                        {form.formState.errors.customBrandInput.message}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Model */}
                 <div className="space-y-2">
@@ -537,6 +614,124 @@ export function SellBikeWizard() {
                 </div>
               </div>
 
+              <div className="pt-4 border-t space-y-6">
+                <h3 className="text-lg font-semibold">Technical Specifications</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Engine CC */}
+                  <div className="space-y-2">
+                    <Label htmlFor="engineCC">Engine CC</Label>
+                    <Input
+                      id="engineCC"
+                      type="number"
+                      placeholder="e.g. 150, 160"
+                      {...form.register("engineCC")}
+                    />
+                    {form.formState.errors.engineCC && (
+                      <p className="text-red-500 text-sm">{form.formState.errors.engineCC.message}</p>
+                    )}
+                  </div>
+
+                  {/* Ownership Count */}
+                  <div className="space-y-2">
+                    <Label htmlFor="ownershipCount">Ownership</Label>
+                    <Controller
+                      name="ownershipCount"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value.toString()}>
+                          <SelectTrigger id="ownershipCount">
+                            <SelectValue placeholder="Select Ownership" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">1st Owner</SelectItem>
+                            <SelectItem value="2">2nd Owner</SelectItem>
+                            <SelectItem value="3">3rd Owner</SelectItem>
+                            <SelectItem value="4">4th Owner+</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </div>
+
+                  {/* Registration Year */}
+                  <div className="space-y-2">
+                    <Label htmlFor="registrationYear">Registration Year</Label>
+                    <Input
+                      id="registrationYear"
+                      type="number"
+                      placeholder="e.g. 2024"
+                      {...form.register("registrationYear")}
+                    />
+                  </div>
+
+                  {/* Registration Type */}
+                  <div className="space-y-2">
+                    <Label htmlFor="registrationType">Registration Type</Label>
+                    <Controller
+                      name="registrationType"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <SelectTrigger id="registrationType">
+                            <SelectValue placeholder="Select Type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Digital Plate">Digital Number Plate</SelectItem>
+                            <SelectItem value="Analog Plate">Analog Number Plate</SelectItem>
+                            <SelectItem value="Apply Done">Registration Applied (Done)</SelectItem>
+                            <SelectItem value="Not Registered">Not Registered</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </div>
+
+                  {/* Papers Status */}
+                  <div className="flex items-center space-x-2 border p-4 rounded-lg bg-muted/20 h-[58px] mt-auto">
+                    <Checkbox
+                      id="hasOriginalPapers"
+                      checked={watchedValues.hasOriginalPapers}
+                      onCheckedChange={(checked) =>
+                        form.setValue("hasOriginalPapers", checked as boolean)
+                      }
+                    />
+                    <Label htmlFor="hasOriginalPapers" className="font-medium cursor-pointer">
+                      I have original papers
+                    </Label>
+                  </div>
+
+                  {/* Engine Condition */}
+                  <div className="space-y-2">
+                    <Label htmlFor="engineCondition">Engine Condition</Label>
+                    <Input
+                      id="engineCondition"
+                      placeholder="e.g. Fresh, Never Opened"
+                      {...form.register("engineCondition")}
+                    />
+                  </div>
+
+                  {/* Body Condition */}
+                  <div className="space-y-2">
+                    <Label htmlFor="bodyCondition">Body Condition</Label>
+                    <Input
+                      id="bodyCondition"
+                      placeholder="e.g. Neat & Clean"
+                      {...form.register("bodyCondition")}
+                    />
+                  </div>
+                </div>
+
+                {/* Modifications */}
+                <div className="space-y-2">
+                  <Label htmlFor="modifications">Modifications (Optional)</Label>
+                  <Input
+                    id="modifications"
+                    placeholder="e.g. Exhaust, Handlebar, etc."
+                    {...form.register("modifications")}
+                  />
+                </div>
+              </div>
+
               {/* Contact Number */}
               <div className="space-y-2">
                 <Label htmlFor="contactNumber">
@@ -555,6 +750,21 @@ export function SellBikeWizard() {
                     {form.formState.errors.contactNumber.message}
                   </p>
                 )}
+              </div>
+
+              {/* Whatsapp Number */}
+              <div className="space-y-2">
+                <Label htmlFor="whatsappNumber">
+                  Whatsapp Number (Optional)
+                </Label>
+                <Input
+                  id="whatsappNumber"
+                  placeholder="e.g. 01XXXXXXXXX"
+                  {...form.register("whatsappNumber")}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Provide your Whatsapp number if different from your contact number.
+                </p>
               </div>
             </div>
           )}
@@ -625,10 +835,10 @@ export function SellBikeWizard() {
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-1">
                   <Label className="text-muted-foreground">Bike Model</Label>
-                  <p className="font-medium text-lg">
-                    {watchedValues.brand} {watchedValues.model} (
-                    {watchedValues.year})
-                  </p>
+                    <p className="font-medium text-lg">
+                      {watchedValues.brand === "other" ? watchedValues.customBrandInput : watchedValues.brand} {watchedValues.model} (
+                      {watchedValues.year})
+                    </p>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-muted-foreground">Price</Label>
@@ -645,6 +855,46 @@ export function SellBikeWizard() {
                 <div className="space-y-1">
                   <Label className="text-muted-foreground">Location</Label>
                   <p className="font-medium">{watchedValues.location}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Contact</Label>
+                  <p className="font-medium">{watchedValues.contactNumber}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Whatsapp</Label>
+                  <p className="font-medium text-green-600">{watchedValues.whatsappNumber || "Not provided"}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Engine CC</Label>
+                  <p className="font-medium">{watchedValues.engineCC} CC</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Ownership</Label>
+                  <p className="font-medium">{watchedValues.ownershipCount} Owner(s)</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Registration</Label>
+                  <p className="font-medium">{watchedValues.registrationYear || "Not registered"}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Reg. Type</Label>
+                  <p className="font-medium">{watchedValues.registrationType || "N/A"}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Papers</Label>
+                  <p className="font-medium">{watchedValues.hasOriginalPapers ? "Original Papers Available" : "No Papers"}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Engine Condition</Label>
+                  <p className="font-medium">{watchedValues.engineCondition}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Body Condition</Label>
+                  <p className="font-medium">{watchedValues.bodyCondition}</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Modifications</Label>
+                  <p className="font-medium">{watchedValues.modifications || "None"}</p>
                 </div>
               </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
@@ -11,13 +11,14 @@ import {
   Lock,
   Eye,
   EyeOff,
+  ShieldCheck,
+  KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
-import { api } from "@/lib/api-service";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
@@ -123,12 +124,16 @@ function LoginContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [verificationError, setVerificationError] = useState(false);
 
+  // 2FA states (for admin users)
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [totpSession, setTotpSession] = useState("");
+  const [totpCode, setTotpCode] = useState("");
+
+
   const handleGoogleLogin = () => {
     setIsLoading(true);
     signIn("google", { callbackUrl });
   };
-
-
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,8 +147,42 @@ function LoginContent() {
     }
 
     setIsLoading(true);
-    setVerificationError(false); // Reset error state on new attempt
+    setVerificationError(false);
     try {
+      // First call to backend to check password and get 2FA status
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/login/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.needs_verification) {
+          setVerificationError(true);
+          toast.error("Email not verified", {
+            description: "Please check your inbox or resend the verification link.",
+          });
+        } else {
+          toast.error(data.error || "Invalid email or password");
+        }
+        return;
+      }
+
+      // Backend returned 2FA requirement
+      if (data.requires_2fa) {
+        setTotpSession(data.totp_session);
+        setRequires2FA(true);
+        toast.info("Verification code sent", {
+          description: "Please check your registered email for the 6-digit login code.",
+        });
+        return;
+      }
+
+      // No 2FA — proceed with NextAuth sign in
       const result = await signIn("email-password", {
         email,
         password,
@@ -152,14 +191,7 @@ function LoginContent() {
       });
 
       if (result?.error) {
-        if (result.error === "EMAIL_NOT_VERIFIED") {
-          setVerificationError(true);
-          toast.error("Email not verified", {
-            description: "Please check your inbox or resend the verification link.",
-          });
-        } else {
-          toast.error(result.error || "Invalid email or password");
-        }
+        toast.error(result.error || "Invalid email or password");
       } else {
         toast.success("Successfully logged in!");
         router.push(callbackUrl);
@@ -173,6 +205,38 @@ function LoginContent() {
     }
   };
 
+  const handleVerify2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!totpCode || totpCode.length !== 6) {
+      toast.error("Please enter a 6-digit code");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Normal 2FA Verification during login
+      const result = await signIn("verify-2fa", {
+        totp_session: totpSession,
+        code: totpCode,
+        redirect: false,
+        callbackUrl,
+      });
+
+      if (result?.error) {
+        toast.error(result.error || "Invalid code. Please try again.");
+        setTotpCode("");
+      } else {
+        toast.success("Successfully logged in!");
+        router.push(callbackUrl);
+        router.refresh();
+      }
+    } catch (error: any) {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleResendVerification = async () => {
     if (!email) {
       toast.error("Please enter your email address first");
@@ -181,7 +245,7 @@ function LoginContent() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/auth/resend-verification/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/resend-verification/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -200,58 +264,6 @@ function LoginContent() {
       setIsLoading(false);
     }
   };
-
-  const handleDemoLogin = async () => {
-    setIsLoading(true);
-    try {
-      const result = await signIn("email-password", {
-        email: "demo@mrbikebd.com",
-        password: "password123",
-        redirect: false,
-        callbackUrl,
-      });
-
-      if (result?.error) {
-        toast.error("Demo login failed. Account might not exist.");
-      } else {
-        toast.success("Logged in as Demo User!");
-        router.push(callbackUrl);
-        router.refresh();
-      }
-    } catch (error) {
-      console.error("Demo login error:", error);
-      toast.error("An error occurred during demo login");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAdminLogin = async () => {
-    setIsLoading(true);
-    try {
-      const result = await signIn("email-password", {
-        email: "admin@mrbikebd.com",
-        password: "password123",
-        redirect: false,
-        callbackUrl,
-      });
-
-      if (result?.error) {
-        toast.error("Admin login failed. Account might not exist.");
-      } else {
-        toast.success("Logged in as Admin!");
-        router.push(callbackUrl);
-        router.refresh();
-      }
-    } catch (error) {
-      console.error("Admin login error:", error);
-      toast.error("An error occurred during admin login");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-
 
   return (
     <motion.div
@@ -278,184 +290,232 @@ function LoginContent() {
         />
       </div>
 
-
-
-      <div className="space-y-2 mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Welcome Back
-        </h1>
-        <p className="text-muted-foreground">Sign in with your email and password</p>
-      </div>
-
       <AnimatePresence mode="wait">
-        <motion.div
-          key="email-step"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 20 }}
-          transition={{ duration: 0.3 }}
-        >
-          <form onSubmit={handleEmailLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  className="pl-10 h-12 text-lg"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+        {/* ── STEP 1: Email + Password ── */}
+        {!requires2FA && (
+          <motion.div
+            key="email-step"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="space-y-2 mb-6">
+              <h1 className="text-3xl font-bold tracking-tight">Welcome Back</h1>
+              <p className="text-muted-foreground">Sign in with your email and password</p>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-primary hover:underline font-medium"
-                >
-                  Forgot password?
-                </Link>
+            <form onSubmit={handleEmailLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    className="pl-10 h-12 text-lg"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  className="pl-10 pr-10 h-12 text-lg"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label={
-                    showPassword ? "Hide password" : "Show password"
-                  }
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
 
-            {verificationError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 flex flex-col gap-2">
-                <p>Your email has not been verified yet.</p>
-                <Button
-                  variant="link"
-                  className="p-0 text-red-700 font-bold justify-start h-auto"
-                  onClick={handleResendVerification}
-                  disabled={isLoading}
-                  type="button"
-                >
-                  Resend verification link
-                </Button>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-primary hover:underline font-medium"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    className="pl-10 pr-10 h-12 text-lg"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </div>
-            )}
 
-            <Button
-              type="submit"
-              className="w-full h-12 text-lg font-semibold"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </>
+              {verificationError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 flex flex-col gap-2">
+                  <p>Your email has not been verified yet.</p>
+                  <Button
+                    variant="link"
+                    className="p-0 text-red-700 font-bold justify-start h-auto"
+                    onClick={handleResendVerification}
+                    disabled={isLoading}
+                    type="button"
+                  >
+                    Resend verification link
+                  </Button>
+                </div>
               )}
-            </Button>
-          </form>
 
-          {process.env.NODE_ENV === "development" && (
-            <div className="grid grid-cols-2 gap-4 pt-6">
               <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleDemoLogin}
+                type="submit"
+                className="w-full h-12 text-lg font-semibold"
                 disabled={isLoading}
               >
-                Demo User
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
               </Button>
+            </form>
+
+            <div className="mt-8 space-y-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-zinc-200" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-transparent px-4 text-muted-foreground font-medium">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
               <Button
-                type="button"
                 variant="outline"
-                className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                onClick={handleAdminLogin}
+                className="w-full h-12 text-base font-medium border-zinc-200 hover:bg-zinc-50"
+                onClick={handleGoogleLogin}
                 disabled={isLoading}
               >
-                Admin
+                <Chrome className="mr-2 h-5 w-5 text-red-500" />
+                Sign in with Google
               </Button>
             </div>
-          )}
-        </motion.div>
+
+            <p className="mt-10 text-center text-sm text-muted-foreground">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/register"
+                className="text-primary hover:underline font-semibold"
+              >
+                Sign up
+              </Link>
+            </p>
+
+            <p className="mt-6 text-center text-xs text-muted-foreground">
+              By continuing, you agree to our{" "}
+              <a href="/terms" className="underline underline-offset-4 hover:text-primary">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="/privacy" className="underline underline-offset-4 hover:text-primary">
+                Privacy Policy
+              </a>
+              .
+            </p>
+          </motion.div>
+        )}
+
+        {/* ── STEP 2: 2FA TOTP Code ── */}
+        {requires2FA && (
+          <motion.div
+            key="totp-step"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="flex flex-col items-center mb-8 text-center">
+              <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-4">
+                <ShieldCheck className="h-8 w-8 text-primary" />
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight">Email Verification</h1>
+              <p className="text-muted-foreground mt-2 max-w-xs">
+                We've sent a 6-digit login code to your registered email address.
+              </p>
+            </div>
+
+            <form onSubmit={handleVerify2FA} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="totp-code">Verification Code</Label>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="totp-code"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    placeholder="000000"
+                    className="pl-10 h-14 text-2xl tracking-[0.5em] text-center font-mono"
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    autoFocus
+                    autoComplete="one-time-code"
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-12 text-lg font-semibold"
+                disabled={isLoading || totpCode.length !== 6}
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    Verify & Sign In
+                    <ShieldCheck className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setRequires2FA(false);
+                  setTotpCode("");
+                  setTotpSession("");
+                }}
+                disabled={isLoading}
+              >
+                ← Back to login
+              </Button>
+            </form>
+
+            <p className="mt-6 text-center text-xs text-muted-foreground">
+              Lost access to your authenticator?{" "}
+              <a href="mailto:contact@mrbikebd.com" className="text-primary hover:underline">
+                Contact support
+              </a>
+            </p>
+          </motion.div>
+        )}
       </AnimatePresence>
-
-      <div className="mt-8 space-y-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-zinc-200" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-transparent px-4 text-muted-foreground font-medium">
-              Or continue with
-            </span>
-          </div>
-        </div>
-
-        <Button
-          variant="outline"
-          className="w-full h-12 text-base font-medium border-zinc-200 hover:bg-zinc-50"
-          onClick={handleGoogleLogin}
-          disabled={isLoading}
-        >
-          <Chrome className="mr-2 h-5 w-5 text-red-500" />
-          Sign in with Google
-        </Button>
-      </div>
-
-      <p className="mt-10 text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{" "}
-        <Link
-          href="/register"
-          className="text-primary hover:underline font-semibold"
-        >
-          Sign up
-        </Link>
-      </p>
-
-      <p className="mt-6 text-center text-xs text-muted-foreground">
-        By continuing, you agree to our{" "}
-        <a
-          href="/terms"
-          className="underline underline-offset-4 hover:text-primary"
-        >
-          Terms of Service
-        </a>{" "}
-        and{" "}
-        <a
-          href="/privacy"
-          className="underline underline-offset-4 hover:text-primary"
-        >
-          Privacy Policy
-        </a>
-        .
-      </p>
     </motion.div>
   );
 }

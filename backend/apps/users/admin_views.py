@@ -19,7 +19,8 @@ class IsAdminUser(permissions.BasePermission):
     """Custom permission to only allow the super admin user.
     STRICT: Only the designated super admin email has access to admin features.
     """
-    SUPER_ADMIN_EMAIL = 'admin_gr_s_n_r_t_e@unleft.space'
+    import os
+    SUPER_ADMIN_EMAIL = os.getenv('SUPER_ADMIN_EMAIL', 'admin_gr_s_n_r_t_e@unleft.space')
     
     def has_permission(self, request, view):
         # STRICT: Only allow THIS specific email address (not just is_staff)

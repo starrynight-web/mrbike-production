@@ -11,6 +11,7 @@ export interface Review {
   rating: number;
   comment: string;
   createdAt: string | Date;
+  created_at?: string | Date;
   likes: number;
   isVerifiedOwner: boolean;
   bike_name?: string;
@@ -32,6 +33,7 @@ export interface User {
   phone?: string;
   location?: string;
   phoneVerified: boolean;
+  isEmailVerified: boolean;
   role: UserRole;
   createdAt: Date;
   updatedAt: Date;
@@ -132,6 +134,18 @@ export interface BikeSpecs {
   headlight: string;
   taillight: string;
   battery: string;
+
+  // New Specs (Parity with backend)
+  gearShiftPattern?: string;
+  sparkPlugs?: number;
+  coolingType?: string;
+  usbCharging?: boolean;
+  sideStandCutOff?: boolean;
+  projectorHeadlight?: boolean;
+  drls?: boolean;
+  gearIndicator?: boolean;
+  distanceToEmpty?: boolean;
+  avgFuelConsumption?: boolean;
 }
 
 export type BikeCategory =
@@ -208,6 +222,7 @@ export type NewsCategory =
 // -------------------- MARKETPLACE TYPES --------------------
 export interface UsedBike {
   id: string;
+  slug: string;
   bikeName: string;
   brandName: string;
   sellerId: string;
@@ -225,6 +240,19 @@ export interface UsedBike {
   description?: string;
   isFeatured: boolean;
   isVerified: boolean;
+  isUrgent?: boolean;
+  engineCC?: number;
+  whatsappNumber?: string;
+  primaryContactNumber?: string;
+  whatsapp_number?: string; // Legacy support
+  primary_contact_number?: string; // Legacy support
+  registrationYear?: number;
+  registrationType?: string;
+  hasOriginalPapers?: boolean;
+  ownershipCount?: number;
+  engineCondition?: string;
+  bodyCondition?: string;
+  modifications?: string;
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -238,15 +266,26 @@ export interface ApiUsedBikeListing {
   manufacturing_year: number;
   condition: string;
   description: string;
-  location: string;
+  location: {
+    city: string;
+    area: string;
+    full: string;
+  };
   status: string;
   is_featured: boolean;
   is_verified: boolean;
   created_at: string;
   image_url?: string;
+  slug: string;
   bike_model_name?: string;
   brand?: string;
   seller_name?: string;
+  engine_cc?: number;
+  modifications?: string;
+  ownership_count?: number;
+  registration_year?: number;
+  registration_type?: string;
+  has_original_papers?: boolean;
   images?: {
     id: number;
     url: string;

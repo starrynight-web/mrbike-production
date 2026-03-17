@@ -1,0 +1,6 @@
+--- CloudinaryResource Tests ---
+res.url = https://res.cloudinary.com/duna87jkw/image/upload/v1234567890/mrbikebd/used-bikes/my_bike_123.jpg
+str(res) = mrbikebd/used-bikes/my_bike_123
+res.public_id = mrbikebd/used-bikes/my_bike_123
+Generated URL from str(res): https://res.cloudinary.com/duna87jkw/image/upload/f_auto,q_auto/v1/mrbikebd/used-bikes/my_bike_123
+Generated URL from full path: https://res.cloudinary.com/duna87jkw/image/upload/v1/image/upload/v1234567890/mrbikebd/used-bikes/my_bike_123.jpg

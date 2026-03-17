@@ -53,6 +53,7 @@ import { toast } from "sonner";
 
 interface BikeDetailClientProps {
   slug: string;
+  initialData?: BikeModel;
 }
 
 // Types for variant data from bikes.json
@@ -68,6 +69,9 @@ interface VariantQuickSpecs {
   topspeedCompany: string;
   topspeedUser: string;
   fuelType: string;
+  gearShiftPattern?: string;
+  sparkPlugs?: number;
+  coolingType?: string;
 }
 
 interface VariantData {
@@ -80,10 +84,26 @@ interface VariantData {
   frontTire: string;
   rearTire: string;
   brakingSystem: string;
+  rearBrakeType?: string;
   headlightType: string;
+  kerbWeight?: string;
+  seatType?: string;
+  instrumentConsole?: string;
+  mobileConnectivity?: boolean;
+  gpsNavigation?: boolean;
+  ridingModes?: boolean;
+  slipperClutch?: boolean;
+  tractionControl?: boolean;
+  quickShifter?: boolean;
   abs: boolean;
   ledHeadlight: boolean;
   usbPort: boolean;
+  sideStandCutOff?: boolean;
+  projectorHeadlight?: boolean;
+  drls?: boolean;
+  gearIndicator?: boolean;
+  distanceToEmpty?: boolean;
+  avgFuelConsumption?: boolean;
   pros: Record<string, string>;
   cons: Record<string, string>;
   color?: string;
@@ -139,6 +159,16 @@ function QuickSpecsPanel({
       dynamic: true,
     },
     {
+      label: "Braking System",
+      value: currentVariant?.brakingSystem || "N/A",
+      icon: Check,
+    },
+    {
+      label: "Kerb Weight",
+      value: currentVariant?.kerbWeight || "N/A",
+      icon: Gauge,
+    },
+    {
       label: "Transmission",
       value: currentVariant?.quickSpecs?.transmission || "N/A",
       icon: Zap,
@@ -159,8 +189,18 @@ function QuickSpecsPanel({
       icon: Fuel,
     },
     {
-      label: "Kerb Weight",
-      value: currentVariant?.quickSpecs?.kerbWeight || "N/A",
+      label: "Gear Indicator",
+      value: currentVariant?.gearIndicator ? "Available" : "N/A",
+      icon: Gauge,
+    },
+    {
+      label: "Quick Shifter",
+      value: currentVariant?.quickShifter ? "Available" : "N/A",
+      icon: Zap,
+    },
+    {
+      label: "Riding Modes",
+      value: currentVariant?.ridingModes ? "Available" : "N/A",
       icon: Gauge,
     },
   ];
@@ -415,14 +455,14 @@ function SimilarNewBikes({ slug }: { slug: string }) {
   );
 }
 
-export function BikeDetailClient({ slug }: BikeDetailClientProps) {
+export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedVariantKey, setSelectedVariantKey] = useState<string>("std");
   const [emiMonths] = useState(EMI_CONFIG.defaultTenureMonths);
-  const [specsTab, setSpecsTab] = useState("general");
+  const [specsTab, setSpecsTab] = useState("engine");
 
   // Fetch bike data from API
-  const { data: bike, isLoading, error } = useBike(slug);
+  const { data: bike, isLoading, error } = useBike(slug, initialData);
   const { data: reviews } = useBikeReviews(bike?.id || "");
 
   // Fetch used bikes
@@ -462,7 +502,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
               bike.detailed_specs?.displacement ||
               (bike.engine_capacity ? `${bike.engine_capacity} cc` : "N/A"),
             transmission:
-              bike.detailed_specs?.gearbox ||
+              bike.detailed_specs?.transmission ||
               (bike.gears ? `${bike.gears} Speed` : "N/A"),
             maxPower: bike.detailed_specs?.max_power || bike.max_power || "N/A",
             maxTorque:
@@ -471,6 +511,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
               bike.detailed_specs?.fuel_tank_capacity ||
               (bike.fuel_capacity ? `${bike.fuel_capacity} L` : "N/A"),
             kerbWeight:
+              v.kerb_weight || 
               bike.detailed_specs?.kerb_weight ||
               (bike.curb_weight ? `${bike.curb_weight} kg` : "N/A"),
             mileageCompany: v.mileage_company || "N/A",
@@ -478,18 +519,35 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
             topspeedCompany: v.topspeed_company || "N/A",
             topspeedUser: v.topspeed_user || "N/A",
             fuelType: bike.detailed_specs?.fuel_system || "Petrol",
+            gearShiftPattern: bike.detailed_specs?.gear_shift_pattern || "N/A",
+            sparkPlugs: bike.detailed_specs?.spark_plugs,
+            coolingType: bike.detailed_specs?.cooling_type || "N/A",
           },
           fuelEfficiency: v.mileage_user || v.mileage_company || "N/A",
           frontTire: bike.detailed_specs?.tyres_front || v.tire_type || "N/A",
           rearTire: bike.detailed_specs?.tyres_rear || v.tire_type || "N/A",
           brakingSystem:
             v.braking_system || bike.detailed_specs?.braking_system || "N/A",
-          headlightType: bike.detailed_specs?.lighting?.headlight || "N/A",
-          abs: (v.braking_system || "").toLowerCase().includes("abs"),
-          ledHeadlight: (bike.detailed_specs?.lighting?.headlight || "")
-            .toLowerCase()
-            .includes("led"),
-          usbPort: false,
+          rearBrakeType: v.rear_brake_type || bike.detailed_specs?.brakes_rear || "N/A",
+          headlightType: v.headlight_type || bike.detailed_specs?.lighting?.headlight || "N/A",
+          kerbWeight: v.kerb_weight || bike.detailed_specs?.kerb_weight || "N/A",
+          seatType: v.seat_type || "N/A",
+          instrumentConsole: v.instrument_console || "N/A",
+          mobileConnectivity: !!v.mobile_connectivity,
+          gpsNavigation: !!v.gps_navigation,
+          ridingModes: !!v.riding_modes,
+          slipperClutch: !!v.slipper_clutch,
+          tractionControl: !!v.traction_control,
+          quickShifter: !!v.quick_shifter,
+          abs: (v.braking_system || bike.detailed_specs?.braking_system || "").toLowerCase().includes("abs"),
+          ledHeadlight: (v.headlight_type || "").toLowerCase().includes("led") || (bike.detailed_specs?.projector_headlight || bike.detailed_specs?.drls || false),
+          usbPort: !!bike.detailed_specs?.usb_charging,
+          sideStandCutOff: !!bike.detailed_specs?.side_stand_cut_off,
+          projectorHeadlight: !!bike.detailed_specs?.projector_headlight,
+          drls: !!bike.detailed_specs?.drls,
+          gearIndicator: !!bike.detailed_specs?.gear_indicator,
+          distanceToEmpty: !!bike.detailed_specs?.distance_to_empty,
+          avgFuelConsumption: !!bike.detailed_specs?.avg_fuel_consumption,
           pros: {},
           cons: {},
         };
@@ -851,7 +909,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                 {similarUsedBikes.map((usedBike: UsedBike) => (
                   <Link
                     key={usedBike.id}
-                    href={`/used-bike/${usedBike.id}`}
+                    href={`/used-bike/${usedBike.slug}`}
                     className="shrink-0 w-40 bg-muted/50 rounded-lg overflow-hidden border hover:shadow-md transition-shadow block"
                   >
                     <div className="aspect-[4/3] bg-muted relative">
@@ -937,7 +995,6 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {[
-                    { id: "general", label: "General Comments" },
                     { id: "engine", label: "Engine & Performance" },
                     { id: "transmission", label: "Transmission & Brakes" },
                     { id: "dimensions", label: "Dimensions & Weight" },
@@ -954,7 +1011,6 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
             {/* Desktop TabsList */}
             <TabsList className="hidden lg:flex w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6 overflow-x-auto">
               {[
-                { id: "general", label: "General Comments" },
                 { id: "engine", label: "Engine & Performance" },
                 { id: "transmission", label: "Transmission & Brakes" },
                 { id: "dimensions", label: "Dimensions & Weight" },
@@ -970,53 +1026,6 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
               ))}
             </TabsList>
 
-            <TabsContent value="general" className="mt-0">
-              <div className="bg-muted/30 rounded-lg p-4">
-                <h3 className="font-semibold text-primary mb-3">
-                  General Information
-                </h3>
-                <div className="space-y-3">
-                  <SpecRow
-                    label="Description"
-                    value={
-                      bikeDescription ||
-                      "No description available for this bike."
-                    }
-                  />
-                  <SpecRow
-                    label="Registered Date"
-                    value={
-                      bike?.launchDate
-                        ? new Date(bike.launchDate).toLocaleDateString()
-                        : "N/A"
-                    }
-                  />
-                  <SpecRow label="Owner Count" value="N/A" />
-                  <SpecRow
-                    label="Color"
-                    value={
-                      currentVariant?.color ||
-                      bike?.variants?.[0]?.color ||
-                      "N/A"
-                    }
-                  />
-                  <SpecRow
-                    label="Assembly"
-                    value={brandName ? `${brandName} Factory` : "N/A"}
-                  />
-                  <SpecRow label="Body Type" value={bike?.category || "N/A"} />
-                  <SpecRow
-                    label="Fuel Type"
-                    value={currentVariant?.quickSpecs?.fuelType || "Petrol"}
-                  />
-                  <SpecRow
-                    label="Mileage"
-                    value={currentVariant?.quickSpecs?.mileageCompany || "N/A"}
-                  />
-                  <SpecRow label="Condition" value="New" />
-                </div>
-              </div>
-            </TabsContent>
 
             <TabsContent value="engine" className="mt-0">
               <div className="bg-muted/30 rounded-lg p-4 mb-4">
@@ -1026,35 +1035,36 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                 <div className="space-y-3">
                   <SpecRow
                     label="Engine Type"
-                    value="Single Cylinder, 4-Stroke, Liquid-Cooled, DOHC"
+                    value={bike.detailed_specs?.engine_type || "N/A"}
                   />
                   <SpecRow
                     label="Displacement"
-                    value={
-                      currentVariant?.quickSpecs?.engineCapacity || "149.16 cc"
-                    }
+                    value={currentVariant?.quickSpecs?.engineCapacity || "N/A"}
                   />
                   <SpecRow
                     label="Max Power"
-                    value={
-                      currentVariant?.quickSpecs?.maxPower ||
-                      "16.4 HP @ 9,000 RPM"
-                    }
+                    value={currentVariant?.quickSpecs?.maxPower || "N/A"}
                   />
                   <SpecRow
                     label="Max Torque"
-                    value={
-                      currentVariant?.quickSpecs?.maxTorque ||
-                      "13.7 Nm @ 7,000 RPM"
-                    }
+                    value={currentVariant?.quickSpecs?.maxTorque || "N/A"}
                   />
-                  <SpecRow label="Bore x Stroke" value="57.3 mm x 57.8 mm" />
-                  <SpecRow label="Compression Ratio" value="11.3:1" />
+                  <SpecRow
+                    label="Cooling Type"
+                    value={currentVariant?.quickSpecs?.coolingType || "N/A"}
+                  />
+                  <SpecRow
+                    label="Spark Plugs"
+                    value={currentVariant?.quickSpecs?.sparkPlugs?.toString() || "1"}
+                  />
                   <SpecRow
                     label="Fuel System"
-                    value="PGM-FI (Programmed Fuel Injection)"
+                    value={currentVariant?.quickSpecs?.fuelType || "N/A"}
                   />
-                  <SpecRow label="Starting" value="Electric Start" />
+                  <SpecRow
+                    label="Starting"
+                    value={bike.detailed_specs?.starting_method || "Electric Start"}
+                  />
                 </div>
               </div>
               <div className="bg-muted/30 rounded-lg p-4">
@@ -1094,13 +1104,20 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                 <div className="space-y-3">
                   <SpecRow
                     label="Transmission Type"
-                    value={
-                      currentVariant?.quickSpecs?.transmission ||
-                      "6-Speed Manual"
-                    }
+                    value={currentVariant?.quickSpecs?.transmission || "N/A"}
                   />
-                  <SpecRow label="Clutch" value="Wet Multi-plate" />
-                  <SpecRow label="Final Drive" value="Chain Drive" />
+                  <SpecRow
+                    label="Gear Shift Pattern"
+                    value={currentVariant?.quickSpecs?.gearShiftPattern || "N/A"}
+                  />
+                  <SpecRow
+                    label="Clutch"
+                    value={bike.detailed_specs?.clutch_type || "Wet Multi-plate"}
+                  />
+                  <SpecRow
+                    label="Final Drive"
+                    value={bike.detailed_specs?.final_drive || "Chain Drive"}
+                  />
                 </div>
               </div>
               <div className="bg-muted/30 rounded-lg p-4">
@@ -1139,6 +1156,7 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                   <SpecRow label="Wheelbase" value="1,351 mm" />
                   <SpecRow label="Ground Clearance" value="155 mm" />
                   <SpecRow label="Seat Height" value="795 mm" />
+                  <SpecRow label="Seat Type" value={currentVariant?.seatType || "Single Seat"} />
                 </div>
               </div>
               <div className="bg-muted/30 rounded-lg p-4">
@@ -1158,6 +1176,10 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                     label="Rear Tyre"
                     value={currentVariant?.rearTire || "150/60-17 Tubeless"}
                   />
+                  <SpecRow
+                    label="Rear Brake Type"
+                    value={currentVariant?.rearBrakeType || "230mm Disc"}
+                  />
                   <SpecRow label="Wheel Type" value="Alloy" />
                 </div>
               </div>
@@ -1168,42 +1190,89 @@ export function BikeDetailClient({ slug }: BikeDetailClientProps) {
                 <h3 className="font-semibold text-primary mb-3">
                   Features & Electricals
                 </h3>
-                <div className="space-y-3">
-                  <SpecRow
+                <div className="space-y-3">                  <SpecRow
                     label="Headlight Type"
-                    value={currentVariant?.headlightType || "Halogen"}
+                    value={currentVariant?.projectorHeadlight ? "LED Projector" : "Halogen"}
                     isFeature
-                    available={currentVariant?.ledHeadlight}
+                    available={!!currentVariant?.projectorHeadlight || !!currentVariant?.ledHeadlight}
                   />
                   <SpecRow
-                    label="Taillight"
-                    value="LED"
+                    label="DRLs"
+                    value={currentVariant?.drls ? "Available" : "Not Available"}
                     isFeature
-                    available={true}
+                    available={!!currentVariant?.drls}
                   />
                   <SpecRow
                     label="USB Charging Port"
-                    value={
-                      currentVariant?.usbPort ? "Available" : "Not Available"
-                    }
+                    value={currentVariant?.usbPort ? "Available" : "Not Available"}
                     isFeature
-                    available={currentVariant?.usbPort}
+                    available={!!currentVariant?.usbPort}
                   />
                   <SpecRow
-                    label="ABS"
-                    value={
-                      currentVariant?.abs ? "Dual Channel" : "Not Available"
-                    }
+                    label="Gear Indicator"
+                    value={currentVariant?.gearIndicator ? "Available" : "Not Available"}
                     isFeature
-                    available={currentVariant?.abs}
+                    available={!!currentVariant?.gearIndicator}
                   />
                   <SpecRow
-                    label="Digital Console"
-                    value="Full LCD"
+                    label="Side Stand Cut-off"
+                    value={currentVariant?.sideStandCutOff ? "Available" : "Not Available"}
                     isFeature
-                    available={true}
+                    available={!!currentVariant?.sideStandCutOff}
                   />
-                  <SpecRow label="Battery" value="12V, 5Ah MF" />
+                  <SpecRow
+                    label="Distance to Empty"
+                    value={currentVariant?.distanceToEmpty ? "Available" : "Not Available"}
+                    isFeature
+                    available={!!currentVariant?.distanceToEmpty}
+                  />
+                  <SpecRow
+                    label="Avg Fuel Consumption"
+                    value={currentVariant?.avgFuelConsumption ? "Available" : "Not Available"}
+                    isFeature
+                    available={!!currentVariant?.avgFuelConsumption}
+                  />
+                  <SpecRow
+                    label="Mobile Connectivity"
+                    value={currentVariant?.mobileConnectivity ? "Available" : "Not Available"}
+                    isFeature
+                    available={!!currentVariant?.mobileConnectivity}
+                  />
+                  <SpecRow
+                    label="GPS & Navigation"
+                    value={currentVariant?.gpsNavigation ? "Available" : "Not Available"}
+                    isFeature
+                    available={!!currentVariant?.gpsNavigation}
+                  />
+                  <SpecRow
+                    label="Riding Modes"
+                    value={currentVariant?.ridingModes ? "Available" : "Not Available"}
+                    isFeature
+                    available={!!currentVariant?.ridingModes}
+                  />
+                  <SpecRow
+                    label="Slipper Clutch"
+                    value={currentVariant?.slipperClutch ? "Available" : "Not Available"}
+                    isFeature
+                    available={!!currentVariant?.slipperClutch}
+                  />
+                  <SpecRow
+                    label="Traction Control"
+                    value={currentVariant?.tractionControl ? "Available" : "Not Available"}
+                    isFeature
+                    available={!!currentVariant?.tractionControl}
+                  />
+                  <SpecRow
+                    label="Quick Shifter"
+                    value={currentVariant?.quickShifter ? "Available" : "Not Available"}
+                    isFeature
+                    available={!!currentVariant?.quickShifter}
+                  />
+                  <SpecRow
+                    label="Instrument Console"
+                    value={currentVariant?.instrumentConsole || "N/A"}
+                  />
+                  <SpecRow label="Battery" value={bike.detailed_specs?.battery_capacity || "12V, 5Ah MF"} />
                 </div>
               </div>
             </TabsContent>

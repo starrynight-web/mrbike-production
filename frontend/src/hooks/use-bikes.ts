@@ -62,7 +62,7 @@ export function useBikes(filters?: BikeFilters) {
 /**
  * Fetch single bike by slug
  */
-export function useBike(slug: string) {
+export function useBike(slug: string, initialData?: Bike) {
   return useQuery({
     queryKey: queryKeys.bikes.detail(slug),
     queryFn: async () => {
@@ -70,6 +70,7 @@ export function useBike(slug: string) {
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch bike");
       return mapBike(response.data);
     },
+    initialData: initialData,
     staleTime: 10 * 60 * 1000, // 10 minutes
     enabled: !!slug,
   });
@@ -139,7 +140,24 @@ export function useBikeReviews(bikeId: string) {
     queryFn: async () => {
       const response = await api.getBikeReviews(bikeId);
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch reviews");
-      return (response.data as Review[]) || [];
+      const rawReviews = (response.data as any[]) || [];
+      return rawReviews.map((r: any) => {
+        const user = r.user;
+        const userName = user 
+          ? (`${user.first_name || ""} ${user.last_name || ""}`.trim() || user.username || "Anonymous")
+          : (r.user_name || "Anonymous");
+          
+        return {
+          id: r.id?.toString(),
+          bikeId: r.bike?.toString() || r.bike_model?.toString(),
+          userId: user?.id?.toString() || r.user?.toString(),
+          userName: userName,
+          rating: Number(r.rating) || 0,
+          comment: r.comment || "",
+          createdAt: r.created_at,
+          isVerifiedOwner: !!r.is_verified_purchase
+        };
+      }) as Review[];
     },
     enabled: !!bikeId,
   });
@@ -170,6 +188,45 @@ export function useSubmitReview() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.reviews.byBike(variables.bikeId),
       });
+      queryClient.invalidateQueries({
+        queryKey: ["user", "reviews"],
+      });
+    },
+  });
+}
+
+/**
+ * Update a review
+ */
+export function useUpdateReview() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      reviewId,
+      rating,
+      comment,
+    }: {
+      reviewId: string;
+      rating: number;
+      comment: string;
+    }) => {
+      const response = await api.patch(API_ENDPOINTS.REVIEW_DELETE(reviewId), {
+        rating,
+        comment,
+      });
+      if (!response.success)
+        throw new Error(response.error?.message || "Failed to update review");
+      return response.data;
+    },
+    onSuccess: (_data, variables) => {
+      // Invalidate both bike reviews and user reviews
+      queryClient.invalidateQueries({
+        queryKey: ["reviews"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", "reviews"],
+      });
     },
   });
 }
@@ -189,6 +246,9 @@ export function useDeleteReview() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.reviews.byBike(variables.bikeId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user", "reviews"],
       });
     },
   });

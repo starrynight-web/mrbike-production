@@ -60,6 +60,7 @@ export const API_ENDPOINTS = {
   AUTH_PASSWORD_RESET: "/users/auth/password-reset/",
   AUTH_PASSWORD_RESET_CONFIRM: "/users/auth/password-reset-confirm/",
   AUTH_REFRESH: "/users/auth/refresh/",
+  AUTH_RESEND_VERIFICATION: "/users/auth/resend-verification/",
 
   // Bikes
   BIKES: "/bikes/",

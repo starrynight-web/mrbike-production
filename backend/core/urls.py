@@ -3,6 +3,7 @@ from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from apps.core.sitemap import sitemap_view
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -14,17 +15,24 @@ schema_view = get_schema_view(
    permission_classes=(permissions.AllowAny,),
 )
 
+# API v1 versioning
+v1_patterns = [
+    path('admin/', include('apps.core.urls')),
+    path('users/', include('apps.users.urls')),
+    path('bikes/', include('apps.bikes.urls')),
+    path('marketplace/', include('apps.marketplace.urls')),
+    path('news/', include('apps.news.urls')),
+    path('interactions/', include('apps.interactions.urls')),
+]
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/admin/', include('apps.core.urls')),
-    path('api/users/', include('apps.users.urls')),
-    path('api/bikes/', include('apps.bikes.urls')),
-    path('api/marketplace/', include('apps.marketplace.urls')),
-    path('api/news/', include('apps.news.urls')),
-    path('api/interactions/', include('apps.interactions.urls')),
-    path('api/recommendations/', include('apps.recommendations.urls')),
-
+    path('sitemap.xml', sitemap_view, name='sitemap'),
     
+    # Versioned API
+    path('api/v1/', include(v1_patterns)),
+    path('api/recommendations/', include('apps.bikes.recommendation_urls')),
+
     # Swagger Documentation
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

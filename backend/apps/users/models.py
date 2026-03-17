@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import BaseUserManager
 from django.utils import timezone
 import uuid
-from djongo import models as dj_models
+
 
 class CustomUserManager(BaseUserManager):
     """Custom manager for User model with email-based authentication"""
@@ -52,11 +52,11 @@ class User(AbstractUser):
     updated_at = models.DateTimeField(auto_now=True)
     
     def save(self, *args, **kwargs):
-        # Automatically set is_staff for administrative roles
+        # Automatically set is_staff for administrative roles (Section 3.4)
         if self.role in ['admin', 'moderator']:
             self.is_staff = True
-        elif self.role == 'user' and not self.is_superuser:
-            # Only demote if not a superuser (to prevent accidental lockout)
+        elif not self.is_superuser:
+            # Demote non-admin roles if they aren't superusers
             self.is_staff = False
         super().save(*args, **kwargs)
     

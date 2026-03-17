@@ -13,6 +13,8 @@ import {
   Save,
   Loader,
   Upload,
+  PlusCircle,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -54,6 +56,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/utils";
 import { BIKE_CATEGORIES } from "@/config/constants";
@@ -64,6 +67,32 @@ interface Brand {
   name: string;
   logo_url?: string;
 }
+
+// Default structure for a variant
+const defaultVariant = () => ({
+  variant_name: "Standard",
+  variant_key: "std",
+  price: 0,
+  is_default: true,
+  braking_system: "",
+  rear_brake_type: "",
+  tire_type: "Tubeless",
+  headlight_type: "",
+  kerb_weight: "",
+  seat_type: "",
+  instrument_console: "",
+  mileage_company: "",
+  mileage_user: "",
+  topspeed_company: "",
+  topspeed_user: "",
+  color_options: [] as string[],
+  mobile_connectivity: false,
+  gps_navigation: false,
+  riding_modes: false,
+  slipper_clutch: false,
+  traction_control: false,
+  quick_shifter: false,
+});
 
 export default function AdminBikesPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -77,6 +106,7 @@ export default function AdminBikesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [variants, setVariants] = useState<ReturnType<typeof defaultVariant>[]>([defaultVariant()]);
 
   const [newBike, setNewBike] = useState({
     name: "",
@@ -94,6 +124,67 @@ export default function AdminBikesPage() {
     tyre_type: "tubeless",
     is_available: true,
     primary_image: "",
+    image1: "",
+    image2: "",
+    image3: "",
+    image4: "",
+    image5: "",
+    detailed_specs: {
+      engine_type: "",
+      displacement: "",
+      max_power: "",
+      max_torque: "",
+      bore_stroke: "",
+      compression_ratio: "",
+      fuel_system: "",
+      starting: "",
+      cooling_system: "",
+      valve_train: "",
+      emission_standard: "",
+      acceleration_0_60: "",
+      acceleration_0_100: "",
+      top_speed: "",
+      mileage_city: "",
+      mileage_highway: "",
+      fuel_type: "petrol",
+      fuel_tank_capacity: "",
+      reserve_fuel: "",
+      range_per_tank: "",
+      clutch: "",
+      gearbox: "",
+      gear_pattern: "",
+      final_drive: "",
+      brakes_front: "",
+      brakes_rear: "",
+      braking_system: "",
+      length: "",
+      width: "",
+      height: "",
+      wheelbase: "",
+      ground_clearance: "",
+      seat_height: "",
+      frame_type: "",
+      suspension_front: "",
+      suspension_rear: "",
+      kerb_weight: "",
+      dry_weight: "",
+      payload_capacity: "",
+      tyres_front: "",
+      tyres_rear: "",
+      tyres_type: "tubeless",
+      wheels_front: "",
+      wheels_rear: "",
+      gear_shift_pattern: "",
+      spark_plugs: 1,
+      cooling_type: "",
+      usb_charging: false,
+      side_stand_cut_off: false,
+      projector_headlight: false,
+      drls: false,
+      gear_indicator: false,
+      distance_to_empty: false,
+      avg_fuel_consumption: false,
+    } as any,
   });
 
   useEffect(() => {
@@ -143,40 +234,58 @@ export default function AdminBikesPage() {
     try {
       setSubmitting(true);
 
-      let imageUrl = newBike.primary_image || imagePreview;
+      // Build FormData — same pattern as the News module for reliable Cloudinary uploads
+      const formData = new FormData();
+      formData.append("name", newBike.name);
+      formData.append("brand", String(Number(newBike.brand)));
+      formData.append("category", newBike.category);
+      formData.append("price", String(Number(newBike.price)));
+      formData.append("engine_capacity", String(Number(newBike.engine_capacity)));
+      formData.append("engine_type", newBike.engine_type || "");
+      formData.append("gears", String(newBike.gears || 5));
+      formData.append("clutch_type", newBike.clutch_type || "");
+      formData.append("curb_weight", String(newBike.curb_weight || 0));
+      formData.append("fuel_capacity", String(newBike.fuel_capacity || 0));
+      formData.append("seat_height", String(newBike.seat_height || 0));
+      formData.append("tyre_type", newBike.tyre_type || "Tubeless");
+      formData.append("is_available", String(newBike.is_available));
+      if (newBike.description) formData.append("description", newBike.description);
 
-      // Upload image if provided
-      if (imageFile && !imageFile.name?.startsWith("data:")) {
-        try {
-          const uploadResult = await adminAPI.uploadImage(imageFile);
-          imageUrl = uploadResult.url;
-        } catch {
-          toast.error("Failed to upload image");
-          return;
-        }
+      // Include image files if selected
+      if (imageFile) {
+        formData.append("primary_image", imageFile);
+      } else if (newBike.primary_image) {
+        formData.append("primary_image", newBike.primary_image);
       }
+      ["image1", "image2", "image3", "image4", "image5"].forEach((key) => {
+        const val = (newBike as any)[key];
+        if (val) formData.append(key, val);
+      });
 
-      const bikeData = {
-        ...newBike,
-        price: Number(newBike.price),
-        primary_image: imageUrl,
-        brand: Number(newBike.brand), // Ensure brand is an ID
-      };
+      // JSON-encode detailed_specs
+      formData.append("detailed_specs", JSON.stringify(newBike.detailed_specs));
+
+      // JSON-encode variants
+      formData.append("variants_data", JSON.stringify(variants.map((v, i) => ({
+        ...v,
+        is_default: i === 0,
+        price: Number(v.price),
+      }))));
 
       if (editingId) {
-        await adminAPI.updateBike(editingId, bikeData);
+        await adminAPI.updateBike(editingId, formData as any);
         toast.success("Bike updated successfully");
       } else {
-        await adminAPI.createBike(bikeData);
+        await adminAPI.createBike(formData as any);
         toast.success("New bike model added successfully");
       }
 
       setIsAddDialogOpen(false);
       resetForm();
       await loadBikes();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save bike:", error);
-      toast.error(editingId ? "Failed to update bike" : "Failed to add bike");
+      toast.error(error?.message || (editingId ? "Failed to update bike" : "Failed to add bike"));
     } finally {
       setSubmitting(false);
     }
@@ -199,13 +308,20 @@ export default function AdminBikesPage() {
       tyre_type: "tubeless",
       is_available: true,
       primary_image: "",
+      image1: "",
+      image2: "",
+      image3: "",
+      image4: "",
+      image5: "",
+      detailed_specs: {} as any,
     });
+    setVariants([defaultVariant()]);
     setImageFile(null);
     setImagePreview("");
     setEditingId(null);
   };
 
-  const handleEdit = (bike: BikeType) => {
+  const handleEdit = (bike: BikeType & { variants?: any[] }) => {
     setNewBike({
       name: bike.name,
       brand: (typeof bike.brand === 'object' ? (bike.brand as { id: number }).id.toString() : bike.brand.toString()),
@@ -222,7 +338,42 @@ export default function AdminBikesPage() {
       tyre_type: bike.tyre_type || "tubeless",
       is_available: bike.is_available ?? true,
       primary_image: bike.primary_image || "",
+      image1: bike.image1 || "",
+      image2: bike.image2 || "",
+      image3: bike.image3 || "",
+      image4: bike.image4 || "",
+      image5: bike.image5 || "",
+      detailed_specs: bike.detailed_specs || {} as any,
     });
+    // Load existing variants
+    if (bike.variants && bike.variants.length > 0) {
+      setVariants(bike.variants.map((v: any) => ({
+        variant_name: v.variant_name || "Standard",
+        variant_key: v.variant_key || "std",
+        price: Number(v.price) || 0,
+        is_default: v.is_default ?? false,
+        braking_system: v.braking_system || "",
+        rear_brake_type: v.rear_brake_type || "",
+        tire_type: v.tire_type || "Tubeless",
+        headlight_type: v.headlight_type || "",
+        kerb_weight: v.kerb_weight || "",
+        seat_type: v.seat_type || "",
+        instrument_console: v.instrument_console || "",
+        mileage_company: v.mileage_company || "",
+        mileage_user: v.mileage_user || "",
+        topspeed_company: v.topspeed_company || "",
+        topspeed_user: v.topspeed_user || "",
+        color_options: v.color_options || [],
+        mobile_connectivity: !!v.mobile_connectivity,
+        gps_navigation: !!v.gps_navigation,
+        riding_modes: !!v.riding_modes,
+        slipper_clutch: !!v.slipper_clutch,
+        traction_control: !!v.traction_control,
+        quick_shifter: !!v.quick_shifter,
+      })));
+    } else {
+      setVariants([defaultVariant()]);
+    }
     setImagePreview(bike.primary_image || "");
     setEditingId(bike.id);
     setIsAddDialogOpen(true);
@@ -302,10 +453,14 @@ export default function AdminBikesPage() {
               </DialogHeader>
 
               <Tabs defaultValue="basic" className="mt-6">
-                <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto">
-                  <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                  <TabsTrigger value="engine">Engine & Performance</TabsTrigger>
-                  <TabsTrigger value="image">Image</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 h-auto">
+                  <TabsTrigger value="basic">Basic</TabsTrigger>
+                  <TabsTrigger value="engine">Engine</TabsTrigger>
+                  <TabsTrigger value="chassis">Chassis</TabsTrigger>
+                  <TabsTrigger value="dims">Dimensions</TabsTrigger>
+                  <TabsTrigger value="features">Features</TabsTrigger>
+                  <TabsTrigger value="variants">Variants</TabsTrigger>
+                  <TabsTrigger value="image">Images</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="basic" className="space-y-4 pt-4">
@@ -342,6 +497,48 @@ export default function AdminBikesPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="top_speed">Top Speed</Label>
+                      <Input
+                        id="top_speed"
+                        placeholder="e.g. 150 kmph"
+                        value={newBike.detailed_specs?.top_speed || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, top_speed: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="mileage_city">Mileage (City)</Label>
+                      <Input
+                        id="mileage_city"
+                        placeholder="e.g. 40 kmpl"
+                        value={newBike.detailed_specs?.mileage_city || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, mileage_city: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="mileage_highway">Mileage (Highway)</Label>
+                      <Input
+                        id="mileage_highway"
+                        placeholder="e.g. 45 kmpl"
+                        value={newBike.detailed_specs?.mileage_highway || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, mileage_highway: e.target.value } 
+                          })
+                        }
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -397,161 +594,610 @@ export default function AdminBikesPage() {
                 </TabsContent>
 
                 <TabsContent value="engine" className="space-y-4 pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="engine_capacity">Engine (CC) *</Label>
+                      <Label htmlFor="displacement">Displacement (CC)</Label>
                       <Input
-                        id="engine_capacity"
-                        type="number"
-                        placeholder="e.g. 155"
-                        required
-                        value={newBike.engine_capacity || ""}
+                        id="displacement"
+                        placeholder="e.g. 155 cc"
+                        value={newBike.detailed_specs?.displacement || ""}
                         onChange={(e) =>
-                          setNewBike({
-                            ...newBike,
-                            engine_capacity: Number(e.target.value),
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, displacement: e.target.value } 
                           })
                         }
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="engine_type">Engine Type</Label>
-                      <Input
-                        id="engine_type"
-                        placeholder="e.g. Single Cylinder, 4-Stroke"
-                        value={newBike.engine_type}
-                        onChange={(e) =>
-                          setNewBike({ ...newBike, engine_type: e.target.value })
-                        }
-                      />
-                    </div>
+                    <Label htmlFor="max_power">Max Power</Label>
+                    <Input
+                      id="max_power"
+                      placeholder="e.g. 18.4 HP @ 10000 rpm"
+                      value={newBike.detailed_specs?.max_power || ""}
+                      onChange={(e) =>
+                        setNewBike({ 
+                          ...newBike, 
+                          detailed_specs: { ...newBike.detailed_specs, max_power: e.target.value } 
+                        })
+                      }
+                    />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="max_torque">Max Torque</Label>
+                    <Input
+                      id="max_torque"
+                      placeholder="e.g. 14.2 Nm @ 7500 rpm"
+                      value={newBike.detailed_specs?.max_torque || ""}
+                      onChange={(e) =>
+                        setNewBike({ 
+                          ...newBike, 
+                          detailed_specs: { ...newBike.detailed_specs, max_torque: e.target.value } 
+                        })
+                      }
+                    />
+                  </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="gears">Number of Gears</Label>
+                      <Label htmlFor="engine_type_detail">Engine Type</Label>
                       <Input
-                        id="gears"
-                        type="number"
-                        value={newBike.gears}
+                        id="engine_type_detail"
+                        placeholder="e.g. Liquid-cooled, 4-stroke, SOHC"
+                        value={newBike.detailed_specs?.engine_type || ""}
                         onChange={(e) =>
-                          setNewBike({ ...newBike, gears: Number(e.target.value) })
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, engine_type: e.target.value } 
+                          })
                         }
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="clutch_type">Clutch Type</Label>
+                      <Label htmlFor="fuel_system">Fuel System</Label>
                       <Input
-                        id="clutch_type"
-                        placeholder="e.g. Wet Multi-plate"
-                        value={newBike.clutch_type}
+                        id="fuel_system"
+                        placeholder="e.g. Fuel Injection"
+                        value={newBike.detailed_specs?.fuel_system || ""}
                         onChange={(e) =>
-                          setNewBike({ ...newBike, clutch_type: e.target.value })
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, fuel_system: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cooling">Cooling System</Label>
+                      <Input
+                        id="cooling"
+                        placeholder="e.g. Liquid Cooled"
+                        value={newBike.detailed_specs?.cooling_system || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, cooling_system: e.target.value } 
+                          })
                         }
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="curb_weight">Body Weight (kg)</Label>
+                      <Label htmlFor="gears">Gears</Label>
                       <Input
-                        id="curb_weight"
-                        type="number"
-                        value={newBike.curb_weight}
+                        id="gears"
+                        placeholder="e.g. 6-speed"
+                        value={newBike.detailed_specs?.gearbox || ""}
                         onChange={(e) =>
-                          setNewBike({ ...newBike, curb_weight: Number(e.target.value) })
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, gearbox: e.target.value } 
+                          })
                         }
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="fuel_capacity">Fuel Capacity (L)</Label>
+                      <Label htmlFor="clutch">Clutch</Label>
                       <Input
-                        id="fuel_capacity"
-                        type="number"
-                        value={newBike.fuel_capacity}
+                        id="clutch"
+                        placeholder="e.g. Wet Multi-plate"
+                        value={newBike.detailed_specs?.clutch || ""}
                         onChange={(e) =>
-                          setNewBike({ ...newBike, fuel_capacity: Number(e.target.value) })
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, clutch: e.target.value } 
+                          })
                         }
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="seat_height">Seat Height (mm)</Label>
+                      <Label htmlFor="starting">Starting</Label>
                       <Input
-                        id="seat_height"
-                        type="number"
-                        value={newBike.seat_height}
+                        id="starting"
+                        placeholder="e.g. Self Start"
+                        value={newBike.detailed_specs?.starting || ""}
                         onChange={(e) =>
-                          setNewBike({ ...newBike, seat_height: Number(e.target.value) })
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, starting: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="cooling_type">Cooling Type</Label>
+                      <Input
+                        id="cooling_type"
+                        placeholder="e.g. Air Cooled"
+                        value={newBike.detailed_specs?.cooling_type || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, cooling_type: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="spark_plugs">Spark Plugs</Label>
+                      <Input
+                        id="spark_plugs"
+                        type="number"
+                        placeholder="1"
+                        value={newBike.detailed_specs?.spark_plugs || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, spark_plugs: Number(e.target.value) } 
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="gear_pattern">Gear Shift Pattern</Label>
+                      <Input
+                        id="gear_pattern"
+                        placeholder="e.g. 1-N-2-3-4-5"
+                        value={newBike.detailed_specs?.gear_shift_pattern || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, gear_shift_pattern: e.target.value } 
+                          })
                         }
                       />
                     </div>
                   </div>
                 </TabsContent>
 
-                <TabsContent value="image" className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="image">Bike Image</Label>
-                    <div
-                      className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted/50 transition"
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.classList.add("bg-muted/50");
-                      }}
-                      onDragLeave={(e) => {
-                        e.currentTarget.classList.remove("bg-muted/50");
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.classList.remove("bg-muted/50");
-                        const files = e.dataTransfer.files;
-                        if (files && files[0]) {
-                          const file = files[0];
-                          setImageFile(file);
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            setImagePreview(reader.result as string);
-                          };
-                          reader.readAsDataURL(file);
+                <TabsContent value="chassis" className="space-y-4 pt-4">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="brakes_front">Front Brake</Label>
+                      <Input
+                        id="brakes_front"
+                        placeholder="e.g. 282mm Disc"
+                        value={newBike.detailed_specs?.brakes_front || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, brakes_front: e.target.value } 
+                          })
                         }
-                      }}
-                    >
-                      <input
-                        id="image"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageSelect}
                       />
-                      <label
-                        htmlFor="image"
-                        className="cursor-pointer flex flex-col items-center gap-2 w-full"
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="brakes_rear">Rear Brake</Label>
+                      <Input
+                        id="brakes_rear"
+                        placeholder="e.g. 220mm Disc"
+                        value={newBike.detailed_specs?.brakes_rear || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, brakes_rear: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="braking_system">Braking System</Label>
+                      <Input
+                        id="braking_system"
+                        placeholder="e.g. Dual Channel ABS"
+                        value={newBike.detailed_specs?.braking_system || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, braking_system: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tyres_front">Front Tyre</Label>
+                      <Input
+                        id="tyres_front"
+                        placeholder="e.g. 100/80-17"
+                        value={newBike.detailed_specs?.tyres_front || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, tyres_front: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tyres_rear">Rear Tyre</Label>
+                      <Input
+                        id="tyres_rear"
+                        placeholder="e.g. 140/70-17"
+                        value={newBike.detailed_specs?.tyres_rear || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, tyres_rear: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="features" className="space-y-4 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { id: "usb_charging", label: "USB Charging" },
+                      { id: "side_stand_cut_off", label: "Side Stand Cut-off" },
+                      { id: "projector_headlight", label: "Projector Headlight" },
+                      { id: "drls", label: "DRLs" },
+                      { id: "gear_indicator", label: "Gear Indicator" },
+                      { id: "distance_to_empty", label: "Distance to Empty" },
+                      { id: "avg_fuel_consumption", label: "Avg Fuel Consumption" },
+                    ].map((feature) => (
+                      <div key={feature.id} className="flex items-center space-x-2 border p-3 rounded-lg">
+                        <Checkbox 
+                          id={feature.id} 
+                          checked={newBike.detailed_specs?.[feature.id] || false}
+                          onCheckedChange={(checked) => 
+                            setNewBike({
+                              ...newBike,
+                              detailed_specs: {
+                                ...newBike.detailed_specs,
+                                [feature.id]: !!checked
+                              }
+                            })
+                          }
+                        />
+                        <Label htmlFor={feature.id} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                          {feature.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="dims" className="space-y-4 pt-4">
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="kerb_weight">Kerb Weight</Label>
+                      <Input
+                        id="kerb_weight"
+                        placeholder="e.g. 142 kg"
+                        value={newBike.detailed_specs?.kerb_weight || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, kerb_weight: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="fuel_capacity_spec">Fuel capacity</Label>
+                      <Input
+                        id="fuel_capacity_spec"
+                        placeholder="e.g. 11 L"
+                        value={newBike.detailed_specs?.fuel_tank_capacity || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, fuel_tank_capacity: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="seat_height_spec">Seat Height</Label>
+                      <Input
+                        id="seat_height_spec"
+                        placeholder="e.g. 815 mm"
+                        value={newBike.detailed_specs?.seat_height || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, seat_height: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ground_clearance">Ground Clearance</Label>
+                      <Input
+                        id="ground_clearance"
+                        placeholder="e.g. 170 mm"
+                        value={newBike.detailed_specs?.ground_clearance || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, ground_clearance: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="wheelbase">Wheelbase</Label>
+                      <Input
+                        id="wheelbase"
+                        placeholder="e.g. 1325 mm"
+                        value={newBike.detailed_specs?.wheelbase || ""}
+                        onChange={(e) =>
+                          setNewBike({ 
+                            ...newBike, 
+                            detailed_specs: { ...newBike.detailed_specs, wheelbase: e.target.value } 
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="variants" className="space-y-4 pt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-sm font-semibold">Variants ({variants.length})</p>
+                      <p className="text-xs text-muted-foreground">Each variant can have different specs and pricing.</p>
+                    </div>
+                    {variants.length < 4 && (
+                      <Button type="button" size="sm" variant="outline"
+                        onClick={() => setVariants(prev => [...prev, { ...defaultVariant(), variant_name: `Variant ${prev.length + 1}`, variant_key: `v${prev.length + 1}`, is_default: false }])}
                       >
-                        {imagePreview ? (
-                          <>
-                            <div className="relative aspect-video w-full max-w-md rounded-lg overflow-hidden bg-muted">
-                              <Image
-                                src={imagePreview}
-                                alt="preview"
-                                fill
-                                className="object-cover"
-                                unoptimized
-                              />
-                            </div>
-                            <span className="text-sm text-muted-foreground">
-                              Click to change image
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="h-8 w-8 text-muted-foreground" />
-                            <span className="text-sm font-medium">
-                              Click to upload or drag and drop
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              PNG, JPG up to 5MB
-                            </span>
-                          </>
+                        <PlusCircle className="h-4 w-4 mr-1" /> Add Variant
+                      </Button>
+                    )}
+                  </div>
+
+                  {variants.map((variant, idx) => (
+                    <div key={idx} className="border rounded-lg p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-sm">
+                          {idx === 0 ? "Default Variant" : `Variant ${idx + 1}`}
+                          {idx === 0 && <span className="ml-2 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">Default</span>}
+                        </h4>
+                        {idx > 0 && (
+                          <Button type="button" size="sm" variant="ghost" className="text-destructive h-7 w-7 p-0"
+                            onClick={() => setVariants(prev => prev.filter((_, i) => i !== idx))}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
                         )}
-                      </label>
+                      </div>
+                      {/* Identity */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Variant Name *</Label>
+                          <Input value={variant.variant_name}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, variant_name: e.target.value} : v))}
+                            placeholder="e.g. ABS" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Variant Key</Label>
+                          <Input value={variant.variant_key}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, variant_key: e.target.value} : v))}
+                            placeholder="e.g. abs" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Price (BDT) *</Label>
+                          <Input type="number" value={variant.price}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, price: Number(e.target.value)} : v))}
+                            placeholder="0" />
+                        </div>
+                      </div>
+                      {/* Performance */}
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Top Speed (Company Claimed)</Label>
+                          <Input value={variant.topspeed_company}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, topspeed_company: e.target.value} : v))}
+                            placeholder="e.g. 135 kmph" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Top Speed (User Claimed)</Label>
+                          <Input value={variant.topspeed_user}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, topspeed_user: e.target.value} : v))}
+                            placeholder="e.g. 128 kmph" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Mileage (Company Claimed)</Label>
+                          <Input value={variant.mileage_company}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, mileage_company: e.target.value} : v))}
+                            placeholder="e.g. 45 kmpl" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Mileage (User Claimed)</Label>
+                          <Input value={variant.mileage_user}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, mileage_user: e.target.value} : v))}
+                            placeholder="e.g. 40 kmpl" />
+                        </div>
+                      </div>
+                      {/* Brakes & Wheels */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Braking System</Label>
+                          <Input value={variant.braking_system}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, braking_system: e.target.value} : v))}
+                            placeholder="e.g. Disc / Drum, ABS" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Rear Brake Type</Label>
+                          <Input value={variant.rear_brake_type}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, rear_brake_type: e.target.value} : v))}
+                            placeholder="e.g. 130mm Drum" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Tyre Type</Label>
+                          <Input value={variant.tire_type}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, tire_type: e.target.value} : v))}
+                            placeholder="e.g. Tubeless" />
+                        </div>
+                      </div>
+                      {/* Other specs */}
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Headlight Type</Label>
+                          <Input value={variant.headlight_type}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, headlight_type: e.target.value} : v))}
+                            placeholder="e.g. LED Projector" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Kerb Weight</Label>
+                          <Input value={variant.kerb_weight}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, kerb_weight: e.target.value} : v))}
+                            placeholder="e.g. 140 kg" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Instrument Console</Label>
+                          <Input value={variant.instrument_console}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, instrument_console: e.target.value} : v))}
+                            placeholder="e.g. TFT Digital" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Seat Type</Label>
+                          <Input value={variant.seat_type}
+                            onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, seat_type: e.target.value} : v))}
+                            placeholder="e.g. Split Seat" />
+                        </div>
+                      </div>
+                      {/* Feature flags */}
+                      <div>
+                        <p className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">Features</p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {[
+                            { key: "mobile_connectivity", label: "Mobile Phone Connectivity" },
+                            { key: "gps_navigation", label: "GPS & Navigation" },
+                            { key: "riding_modes", label: "Riding Modes" },
+                            { key: "slipper_clutch", label: "Slipper / Assist Clutch" },
+                            { key: "traction_control", label: "Traction Control" },
+                            { key: "quick_shifter", label: "Quick Shifter" },
+                          ].map(feat => (
+                            <div key={feat.key} className="flex items-center gap-2">
+                              <Checkbox id={`${feat.key}-${idx}`}
+                                checked={!!(variant as any)[feat.key]}
+                                onCheckedChange={checked => setVariants(prev => prev.map((v, i) => i === idx ? {...v, [feat.key]: !!checked} : v))}
+                              />
+                              <Label htmlFor={`${feat.key}-${idx}`} className="text-xs">{feat.label}</Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </TabsContent>
+
+                <TabsContent value="image" className="space-y-4 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Primary Image */}
+                    <div className="space-y-2">
+                      <Label>Primary Image *</Label>
+                      <ImageUploadSlot
+                        id="primary_image"
+                        preview={imagePreview || newBike.primary_image}
+                        onUpload={async (file) => {
+                          const res = await adminAPI.uploadImage(file);
+                          if (res?.url) {
+                            setNewBike(prev => ({ ...prev, primary_image: res.url }));
+                            setImagePreview(res.url);
+                          }
+                        }}
+                      />
+                    </div>
+                    {/* Image 1 */}
+                    <div className="space-y-2">
+                      <Label>Image 1</Label>
+                      <ImageUploadSlot
+                        id="image1"
+                        preview={newBike.image1}
+                        onUpload={async (file) => {
+                          const res = await adminAPI.uploadImage(file);
+                          if (res?.url) {
+                            setNewBike(prev => ({ ...prev, image1: res.url }));
+                          }
+                        }}
+                      />
+                    </div>
+                    {/* Image 2 */}
+                    <div className="space-y-2">
+                      <Label>Image 2</Label>
+                      <ImageUploadSlot
+                        id="image2"
+                        preview={newBike.image2}
+                        onUpload={async (file) => {
+                          const res = await adminAPI.uploadImage(file);
+                          if (res?.url) {
+                            setNewBike(prev => ({ ...prev, image2: res.url }));
+                          }
+                        }}
+                      />
+                    </div>
+                    {/* Image 3 */}
+                    <div className="space-y-2">
+                      <Label>Image 3</Label>
+                      <ImageUploadSlot
+                        id="image3"
+                        preview={newBike.image3}
+                        onUpload={async (file) => {
+                          const res = await adminAPI.uploadImage(file);
+                          if (res?.url) {
+                            setNewBike(prev => ({ ...prev, image3: res.url }));
+                          }
+                        }}
+                      />
+                    </div>
+                    {/* Image 4 */}
+                    <div className="space-y-2">
+                      <Label>Image 4</Label>
+                      <ImageUploadSlot
+                        id="image4"
+                        preview={newBike.image4}
+                        onUpload={async (file) => {
+                          const res = await adminAPI.uploadImage(file);
+                          if (res?.url) {
+                            setNewBike(prev => ({ ...prev, image4: res.url }));
+                          }
+                        }}
+                      />
+                    </div>
+                    {/* Image 5 */}
+                    <div className="space-y-2">
+                      <Label>Image 5</Label>
+                      <ImageUploadSlot
+                        id="image5"
+                        preview={newBike.image5}
+                        onUpload={async (file) => {
+                          const res = await adminAPI.uploadImage(file);
+                          if (res?.url) {
+                            setNewBike(prev => ({ ...prev, image5: res.url }));
+                          }
+                        }}
+                      />
                     </div>
                   </div>
                 </TabsContent>
@@ -736,6 +1382,79 @@ export default function AdminBikesPage() {
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function ImageUploadSlot({ 
+  id, 
+  preview, 
+  onUpload 
+}: { 
+  id: string, 
+  preview?: string, 
+  onUpload: (file: File) => Promise<void> 
+}) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        setUploading(true);
+        await onUpload(file);
+      } catch (error) {
+        console.error("Upload error:", error);
+        toast.error("Failed to upload image");
+      } finally {
+        setUploading(false);
+      }
+    }
+  };
+
+  return (
+    <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/80 transition group">
+      {preview ? (
+        <div className="relative w-full h-full">
+           <Image
+            src={preview}
+            alt="preview"
+            fill
+            className="object-cover"
+            unoptimized
+          />
+          <label 
+            htmlFor={id} 
+            className="absolute inset-x-0 bottom-0 bg-black/60 text-white text-[10px] py-1 text-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer font-medium"
+          >
+            Change Image
+          </label>
+          {uploading && (
+             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+               <Loader className="h-6 w-6 text-white animate-spin" />
+             </div>
+          )}
+        </div>
+      ) : (
+        <label htmlFor={id} className="cursor-pointer flex flex-col items-center gap-2 p-4 text-center w-full h-full justify-center">
+          {uploading ? (
+            <Loader className="h-8 w-8 text-muted-foreground animate-spin" />
+          ) : (
+            <>
+              <Upload className="h-8 w-8 text-muted-foreground" />
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Click to upload</span>
+            </>
+          )}
+        </label>
+      )}
+      <input
+        id={id}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleChange}
+        disabled={uploading}
+      />
     </div>
   );
 }

@@ -39,6 +39,8 @@ import {
 } from "@/hooks/use-user";
 import { toast } from "sonner";
 import Image from "next/image";
+import { api } from "@/lib/api-service";
+import { API_ENDPOINTS } from "@/config/constants";
 
 // Import Profile Components
 import { AccountManagement } from "@/components/profile/account-management";
@@ -439,13 +441,32 @@ export function ProfileClient() {
                       <span>{listing.location}</span>
                     </div>
                     <div className="flex gap-2 pt-2">
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => router.push(`/sell-bike?edit=${listing.id}`)}
+                      >
                         Edit
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         className="text-destructive hover:bg-destructive/10"
+                        onClick={async () => {
+                          if (confirm("Are you sure you want to delete this listing?")) {
+                            try {
+                              const res = await api.delete(API_ENDPOINTS.USED_BIKE_DELETE(String(listing.id)));
+                              if (res.success) {
+                                toast.success("Listing deleted successfully");
+                                window.location.reload();
+                              } else {
+                                toast.error(res.error?.message || "Failed to delete listing");
+                              }
+                            } catch (err: any) {
+                              toast.error(err.message || "An error occurred");
+                            }
+                          }
+                        }}
                       >
                         Delete
                       </Button>
@@ -550,7 +571,7 @@ export function ProfileClient() {
                         </div>
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(review.createdAt).toLocaleDateString()}
+                        {new Date(review.created_at || (review as any).createdAt).toLocaleDateString()}
                       </span>
                     </div>
                   </CardHeader>

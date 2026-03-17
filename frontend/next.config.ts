@@ -39,11 +39,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "images.unsplash",
+        hostname: "res.cloudinary.com",
       },
       {
         protocol: "https",
-        hostname: "res.cloudinary.com",
+        hostname: "*.onrender.com",
       },
       {
         protocol: "https",
@@ -58,6 +58,19 @@ const nextConfig: NextConfig = {
         hostname: "127.0.0.1",
       },
     ],
+  },
+  // Ensure Cloudinary public IDs (non-URL strings) don't break image rendering
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+    ];
   },
 };
 

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-service";
 import { ApiUsedBikeListing, Review } from "@/types";
+import { mapReview } from "@/lib/data-utils";
 
 export interface UserStats {
   listings_count: number;
@@ -39,7 +40,8 @@ export function useMyReviews() {
     queryFn: async () => {
       const response = await api.getUserReviews();
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch reviews");
-      return (response.data as Review[]) || [];
+      const rawReviews = (response.data as any[]) || [];
+      return rawReviews.map(mapReview);
     },
     staleTime: 5 * 60 * 1000,
   });

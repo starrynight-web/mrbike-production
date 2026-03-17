@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .otp-code { font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #e11d48; text-align: center; padding: 20px; background: #f9f9f9; border-radius: 5px; margin: 20px 0; }
+        .footer { font-size: 12px; color: #888; margin-top: 30px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div className="container">
+        <div className="header">
+            <h1 style="color: #e11d48;">MrBikeBD Admin Security</h1>
+        </div>
+        <p>Hello {{ name }},</p>
+        <p>You are attempting to log in to the MrBikeBD Admin Panel. Please use the following One-Time Password (OTP) to complete your sign-in:</p>
+        
+        <div className="otp-code">{{ otp_code }}</div>
+        
+        <p>This code is valid for 5 minutes and should not be shared with anyone. If you did not attempt to log in, please secure your account immediately.</p>
+        
+        <div className="footer">
+            <p>&copy; 2026 MrBikeBD. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

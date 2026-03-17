@@ -11,6 +11,8 @@ export const metadata: Metadata = {
     },
 };
 
+import { redirect } from "next/navigation";
+
 export default function ProfilePage() {
-    return <ProfileClient />;
+    redirect("/dashboard");
 }

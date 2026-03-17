@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, AllowAny
+from django.db import connections
+from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from apps.bikes.models import Brand, BikeModel
 from apps.marketplace.models import UsedBikeListing
@@ -80,3 +82,29 @@ class AdminSettingsView(APIView):
     def patch(self, request):
         # Update settings logic here
         return Response({"message": "Settings updated successfully"})
+
+class HealthCheckView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        health = {"status": "ok", "checks": {}}
+        
+        # Check DB
+        try:
+            connections['default'].cursor()
+            health["checks"]["database"] = "ok"
+        except Exception as e:
+            health["status"] = "error"
+            health["checks"]["database"] = str(e)
+            
+        # Check Redis
+        try:
+            cache.set("health_check_key", "ok", 1)
+            if cache.get("health_check_key") == "ok":
+                health["checks"]["cache"] = "ok"
+            else:
+                raise Exception("Cache retrieval failed")
+        except Exception as e:
+            health["checks"]["cache"] = str(e)
+            
+        return Response(health)

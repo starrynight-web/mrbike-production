@@ -81,3 +81,7 @@ class Article(models.Model):
 
     class Meta:
         ordering = ['-published_at', '-created_at']
+        indexes = [
+            models.Index(fields=['is_published', '-published_at']),
+            models.Index(fields=['category']),
+        ]

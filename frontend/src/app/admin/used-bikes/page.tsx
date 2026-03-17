@@ -16,6 +16,11 @@ import {
   Tag,
   Users,
   Loader,
+  AlertTriangle,
+  Scale,
+  Fuel,
+  Info,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -55,6 +60,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { adminAPI, UsedBikeListing } from "@/lib/admin-api";
+import { sanitizeImageUrl } from "@/lib/data-utils";
 
 const BIKE_CATEGORIES = [
   { value: "sports", label: "Sports" },
@@ -283,6 +289,7 @@ export default function UsedBikesModeration() {
                     <TableHead>Bike / Brand</TableHead>
                     <TableHead>Seller</TableHead>
                     <TableHead>Location / Year</TableHead>
+                    <TableHead>Category</TableHead>
                     <TableHead>Price</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -297,19 +304,28 @@ export default function UsedBikesModeration() {
                       >
                         <TableCell>
                           <div className="h-12 w-16 rounded overflow-hidden bg-muted relative">
-                            {listing.image_url ? (
-                              <Image
-                                src={listing.image_url}
-                                alt={listing.bike_model}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                              />
-                            ) : (
-                              <div className="h-full w-full flex items-center justify-center">
-                                <Bike className="h-6 w-6 text-muted-foreground" />
-                              </div>
-                            )}
+                            {(() => {
+                              const imageUrl = sanitizeImageUrl(
+                                (listing as any).image_url || 
+                                (listing as any).thumbnail_url || 
+                                (listing as any).images?.[0]?.url || 
+                                (listing as any).images?.[0], 
+                                undefined
+                              );
+                              return imageUrl ? (
+                                <Image
+                                  src={imageUrl}
+                                  alt={listing.bike_model}
+                                  fill
+                                  className="object-cover"
+                                  unoptimized
+                                />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center">
+                                  <Bike className="h-6 w-6 text-muted-foreground" />
+                                </div>
+                              );
+                            })()}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -318,6 +334,12 @@ export default function UsedBikesModeration() {
                             <p className="text-xs text-muted-foreground capitalize">
                               {listing.brand}
                             </p>
+                            {listing.reports_count && listing.reports_count > 0 ? (
+                              <div className="flex items-center mt-1 text-xs text-red-500 font-medium">
+                                <AlertTriangle className="mr-1 h-3 w-3" />
+                                {listing.reports_count} {listing.reports_count === 1 ? 'Report' : 'Reports'}
+                              </div>
+                            ) : null}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -332,13 +354,18 @@ export default function UsedBikesModeration() {
                           <div className="space-y-1">
                             <div className="flex items-center text-xs text-muted-foreground">
                               <MapPin className="mr-1 h-3 w-3" />{" "}
-                              {listing.seller_location}
+                                {typeof listing.seller_location === 'object' ? (listing.seller_location as any).full : listing.seller_location}
                             </div>
                             <div className="flex items-center text-xs text-muted-foreground">
                               <Calendar className="mr-1 h-3 w-3" />{" "}
                               {listing.year}
                             </div>
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">
+                            {listing.category || 'Commuter'}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center font-bold">
@@ -605,6 +632,187 @@ export default function UsedBikesModeration() {
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Preview Full Detail Dialog */}
+      <Dialog
+        open={previewDialog.open}
+        onOpenChange={(open) => {
+          if (!open) setPreviewDialog({ open: false, listing: null });
+          else setPreviewDialog({ ...previewDialog, open: true });
+        }}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Listing Details</DialogTitle>
+            <DialogDescription>
+              Review all information provided by the seller.
+            </DialogDescription>
+          </DialogHeader>
+
+          {previewDialog.listing && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+              <div className="space-y-6">
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-muted border">
+                  { (previewDialog.listing.images?.length > 0 || previewDialog.listing.image_url) ? (
+                    <Image
+                      src={sanitizeImageUrl(previewDialog.listing.images?.[0]?.url || previewDialog.listing.images?.[0] || previewDialog.listing.image_url)}
+                      alt={previewDialog.listing.title || previewDialog.listing.bike_model}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center">
+                      <Bike className="h-12 w-12 text-muted-foreground opacity-20" />
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2">
+                    <Badge variant={previewDialog.listing.status === 'active' ? 'default' : 'secondary'}>
+                      {previewDialog.listing.status.toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg flex items-center gap-2">
+                    <Info className="h-4 w-4 text-primary" />
+                    Specifications
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Year</p>
+                      <p className="font-medium">{previewDialog.listing.year}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Mileage</p>
+                      <p className="font-medium">{previewDialog.listing.mileage.toLocaleString()} km</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Condition</p>
+                      <p className="font-medium capitalize">{previewDialog.listing.condition}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Location</p>
+                      <p className="font-medium truncate">{previewDialog.listing.seller_location}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {previewDialog.listing.reports_count ? previewDialog.listing.reports_count > 0 && (
+                  <div className="p-4 rounded-lg bg-red-50 border border-red-100 dark:bg-red-900/10 dark:border-red-900/20">
+                    <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-semibold mb-1">
+                      <AlertTriangle className="h-4 w-4" />
+                      Community Reports ({previewDialog.listing.reports_count})
+                    </div>
+                    <p className="text-xs text-red-500/80">
+                      This listing has been flagged by users. Please review carefully before approving.
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold">{previewDialog.listing.bike_model}</h2>
+                  <p className="text-primary font-bold text-xl mt-1">
+                    ৳{previewDialog.listing.price.toLocaleString()}
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground uppercase tracking-wider">
+                    <Users className="h-4 w-4" />
+                    Seller Information
+                  </h3>
+                  <div className="border rounded-lg p-4 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Name</span>
+                      <span className="font-medium">{previewDialog.listing.seller_name}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Phone</span>
+                      <span className="font-medium">{previewDialog.listing.seller_phone}</span>
+                    </div>
+                    {previewDialog.listing.whatsapp_number && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">WhatsApp</span>
+                        <span className="font-medium text-green-600">{previewDialog.listing.whatsapp_number}</span>
+                      </div>
+                    )}
+                    {previewDialog.listing.primary_contact_number && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Primary Contact</span>
+                        <span className="font-medium">{previewDialog.listing.primary_contact_number}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-1 border-t">
+                      <span className="text-sm text-muted-foreground">Category</span>
+                      <Badge variant="outline" className="capitalize">
+                        {previewDialog.listing.category || 'N/A'}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground uppercase tracking-wider">
+                    <Info className="h-4 w-4" />
+                    Description
+                  </h3>
+                  <div className="border rounded-lg p-4 bg-muted/30">
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                      {previewDialog.listing.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 pt-4">
+                  {previewDialog.listing.status === 'pending' && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button 
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => {
+                          setPreviewDialog({ open: false, listing: null });
+                          setApproveDialog({ open: true, id: previewDialog.listing?.id || null, category: previewDialog.listing?.category || 'commuter' });
+                        }}
+                      >
+                        <CheckCircle2 className="mr-2 h-4 w-4" /> Approve
+                      </Button>
+                      <Button 
+                        variant="destructive"
+                        onClick={() => {
+                          setPreviewDialog({ open: false, listing: null });
+                          setRejectDialog({ open: true, id: previewDialog.listing?.id || null, reason: '' });
+                        }}
+                      >
+                        <XCircle className="mr-2 h-4 w-4" /> Reject
+                      </Button>
+                    </div>
+                  )}
+                  {previewDialog.listing.status !== 'pending' && (
+                     <Button 
+                        variant="destructive"
+                        className="w-full"
+                        onClick={() => {
+                          setPreviewDialog({ open: false, listing: null });
+                          handleDelete(previewDialog.listing!.id);
+                        }}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete Permanently
+                      </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+// Re-using Trash2 and other icons if needed, but they are imported above.
+// Wait, I missed Trash2 in imports? 
+// Checking imports at top... yes, Trash2 is NOT there.
+// I will add it.
+

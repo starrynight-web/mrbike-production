@@ -9,10 +9,9 @@ django.setup()
 from apps.users.models import UserProfile
 
 def audit_profiles():
-    for db in ['default', 'mongodb']:
-        print(f"\n--- Checking {db} ---")
-        try:
-            profiles = list(UserProfile.objects.using(db).values('id', 'user_id'))
+    print(f"\n--- Checking default ---")
+    try:
+        profiles = list(UserProfile.objects.all().values('id', 'user_id'))
             print(f"Profiles: {profiles}")
         except Exception as e:
             print(f"Error: {e}")
