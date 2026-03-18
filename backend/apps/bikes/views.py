@@ -7,6 +7,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from .models import Brand, BikeModel
 from .serializers import BrandSerializer, BikeModelSerializer
+from .filters import BikeModelFilter
 from django.conf import settings
 import logging
 from django.utils.text import get_valid_filename
@@ -21,14 +22,13 @@ from django.views.decorators.cache import cache_page
 class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all().order_by('name')
     serializer_class = BrandSerializer
+    pagination_class = None
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'origin']
     
-    @method_decorator(cache_page(60 * 15)) # 15 minutes
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @method_decorator(cache_page(60 * 15))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -66,9 +66,9 @@ class BrandViewSet(viewsets.ModelViewSet):
 
 class BikeModelViewSet(viewsets.ModelViewSet):
     serializer_class = BikeModelSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['category', 'brand', 'engine_capacity']
-    search_fields = ['name', 'brand__name']
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = BikeModelFilter
+    search_fields = ['name', 'brand__name', 'category']
     ordering_fields = ['price', 'popularity_score', 'engine_capacity']
 
     def get_queryset(self):

@@ -244,39 +244,70 @@ export function BikeFilters({ brands, totalCount }: BikeFiltersProps) {
     setCcRange,
   ]);
 
-  // Update URL when filters change
-  const updateUrl = useCallback(() => {
-    const params = new URLSearchParams();
+  // Update URL whenever store filters change (Auto-Sync Store -> URL)
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
 
+    // Only set params if they differ from default values
     if (selectedBrands.length > 0) {
       params.set("brand", selectedBrands.join(","));
-    }
-    if (selectedCategories.length > 0) {
-      params.set("category", selectedCategories.join(","));
-    }
-    if (priceRange[0] > 0) {
-      params.set("priceMin", priceRange[0].toString());
-    }
-    if (priceRange[1] < 10000000) {
-      params.set("priceMax", priceRange[1].toString());
-    }
-    if (sortBy !== "popularity") {
-      params.set("sortBy", sortBy);
+    } else {
+      params.delete("brand");
     }
 
-    // Add ccRange to URL params
+    if (selectedCategories.length > 0) {
+      params.set("category", selectedCategories.join(","));
+    } else {
+      params.delete("category");
+    }
+
+    if (priceRange[0] > 0) {
+      params.set("priceMin", priceRange[0].toString());
+    } else {
+      params.delete("priceMin");
+    }
+
+    if (priceRange[1] < 10000000) {
+      params.set("priceMax", priceRange[1].toString());
+    } else {
+      params.delete("priceMax");
+    }
+
+    if (sortBy !== "popularity") {
+      params.set("sortBy", sortBy);
+    } else {
+      params.delete("sortBy");
+    }
+
     if (ccRange[0] > 0) {
       params.set("ccMin", ccRange[0].toString());
+    } else {
+      params.delete("ccMin");
     }
+
     if (ccRange[1] < 1000) {
       params.set("ccMax", ccRange[1].toString());
+    } else {
+      params.delete("ccMax");
     }
 
     const queryString = params.toString();
-    router.push(`/bikes${queryString ? `?${queryString}` : ""}`, {
-      scroll: false,
-    });
-  }, [selectedBrands, selectedCategories, priceRange, ccRange, sortBy, router]);
+    const currentQuery = searchParams.toString();
+
+    // Only push if the query actually changed to avoid redundant history entries
+    if (queryString !== currentQuery) {
+      // Keep search and page params if they exist
+      const search = searchParams.get("search");
+      if (search) params.set("search", search);
+      
+      // Reset page when filters change (unless only page changed, but we handle that elsewhere)
+      if (queryString !== currentQuery.replace(/&?page=\d+/, "")) {
+         params.set("page", "1");
+      }
+
+      router.push(`/bikes?${params.toString()}`, { scroll: false });
+    }
+  }, [selectedBrands, selectedCategories, priceRange, ccRange, sortBy, router, searchParams]);
 
   const toggleBrand = (brand: string) => {
     const newBrands = selectedBrands.includes(brand)
@@ -297,7 +328,6 @@ export function BikeFilters({ brands, totalCount }: BikeFiltersProps) {
   };
 
   const handleApply = () => {
-    updateUrl();
     setIsOpen(false);
   };
 
@@ -328,7 +358,6 @@ export function BikeFilters({ brands, totalCount }: BikeFiltersProps) {
           value={sortBy}
           onValueChange={(v) => {
             setSortBy(v);
-            updateUrl();
           }}
         >
           <SelectTrigger className="w-40 h-9">

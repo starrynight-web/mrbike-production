@@ -113,6 +113,7 @@ export function SellBikeWizard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit: SubmitHandler<FormData> = async (_data) => {
+    if (isSubmitting) return;
     if (!session) {
       toast.error("You must be logged in to post an ad");
       return;
@@ -135,6 +136,7 @@ export function SellBikeWizard() {
       formData.append("condition", _data.condition);
       formData.append("description", _data.description);
       formData.append("location", _data.location);
+      formData.append("location_city", _data.location); // Ensure city-based URL works
       formData.append("custom_brand", finalBrand);
       formData.append("custom_model", _data.model);
       formData.append("contact_number", _data.contactNumber);
@@ -160,11 +162,11 @@ export function SellBikeWizard() {
       for (let i = 0; i < imageFiles.length; i++) {
         const file = imageFiles[i];
         try {
-          // Use slightly higher quality for 'premium' feel but keep size low
+          // Use high quality for 'premium' feel and Full HD resolution
           const compressedBlob = await compressImage(file, { 
-            quality: 0.85, 
-            maxWidth: 1600,
-            maxHeight: 1600 
+            quality: 0.95, 
+            maxWidth: 1920,
+            maxHeight: 1920 
           });
           const compressedFile = new File([compressedBlob], file.name, { type: "image/jpeg" });
           formData.append("uploaded_images", compressedFile);
@@ -404,6 +406,7 @@ export function SellBikeWizard() {
                               </SelectItem>
                             ),
                           )}
+                          <SelectItem value="yamaha">Yamaha</SelectItem>
                           <SelectItem value="gpx-demon">GPX Demon</SelectItem>
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>

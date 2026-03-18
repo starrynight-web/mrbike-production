@@ -153,6 +153,16 @@ export interface UsedBikeListing {
   created_at: string;
   seller_id: number;
   reports_count?: number;
+  // Additional fields
+  engine_cc?: number;
+  registration_year?: number;
+  registration_type?: string;
+  has_original_papers?: boolean;
+  engine_condition?: string;
+  body_condition?: string;
+  ownership_count?: number;
+  modifications?: string;
+  has_accident_history?: boolean;
 }
 
 export interface AdminStats {
@@ -329,6 +339,15 @@ class AdminAPI {
       category: item.category || "",
       whatsapp_number: item.whatsapp_number || "",
       reports_count: item.reports_count || 0,
+      engine_cc: item.engine_cc,
+      registration_year: item.registration_year,
+      registration_type: item.registration_type,
+      has_original_papers: item.has_original_papers,
+      engine_condition: item.engine_condition,
+      body_condition: item.body_condition,
+      ownership_count: item.ownership_count,
+      modifications: item.modifications,
+      has_accident_history: item.has_accident_history,
     }));
 
     return {
@@ -561,7 +580,17 @@ class AdminAPI {
       description: item.description || "",
       created_at: item.created_at || new Date().toISOString(),
       seller_id: item.seller || 0,
+      category: item.category || "",
       reports_count: item.reports_count || 0,
+      engine_cc: item.engine_cc,
+      registration_year: item.registration_year,
+      registration_type: item.registration_type,
+      has_original_papers: item.has_original_papers,
+      engine_condition: item.engine_condition,
+      body_condition: item.body_condition,
+      ownership_count: item.ownership_count,
+      modifications: item.modifications,
+      has_accident_history: item.has_accident_history,
     }));
   }
 

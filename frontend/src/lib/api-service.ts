@@ -11,11 +11,27 @@ class ApiService {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE,
-      timeout: 15000,
+      timeout: 60000,
       headers: {
         "Content-Type": "application/json",
       },
       withCredentials: true,
+      paramsSerializer: (params) => {
+        const searchParams = new URLSearchParams();
+        for (const key in params) {
+          const value = params[key];
+          if (Array.isArray(value)) {
+            value.forEach((v) => {
+              if (v !== undefined && v !== null && v !== "") {
+                searchParams.append(key, v);
+              }
+            });
+          } else if (value !== undefined && value !== null && value !== "") {
+            searchParams.append(key, String(value));
+          }
+        }
+        return searchParams.toString();
+      },
     });
 
     this.setupInterceptors();
@@ -69,7 +85,10 @@ class ApiService {
 
         // Retry on network errors or 502/503 (up to 2 retries)
         const retryCount = originalRequest._retryCount || 0;
+        const isGetRequest = originalRequest.method?.toLowerCase() === 'get';
+
         if (
+          isGetRequest &&
           retryCount < 2 &&
           (!error.response || error.response.status === 502 || error.response.status === 503)
         ) {
@@ -168,6 +187,7 @@ class ApiService {
   async createUsedBike(data: FormData) {
     return this.request<any>(this.client.post(API_ENDPOINTS.USED_BIKE_CREATE, data, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 300000, // 5 minutes for image-heavy uploads
     }));
   }
 

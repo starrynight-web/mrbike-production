@@ -315,7 +315,7 @@ function FilterContent({
               />
               <span className="text-sm flex-1">{brand.name}</span>
               <span className="text-[10px] text-muted-foreground">
-                ({brand.bikeCount})
+                ({brand.usedBikeCount || 0})
               </span>
             </label>
           ))}

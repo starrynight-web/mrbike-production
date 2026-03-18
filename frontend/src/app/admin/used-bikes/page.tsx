@@ -653,7 +653,7 @@ export default function UsedBikesModeration() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
               <div className="space-y-6">
                 <div className="relative aspect-video rounded-lg overflow-hidden bg-muted border">
-                  { (previewDialog.listing.images?.length > 0 || previewDialog.listing.image_url) ? (
+                  { ((previewDialog.listing.images?.length ?? 0) > 0 || previewDialog.listing.image_url) ? (
                     <Image
                       src={sanitizeImageUrl(previewDialog.listing.images?.[0]?.url || previewDialog.listing.images?.[0] || previewDialog.listing.image_url)}
                       alt={previewDialog.listing.title || previewDialog.listing.bike_model}
@@ -684,16 +684,59 @@ export default function UsedBikesModeration() {
                       <p className="font-medium">{previewDialog.listing.year}</p>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Engine CC</p>
+                      <p className="font-medium">{previewDialog.listing.engine_cc || 'N/A'} CC</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
                       <p className="text-xs text-muted-foreground">Mileage</p>
                       <p className="font-medium">{previewDialog.listing.mileage.toLocaleString()} km</p>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
                       <p className="text-xs text-muted-foreground">Condition</p>
-                      <p className="font-medium capitalize">{previewDialog.listing.condition}</p>
+                      <p className="font-medium capitalize">{previewDialog.listing.condition.replace('_', ' ')}</p>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
                       <p className="text-xs text-muted-foreground">Location</p>
-                      <p className="font-medium truncate">{previewDialog.listing.seller_location}</p>
+                      <p className="font-medium truncate">{typeof previewDialog.listing.seller_location === 'object' ? (previewDialog.listing.seller_location as any).city : previewDialog.listing.seller_location}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Ownership</p>
+                      <p className="font-medium">{previewDialog.listing.ownership_count || 1} Owner(s)</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-sm flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+                    <Info className="h-4 w-4" />
+                    Registration & Condition
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Reg. Year</p>
+                      <p className="font-medium">{previewDialog.listing.registration_year || 'Not Registered'}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Reg. Type</p>
+                      <p className="font-medium">{previewDialog.listing.registration_type || 'N/A'}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Engine Cond.</p>
+                      <p className="font-medium">{previewDialog.listing.engine_condition || 'N/A'}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Body Cond.</p>
+                      <p className="font-medium">{previewDialog.listing.body_condition || 'N/A'}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Papers</p>
+                      <p className="font-medium text-primary">{previewDialog.listing.has_original_papers ? 'Original' : 'Missing'}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Accident Hist.</p>
+                      <p className={cn("font-medium", previewDialog.listing.has_accident_history ? "text-red-500" : "text-green-600")}>
+                        {previewDialog.listing.has_accident_history ? 'Yes' : 'No'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -757,12 +800,23 @@ export default function UsedBikesModeration() {
                 <div className="space-y-3">
                   <h3 className="font-semibold flex items-center gap-2 text-sm text-muted-foreground uppercase tracking-wider">
                     <Info className="h-4 w-4" />
-                    Description
+                    Description & Modifications
                   </h3>
-                  <div className="border rounded-lg p-4 bg-muted/30">
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                      {previewDialog.listing.description}
-                    </p>
+                  <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
+                    <div>
+                      <p className="text-xs font-bold text-muted-foreground mb-1">Seller Remark:</p>
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                        {previewDialog.listing.description}
+                      </p>
+                    </div>
+                    {previewDialog.listing.modifications && (
+                      <div className="pt-2 border-t">
+                        <p className="text-xs font-bold text-muted-foreground mb-1">Modifications:</p>
+                        <p className="text-sm text-primary">
+                          {previewDialog.listing.modifications}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 

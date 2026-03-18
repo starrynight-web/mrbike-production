@@ -26,7 +26,8 @@ import {
   Shield,
   CheckCircle2,
   Star,
-  Bike
+  Bike,
+  Fuel
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -302,7 +303,8 @@ export function UsedBikeDetailClient({ slug, initialData }: UsedBikeDetailClient
                   <h3 className="text-xs font-black uppercase tracking-[0.2em] text-primary/60 px-1">Registration & Papers</h3>
                   <div className="space-y-5">
                     {[
-                      { label: "Registration Year", value: bike.registrationYear || bike.year, icon: FileText },
+                      { label: "Engine Capacity", value: `${bike.engineCC || 'N/A'} CC`, icon: Fuel },
+                      { label: "Registration Year", value: bike.registrationYear || bike.year || "Not Registered", icon: FileText },
                       { label: "Registration Type", value: bike.registrationType || "Not Specified", icon: Shield },
                       { label: "Original Papers", value: bike.hasOriginalPapers ? "Available" : "Not Available", icon: CheckCircle2, color: bike.hasOriginalPapers ? "text-emerald-500" : "text-rose-500" },
                       { label: "Ownership", value: `${bike.ownershipCount || 1}${bike.ownershipCount === 1 ? 'st' : bike.ownershipCount === 2 ? 'nd' : bike.ownershipCount === 3 ? 'rd' : 'th'} Owner`, icon: User },

@@ -114,24 +114,45 @@ class UsedBikeListing(models.Model):
             self.category = self.bike_model.category
 
         # 2. Auto-generate slug (Section 9.1)
-        if not self.slug:
-            brand_name = self.bike_model.brand.name if self.bike_model else (self.custom_brand or "other")
-            model_name = self.bike_model.name if self.bike_model else (self.custom_model or "bike")
-            city = self.location_city or "dhaka-bangladesh"
-            # Ensure bangladesh is in city if not already
-            if "bangladesh" not in city.lower():
-                city = f"{city}-bangladesh"
-            base_slug = f"{brand_name}-{model_name}-{self.manufacturing_year}-{city}"
-            self.slug = slugify(base_slug)
+        # brand-bike-name-model_year-location-bangladesh
+        should_update_slug = not self.slug or kwargs.get('force_slug_update', False)
+        
+        if should_update_slug:
+            brand_name = (self.bike_model.brand.name if self.bike_model and self.bike_model.brand else (self.custom_brand or "other")).strip()
+            model_name = (self.bike_model.name if self.bike_model else (self.custom_model or "bike")).strip()
+            
+            # Avoid repeating brand name
+            if model_name.lower().startswith(brand_name.lower()):
+                display_name = model_name
+            else:
+                display_name = f"{brand_name} {model_name}"
+                
+            city = (self.location_city or "dhaka").strip().lower()
+            
+            # Construct base slug as requested: brand-bike-name-year-location-bangladesh
+            # We use slugify on each part to ensure clean format
+            slug_parts = [
+                slugify(display_name),
+                str(self.manufacturing_year),
+                slugify(city),
+                "bangladesh"
+            ]
+            base_slug = "-".join(slug_parts)
+            self.slug = base_slug
             
             # Ensure uniqueness
-            if UsedBikeListing.objects.filter(slug=self.slug).exists():
-                self.slug = f"{self.slug}-{str(uuid.uuid4())[:8]}"
+            original_slug = self.slug
+            counter = 1
+            while UsedBikeListing.objects.filter(slug=self.slug).exclude(id=self.id).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
 
         # 3. Set expiry (Section 9.4) - 15 days default
         if not self.expires_at:
             self.expires_at = timezone.now() + timezone.timedelta(days=15)
 
+        # Pop custom kwargs before calling super().save() as Django doesn't support arbitrary kwargs
+        kwargs.pop('force_slug_update', None)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -267,20 +288,28 @@ class ListingImage(models.Model):
                 if not public_id or public_id == 'None':
                     continue
                 
-                # Strip versions and paths if present in the string representation
-                if "image/upload/" in public_id:
+                # Strip absolute URL prefixes if they accidentally got stored
+                if "http" in public_id and "image/upload/" in public_id:
                     public_id = public_id.split("image/upload/")[-1]
                 
                 # Remove version prefix (v12345678/)
                 public_id = re.sub(r'^v\d+/', '', public_id)
                 
-                # Remove extension if present
+                # Remove extension if present (Cloudinary doesn't need it for URL generation with format/transform)
                 if '.' in public_id:
                     public_id = public_id.rsplit('.', 1)[0]
                 
                 # Generate secured URL with auto-optimization
+                # Fallback to hardcoded cloud_name if settings fails
+                try:
+                    from django.conf import settings
+                    cloud_name = getattr(settings, 'CLOUDINARY_STORAGE', {}).get('CLOUD_NAME', 'duna87jkw')
+                except Exception:
+                    cloud_name = 'duna87jkw'
+
                 url, _ = cloudinary.utils.cloudinary_url(
                     public_id,
+                    cloud_name=cloud_name,
                     secure=True,
                     format='webp' if is_webp else None,
                     transformation=[
@@ -289,6 +318,8 @@ class ListingImage(models.Model):
                 )
                 
                 if url:
+                    if url.startswith('http://'):
+                        url = url.replace('http://', 'https://')
                     return url
             except Exception as e:
                 import logging

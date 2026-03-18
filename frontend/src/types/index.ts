@@ -163,9 +163,10 @@ export interface Brand {
   slug: string;
   name: string;
   logo: string;
-  country: string;
-  bikeCount: number;
   description?: string;
+  bikeCount: number;
+  usedBikeCount?: number;
+  country?: string;
 }
 
 export interface PriceRange {

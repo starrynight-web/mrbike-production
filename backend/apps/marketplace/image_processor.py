@@ -16,9 +16,9 @@ class ImageProcessingService:
     # Configuration
     MAX_WIDTH = 2000
     MAX_HEIGHT = 2000
-    WEBP_QUALITY = 85
-    JPEG_QUALITY = 75
-    COMPRESS_QUALITY = 60
+    WEBP_QUALITY = 92
+    JPEG_QUALITY = 90
+    COMPRESS_QUALITY = 75
     
     @classmethod
     def compress_and_convert(cls, image_file):

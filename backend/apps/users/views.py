@@ -86,7 +86,7 @@ class GoogleAuthView(generics.GenericAPIView):
             logger.warning(f"Invalid Google ID token: {e}")
             return Response({'detail': 'Invalid Google token'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        email = idinfo.get('email')
+        email = User.objects.normalize_email(idinfo.get('email'))
         name = idinfo.get('name', '')
 
         # Lookup by email only (avoid username collisions)
@@ -94,7 +94,7 @@ class GoogleAuthView(generics.GenericAPIView):
         created = False
         if not user:
             # Compute first and last name once
-            parts = name.split(' ', 1) if name else ['','']
+            parts = name.split(' ', 1) if name else ['', '']
             first_name = parts[0] if parts else ''
             last_name = parts[1] if len(parts) > 1 else ''
 

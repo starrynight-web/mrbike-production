@@ -20,9 +20,9 @@ export async function compressImage(
   options: CompressionOptions = {}
 ): Promise<Blob> {
   const {
-    maxWidth = 1200,
-    maxHeight = 1200,
-    quality = 0.7,
+    maxWidth = 1920,
+    maxHeight = 1920,
+    quality = 0.9,
     mimeType = "image/jpeg",
   } = options;
 

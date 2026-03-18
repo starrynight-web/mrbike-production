@@ -14,6 +14,7 @@ from .serializers import (
     UsedBikeListingCreateSerializer,
     ReportListingSerializer
 )
+from .filters import UsedBikeListingFilter
 
 class IsSellerOrReadOnly(permissions.BasePermission):
     """
@@ -29,7 +30,7 @@ class IsSellerOrReadOnly(permissions.BasePermission):
 
 class UsedBikeListingViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['condition', 'location_city', 'status', 'category', 'is_featured', 'is_urgent']
+    filterset_class = UsedBikeListingFilter
     search_fields = ['title', 'description', 'location', 'location_city']
     ordering_fields = ['price', 'created_at', 'mileage']
     
@@ -135,12 +136,17 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
             if seller.email:
                 frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
                 listing_url = f"{frontend_url}/used-bike/{listing.slug or str(listing.id)}"
-                email_service.send_approval_email(
+                
+                print(f"DEBUG: Sending approval email to {seller.email} (Verified: {seller.is_email_verified})")
+                email_sent = email_service.send_approval_email(
                     to_email=seller.email,
                     listing_title=listing.title,
                     listing_url=listing_url,
                     to_name=seller.first_name or seller.username
                 )
+                print(f"DEBUG: Approval email sent status: {email_sent}")
+            else:
+                print(f"WARN: Seller {seller.username} has no email address")
             
             Notification.objects.create(
                 user=seller,
@@ -148,7 +154,9 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
                 message=f'Your listing "{listing.title}" has been approved and is now live!'
             )
         except Exception as e:
+            import traceback
             print(f"ERROR: Failed to send approval notification for listing {pk}: {str(e)}")
+            traceback.print_exc()
         
         data = {"status": "active", "id": listing.id}
         return StandardResponse.success(data=data, message="Listing has been approved and is now active.")
@@ -180,13 +188,18 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
             if seller.email:
                 frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
                 dashboard_url = f"{frontend_url}/dashboard/my-listings"
-                email_service.send_rejection_email(
+                
+                print(f"DEBUG: Sending rejection email to {seller.email} (Verified: {seller.is_email_verified})")
+                email_sent = email_service.send_rejection_email(
                     to_email=seller.email,
                     listing_title=listing.title,
                     reason=reason,
                     listing_url=dashboard_url,
                     to_name=seller.first_name or seller.username
                 )
+                print(f"DEBUG: Rejection email sent status: {email_sent}")
+            else:
+                print(f"WARN: Seller {seller.username} has no email address")
             
             Notification.objects.create(
                 user=seller,

@@ -1,0 +1,17 @@
+﻿[OK] Development: Using PostgreSQL/Supabase
+[OK] Development: Redis connection successful
+ID: 29, Title: cfmoto 250 CL 2026, Slug: cfmoto-250-cl-2026-dhaka-bangladesh-2, Status: active, Created At: 2026-03-18 11:38:46.927189+00:00
+ID: 28, Title: cfmoto 250 CL 2026, Slug: cfmoto-250-cl-2026-dhaka-bangladesh-1, Status: pending, Created At: 2026-03-18 11:38:29.442727+00:00
+ID: 27, Title: cfmoto 250 CL 2026, Slug: cfmoto-250-cl-2026-dhaka-bangladesh, Status: pending, Created At: 2026-03-18 11:38:14.421709+00:00
+ID: 26, Title: hero XTREAM 250 RR 2026, Slug: hero-xtream-250-rr-2026-dhaka-bangladesh-1, Status: active, Created At: 2026-03-18 08:30:16.605239+00:00
+ID: 25, Title: hero XTREAM 250 RR 2026, Slug: hero-xtream-250-rr-2026-dhaka-bangladesh, Status: pending, Created At: 2026-03-18 08:30:00.698602+00:00
+ID: 24, Title: Test Bike Image d2be7c33, Slug: royal-enfield-meteor-350-supernova-2024-dhaka-bangladesh-6, Status: active, Created At: 2026-03-18 08:14:58.626017+00:00
+ID: 23, Title: Test Bike Image f416c308, Slug: royal-enfield-meteor-350-supernova-2024-dhaka-bangladesh-5, Status: pending, Created At: 2026-03-18 08:14:06.015995+00:00
+ID: 22, Title: Test Bike Image ebce7875, Slug: royal-enfield-meteor-350-supernova-2024-dhaka-bangladesh-4, Status: pending, Created At: 2026-03-18 08:13:07.847698+00:00
+ID: 21, Title: Test Bike Image 3a346253, Slug: royal-enfield-meteor-350-supernova-2024-dhaka-bangladesh-3, Status: pending, Created At: 2026-03-18 08:12:18.911049+00:00
+ID: 20, Title: Test Bike Image e979a479, Slug: royal-enfield-meteor-350-supernova-2024-dhaka-bangladesh-2, Status: pending, Created At: 2026-03-18 08:11:59.533539+00:00
+ID: 19, Title: Test Bike Image 390d7c06, Slug: royal-enfield-meteor-350-supernova-2024-dhaka-bangladesh-1, Status: pending, Created At: 2026-03-18 08:11:32.568437+00:00
+ID: 18, Title: Test Bike Image Reproduction, Slug: royal-enfield-meteor-350-supernova-2024-dhaka-bangladesh, Status: pending, Created At: 2026-03-18 08:10:10.958377+00:00
+ID: 17, Title: bajaj 260f 2026, Slug: bajaj-260f-2026-dhaka-bangladesh, Status: active, Created At: 2026-03-18 08:02:11.824797+00:00
+ID: 16, Title: akij-motors Duronto 2026, Slug: akij-motors-duronto-2026-dhaka-bangladesh, Status: active, Created At: 2026-03-18 06:43:30.666895+00:00
+ID: 15, Title: hero Xtrean 250 r 2026, Slug: hero-xtrean-250-r-2026-dhaka-bangladesh, Status: pending, Created At: 2026-03-16 13:12:00.147751+00:00

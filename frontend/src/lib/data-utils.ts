@@ -103,6 +103,7 @@ export function mapUsedBike(item: any): UsedBike {
             city: typeof item.location === 'object' ? (item.location.city || item.location_city || "Unknown") : (item.location || item.location_city || "Unknown"),
             area: typeof item.location === 'object' ? (item.location.area || item.location_area || "") : (item.location_area || ""),
         },
+        description: item.description || "",
         status: status as any,
         isFeatured: item.is_featured || false,
         isVerified: item.is_verified || false,

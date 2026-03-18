@@ -756,7 +756,7 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
                 className="w-full h-full relative"
               >
                 <Image
-                  src={defaultImage}
+                  src={bike.images && bike.images.length > 0 ? bike.images[activeImageIndex] : defaultImage}
                   alt={`${bikeName} - Image ${activeImageIndex + 1}`}
                   fill
                   className="object-cover"
@@ -768,7 +768,7 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
               <button
                 onClick={() =>
                   setActiveImageIndex((prev) =>
-                    prev === 0 ? IMAGE_COUNT - 1 : prev - 1,
+                    prev === 0 ? (bike.images?.length || 1) - 1 : prev - 1,
                   )
                 }
                 className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
@@ -778,7 +778,7 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
               <button
                 onClick={() =>
                   setActiveImageIndex((prev) =>
-                    prev === IMAGE_COUNT - 1 ? 0 : prev + 1,
+                    prev === (bike.images?.length || 1) - 1 ? 0 : prev + 1,
                   )
                 }
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
@@ -793,13 +793,13 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
 
               {/* Image Counter */}
               <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-black/60 text-white text-sm font-medium">
-                {activeImageIndex + 1} / {IMAGE_COUNT}
+                {activeImageIndex + 1} / {bike.images?.length || 1}
               </div>
             </div>
 
             {/* Thumbnails */}
             <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-              {Array.from({ length: IMAGE_COUNT }).map((_, index) => (
+              {(bike.images || [defaultImage]).map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveImageIndex(index)}
@@ -811,7 +811,7 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
                   )}
                 >
                   <Image
-                    src={defaultImage}
+                    src={img}
                     alt={`Thumbnail ${index + 1}`}
                     fill
                     className="object-cover"

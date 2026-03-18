@@ -8,6 +8,12 @@ class ListingImageSerializer(serializers.ModelSerializer):
     url = serializers.ReadOnlyField(source='get_best_url')
     compression_ratio = serializers.ReadOnlyField()
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Use get_best_url which already includes security and optimization
+        representation['url'] = instance.get_best_url
+        return representation
+
     class Meta:
         model = ListingImage
         fields = [
@@ -114,8 +120,8 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
             'mileage', 'manufacturing_year', 'registration_year', 'condition',
             'description', 'location', 'location_city', 'location_area',
             'location_division', 'contact_number', 'whatsapp_number', 'has_accident_history',
-            'engine_condition', 'body_condition', 'ownership_count',
-            'has_original_papers', 'registration_type', 'category',
+            'engine_condition', 'body_condition', 'ownership_count', 'engine_cc',
+            'has_original_papers', 'registration_year', 'category',
             'is_featured', 'is_urgent', 'uploaded_images', 'slug'
         ]
         extra_kwargs = {
@@ -127,6 +133,7 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
             'contact_number': {'required': True},
             'whatsapp_number': {'required': False},
             'location_city': {'required': False},
+            'engine_cc': {'required': False},
         }
 
     def validate_price(self, value):
@@ -153,46 +160,41 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
         listing = UsedBikeListing.objects.create(**validated_data)
         
         from .image_processor import ImageProcessingService
-        from django.core.files.base import ContentFile
+        import cloudinary.uploader
         import logging
         
         logger = logging.getLogger(__name__)
 
         for i, image in enumerate(images_data):
-            webp_file = None
-            compressed_file = None
-            
-            # Attempt processing
-            try:
-                processed = ImageProcessingService.compress_and_convert(image)
-                if processed.get('webp'):
-                    name = processed['webp'].get('name', f"image_{i}.webp")
-                    webp_file = ContentFile(processed['webp']['content'], name=name)
-                
-                if processed.get('compressed'):
-                    name = processed['compressed'].get('name', f"image_{i}_compressed.jpg")
-                    compressed_file = ContentFile(processed['compressed']['content'], name=name)
-                
-                # Reset original file pointer for saving
-                if hasattr(image, 'seek'):
-                    image.seek(0)
-            except Exception as e:
-                logger.error(f"Failed to process image {i} for listing {listing.id}: {str(e)}")
-
-            # Create ListingImage record regardless of processing success (at least original)
+            # Attempt processing and manual upload to bypass Djongo adaptation errors
             try:
                 is_primary = (i == 0)
+                
+                # 1. Upload original image
+                orig_result = cloudinary.uploader.upload(
+                    image,
+                    folder='mrbikebd/used-bikes/originals/',
+                    resource_type='image'
+                )
+                
+                # 2. Skip backend processing to reduce latency (frontend already compresses)
+                # Cloudinary handles dynamic optimization via get_best_url property
+                webp_public_id = None
+                compressed_public_id = None
+                
+                # 3. Create ListingImage record with PUBLIC IDs (strings) to satisfy Djongo
                 ListingImage.objects.create(
                     listing=listing,
-                    original_image=image,
-                    webp_image=webp_file,
-                    compressed_image=compressed_file,
+                    original_image=orig_result['public_id'],
+                    webp_image=webp_public_id,
+                    compressed_image=compressed_public_id,
                     is_primary=is_primary,
                     order=i,
                     file_size_original=image.size if hasattr(image, 'size') else None,
                 )
+                
                 logger.debug(f"Created ListingImage {i} for listing {listing.id}")
             except Exception as e:
-                logger.error(f"Failed to save ListingImage {i} for listing {listing.id}: {str(e)}")
+                logger.error(f"Failed to manually upload/save ListingImage {i} for listing {listing.id}: {str(e)}")
         
         return listing
