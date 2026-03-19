@@ -5,6 +5,7 @@ import { QueryProvider } from "./query-provider";
 import { AuthProvider } from "./auth-provider";
 import { AuthSync } from "./auth-sync";
 import { Toaster } from "@/components/ui/sonner";
+import { MotionProvider } from "./motion-provider";
 
 interface ProvidersProps {
     children: ReactNode;
@@ -18,16 +19,18 @@ export function Providers({ children }: ProvidersProps) {
     return (
         <QueryProvider>
             <AuthProvider>
-                <AuthSync />
-                {children}
-                <Toaster
-                    position="top-center"
-                    richColors
-                    closeButton
-                    toastOptions={{
-                        duration: 4000,
-                    }}
-                />
+                <MotionProvider>
+                    <AuthSync />
+                    {children}
+                    <Toaster
+                        position="top-center"
+                        richColors
+                        closeButton
+                        toastOptions={{
+                            duration: 4000,
+                        }}
+                    />
+                </MotionProvider>
             </AuthProvider>
         </QueryProvider>
     );

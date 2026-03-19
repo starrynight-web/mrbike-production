@@ -51,4 +51,26 @@ except Exception:
 # Simple JWT Debug
 SIMPLE_JWT['SIGNING_KEY'] = SECRET_KEY
 
+# Effectively disable throttling by setting very high rates
+REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = [
+    'rest_framework.throttling.AnonRateThrottle',
+    'rest_framework.throttling.UserRateThrottle',
+]
+REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
+    'anon': '100000/hour',
+    'user': '100000/hour',
+    'image_upload': '100000/hour',
+    'login': '100000/hour',
+    'register': '100000/hour',
+    'email_throttle': '100000/hour',
+    'inquiry': '100000/hour',
+    'auth': '100000/hour',
+    'marketplace_create': '100000/hour',
+    'admin_action': '100000/hour',
+    'search': '100000/hour',
+    'ip_based': '100000/hour',
+    'burst': '100000/hour',
+}
+
+
 

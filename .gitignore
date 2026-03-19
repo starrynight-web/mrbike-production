@@ -54,16 +54,38 @@ backend/staticfiles/
 *~
 .DS_Store
 
-# Node (frontend)
-frontend/node_modules/
-frontend/.next/
-frontend/out/
-
-# Testing
-.coverage
+# Node (front.env
+.env.local
+.env.*
+backend/.env
+backend/.env.*
+node_modules/
+dist/
+build/
+.next/
+.venv/
+env/
+venv/
+*.pyc
+__pycache__/
 .pytest_cache/
+.coverage
 htmlcov/
-
+*.log
+api_response.json
+migrate_error.txt
+debug_out.txt
+diag_out.txt
+output.txt
+raw_out.txt
+out.txt
+db_diagnosis.txt
+listings_debug.txt
+listings_fixed.txt
+listings_info.txt
+listings_utf8.txt
+migration_sql.sql
+bike_dump.json
 # OS
 .DS_Store
 Thumbs.db

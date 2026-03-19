@@ -1,15 +1,19 @@
 from rest_framework import generics, permissions, status
+from django.db import transaction
+from apps.core.responses import StandardResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import Review, Wishlist, Inquiry
 from .serializers import ReviewSerializer, WishlistSerializer, InquirySerializer
 from apps.bikes.models import BikeModel
+from apps.core.throttles import InquiryThrottle
 
 class InquiryCreateView(generics.CreateAPIView):
     queryset = Inquiry.objects.all()
     serializer_class = InquirySerializer
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [InquiryThrottle]
 
 class BikeReviewListView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer
@@ -24,30 +28,36 @@ class BikeReviewListView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         bike = get_object_or_404(BikeModel, pk=self.kwargs['bike_id'])
-        # If user already reviewed this bike, update the existing review
-        existing_review = Review.objects.filter(user=self.request.user, bike=bike).first()
-        if existing_review:
-            # Update the existing instance
-            serializer.instance = existing_review
-            serializer.save(user=self.request.user, bike=bike)
-        else:
-            serializer.save(user=self.request.user, bike=bike)
+        with transaction.atomic():
+            # update_or_create is atomic and prevents duplicate reviews
+            review, created = Review.objects.update_or_create(
+                user=self.request.user, 
+                bike=bike,
+                defaults=serializer.validated_data
+            )
+            # Re-assign to instance for serializer representation
+            serializer.instance = review
 
 class WishlistToggleView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, bike_id):
         bike = get_object_or_404(BikeModel, pk=bike_id)
-        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
         
-        if wishlist.bikes.filter(id=bike_id).exists():
-            wishlist.bikes.remove(bike)
-            status_msg = "removed"
-        else:
-            wishlist.bikes.add(bike)
-            status_msg = "added"
+        with transaction.atomic():
+            wishlist, created = Wishlist.objects.select_for_update().get_or_create(user=request.user)
             
-        return Response({"status": status_msg}, status=status.HTTP_200_OK)
+            if wishlist.bikes.filter(id=bike_id).exists():
+                wishlist.bikes.remove(bike)
+                status_msg = "removed"
+            else:
+                wishlist.bikes.add(bike)
+                status_msg = "added"
+            
+        return StandardResponse.success(
+            data={"status": status_msg},
+            message=f"Bike successfully {status_msg} your wishlist."
+        )
 
 class UserWishlistView(generics.RetrieveAPIView):
     serializer_class = WishlistSerializer
@@ -73,4 +83,6 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         # Users can only see/edit/delete their own reviews via this detail view for security
         # Note: BikeReviewListView handles public viewing of approved reviews
-        return Review.objects.filter(user=self.request.user)
+        if self.request.user.is_authenticated:
+            return Review.objects.filter(user=self.request.user)
+        return Review.objects.none()

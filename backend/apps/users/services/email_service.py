@@ -71,63 +71,72 @@ class BrevoEmailService:
             return False
 
     def send_verification_email(self, to_email: str, token: str, to_name: Optional[str] = None) -> bool:
-        """Send email verification link after registration"""
+        """Queue email verification link"""
+        from django_q.tasks import async_task
+        async_task('apps.users.tasks.send_async_email', 'send_verification_email_sync', to_email, token, to_name)
+        return True
+
+    def send_verification_email_sync(self, to_email: str, token: str, to_name: Optional[str] = None) -> bool:
+        """Actual synchronous send for verification email"""
         verify_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/verify-email?token={token}"
-        
-        context = {
-            'name': to_name or to_email,
-            'verify_url': verify_url
-        }
+        context = {'name': to_name or to_email, 'verify_url': verify_url}
         html_content = render_to_string('emails/verify_email.html', context)
         return self.send_email(to_email, "Verify Your Email - MrBikeBD", html_content, to_name)
 
     def send_password_reset(self, to_email: str, reset_token: str, to_name: Optional[str] = None) -> bool:
-        """Send password reset email"""
+        """Queue password reset email"""
+        from django_q.tasks import async_task
+        async_task('apps.users.tasks.send_async_email', 'send_password_reset_sync', to_email, reset_token, to_name)
+        return True
+
+    def send_password_reset_sync(self, to_email: str, reset_token: str, to_name: Optional[str] = None) -> bool:
+        """Actual synchronous send for password reset"""
         reset_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/reset-password?token={reset_token}"
-        
-        context = {
-            'name': to_name or to_email,
-            'reset_url': reset_url
-        }
+        context = {'name': to_name or to_email, 'reset_url': reset_url}
         html_content = render_to_string('emails/reset_password.html', context)
         return self.send_email(to_email, "Password Reset Request - MrBikeBD", html_content, to_name)
 
     def send_welcome_email(self, to_email: str, to_name: Optional[str] = None) -> bool:
-        """Send welcome email after email verification"""
-        context = {
-            'name': to_name or to_email,
-            'login_url': f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/login"
-        }
+        """Queue welcome email"""
+        from django_q.tasks import async_task
+        async_task('apps.users.tasks.send_async_email', 'send_welcome_email_sync', to_email, to_name)
+        return True
+
+    def send_welcome_email_sync(self, to_email: str, to_name: Optional[str] = None) -> bool:
+        context = {'name': to_name or to_email, 'login_url': f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/login"}
         html_content = render_to_string('emails/welcome_email.html', context)
         return self.send_email(to_email, "Welcome to MrBikeBD!", html_content, to_name)
 
     def send_rejection_email(self, to_email: str, listing_title: str, reason: str, listing_url: str = "", to_name: Optional[str] = None) -> bool:
-        """Send listing rejection notification email"""
-        context = {
-            'name': to_name or to_email,
-            'listing_title': listing_title,
-            'reason': reason,
-            'listing_url': listing_url
-        }
+        """Queue rejection email"""
+        from django_q.tasks import async_task
+        async_task('apps.users.tasks.send_async_email', 'send_rejection_email_sync', to_email, listing_title, reason, listing_url, to_name)
+        return True
+
+    def send_rejection_email_sync(self, to_email: str, listing_title: str, reason: str, listing_url: str = "", to_name: Optional[str] = None) -> bool:
+        context = {'name': to_name or to_email, 'listing_title': listing_title, 'reason': reason, 'listing_url': listing_url}
         html_content = render_to_string('emails/rejection_email.html', context)
         return self.send_email(to_email, f"Listing Update: {listing_title} - MrBikeBD", html_content, to_name)
 
     def send_approval_email(self, to_email: str, listing_title: str, listing_url: str, to_name: Optional[str] = None) -> bool:
-        """Send listing approval notification email"""
-        context = {
-            'name': to_name or to_email,
-            'listing_title': listing_title,
-            'listing_url': listing_url
-        }
+        """Queue approval email"""
+        from django_q.tasks import async_task
+        async_task('apps.users.tasks.send_async_email', 'send_approval_email_sync', to_email, listing_title, listing_url, to_name)
+        return True
+
+    def send_approval_email_sync(self, to_email: str, listing_title: str, listing_url: str, to_name: Optional[str] = None) -> bool:
+        context = {'name': to_name or to_email, 'listing_title': listing_title, 'listing_url': listing_url}
         html_content = render_to_string('emails/approval_email.html', context)
         return self.send_email(to_email, f"Listing Approved: {listing_title} - MrBikeBD", html_content, to_name)
 
     def send_login_otp(self, to_email: str, otp_code: str, to_name: Optional[str] = None) -> bool:
-        """Send 2FA login OTP"""
-        context = {
-            'name': to_name or to_email,
-            'otp_code': otp_code
-        }
+        """Queue login OTP email"""
+        from django_q.tasks import async_task
+        async_task('apps.users.tasks.send_async_email', 'send_login_otp_sync', to_email, otp_code, to_name)
+        return True
+
+    def send_login_otp_sync(self, to_email: str, otp_code: str, to_name: Optional[str] = None) -> bool:
+        context = {'name': to_name or to_email, 'otp_code': otp_code}
         html_content = render_to_string('emails/login_otp.html', context)
         return self.send_email(to_email, "Login Verification Code - MrBikeBD", html_content, to_name)
 

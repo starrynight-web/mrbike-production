@@ -5,25 +5,24 @@ import Image from "next/image";
 import { useBrand, useBrandBikes } from "@/hooks/use-brands";
 import { BikeCard } from "@/components/bikes/bike-card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-  ChevronRight,
-  ArrowLeft,
-  Info,
-  MapPin,
-  Bike,
-  BadgeCheck,
+import { 
+  ChevronRight, 
+  ArrowLeft, 
+  Info, 
+  MapPin, 
+  Bike as BikeIcon 
 } from "lucide-react";
 import { Bike as BikeType } from "@/types";
 import { ALLOWED_BRANDS } from "@/config/constants";
 
 interface BrandDetailClientProps {
   slug: string;
+  initialData?: any;
 }
 
-export function BrandDetailClient({ slug }: BrandDetailClientProps) {
+export function BrandDetailClient({ slug, initialData }: BrandDetailClientProps) {
   const { data: brand, isLoading: isBrandLoading } = useBrand(slug);
-  const { data: bikes = [], isLoading: isBikesLoading } = useBrandBikes(slug);
+  const { data: bikes = [], isLoading: isBikesLoading } = useBrandBikes(slug, initialData?.results || (Array.isArray(initialData) ? initialData : undefined));
 
   if (isBrandLoading || isBikesLoading) {
     return <BrandDetailLoading />;
@@ -96,7 +95,7 @@ export function BrandDetailClient({ slug }: BrandDetailClientProps) {
                     priority
                   />
                 ) : (
-                  <Bike className="w-16 h-16 text-muted-foreground/30" />
+                  <BikeIcon className="w-16 h-16 text-muted-foreground/30" />
                 )}
               </div>
             </div>
@@ -108,12 +107,12 @@ export function BrandDetailClient({ slug }: BrandDetailClientProps) {
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 text-muted-foreground">
                   <div className="flex items-center gap-1.5">
                     <MapPin className="h-4 w-4" />
-                    <span>{brand.country}</span>
+                    <span>{brand.country || 'International'}</span>
                   </div>
                   <div className="hidden md:block w-1 h-1 rounded-full bg-muted-foreground/30" />
                   <div className="flex items-center gap-1.5">
-                    <Bike className="h-4 w-4" />
-                    <span>{brand.bikeCount} Models Available</span>
+                    <BikeIcon className="h-4 w-4" />
+                    <span>{brand.bikeCount || bikes.length} Models Available</span>
                   </div>
                 </div>
               </div>

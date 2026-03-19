@@ -63,9 +63,11 @@ def generate_unique_username(identifier: str, UserModel, max_attempts: int = 10)
         username = f"{base}-{secrets.token_hex(3)}"
     return username
 
+from .throttles import EmailRateThrottle
+
 class GoogleAuthView(generics.GenericAPIView):
     permission_classes = [AllowAny]
-    throttle_classes = [LoginThrottle]
+    throttle_classes = [LoginThrottle, EmailRateThrottle]
     serializer_class = GoogleAuthSerializer
 
     def post(self, request, *args, **kwargs):
@@ -108,8 +110,8 @@ class GoogleAuthView(generics.GenericAPIView):
             )
             created = True
         
-        # ADMIN OTP Verification (Only for mrbikecloude@gmail.com)
-        if email.lower() == 'mrbikecloude@gmail.com':
+        # ADMIN OTP Verification
+        if email.lower() == settings.SUPER_ADMIN_EMAIL.lower():
             # Generate 6-digit random OTP
             otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
             session_id = secrets.token_urlsafe(32)
@@ -173,7 +175,7 @@ class NotificationListView(generics.ListAPIView):
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
-    throttle_classes = [RegisterThrottle]
+    throttle_classes = [RegisterThrottle, EmailRateThrottle]
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
@@ -209,7 +211,7 @@ class RegisterView(generics.CreateAPIView):
 class EmailLoginView(generics.GenericAPIView):
     """Login with email and password. Requires email verification."""
     permission_classes = [AllowAny]
-    throttle_classes = [LoginThrottle]
+    throttle_classes = [LoginThrottle, EmailRateThrottle]
     serializer_class = EmailLoginSerializer
 
     def post(self, request, *args, **kwargs):
@@ -242,8 +244,8 @@ class EmailLoginView(generics.GenericAPIView):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        # ADMIN OTP Verification (Only for mrbikecloude@gmail.com)
-        if email.lower() == 'mrbikecloude@gmail.com':
+        # ADMIN OTP Verification
+        if email.lower() == settings.SUPER_ADMIN_EMAIL.lower():
             # Generate 6-digit random OTP
             otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
             session_id = secrets.token_urlsafe(32)
@@ -296,7 +298,7 @@ class VerifyOTPView(generics.GenericAPIView):
         if not otp_data:
             return Response({'error': 'OTP session expired. Please login again.'}, status=status.HTTP_401_UNAUTHORIZED)
             
-        if otp_data['code'] == code:
+        if hmac.compare_digest(otp_data['code'], code):
             try:
                 user = User.objects.get(id=otp_data['user_id'])
             except User.DoesNotExist:
@@ -382,7 +384,7 @@ class EmailVerifyView(APIView):
 class ResendVerificationView(APIView):
     """Resend email verification link"""
     permission_classes = [AllowAny]
-    throttle_classes = [RegisterThrottle]
+    throttle_classes = [RegisterThrottle, EmailRateThrottle]
 
     def post(self, request):
         email = request.data.get('email')
@@ -419,7 +421,7 @@ class ResendVerificationView(APIView):
 
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
-    throttle_classes = [LoginThrottle]
+    throttle_classes = [LoginThrottle, EmailRateThrottle]
     serializer_class = PasswordResetRequestSerializer
 
     def post(self, request):
@@ -447,6 +449,7 @@ class PasswordResetRequestView(APIView):
 
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [LoginThrottle, EmailRateThrottle]
     serializer_class = PasswordResetConfirmSerializer
 
     def post(self, request):

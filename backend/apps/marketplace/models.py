@@ -38,7 +38,7 @@ class UsedBikeListing(models.Model):
     custom_model = models.CharField(max_length=100, blank=True, null=True)
     
     title = models.CharField(max_length=255)
-    price = models.FloatField()
+    price = models.DecimalField(max_digits=12, decimal_places=2, help_text="Price in BDT")
     mileage = models.IntegerField(help_text="Total kilometers driven")
     manufacturing_year = models.IntegerField()
     registration_year = models.IntegerField(null=True, blank=True)
@@ -147,7 +147,12 @@ class UsedBikeListing(models.Model):
                 self.slug = f"{original_slug}-{counter}"
                 counter += 1
 
-        # 3. Set expiry (Section 9.4) - 15 days default
+        # 4. Input Sanitization (Bleach)
+        from apps.core.utils import sanitize_html
+        if self.description:
+            self.description = sanitize_html(self.description)
+
+        super().save(*args, **kwargs)
         if not self.expires_at:
             self.expires_at = timezone.now() + timezone.timedelta(days=15)
 
@@ -303,9 +308,9 @@ class ListingImage(models.Model):
                 # Fallback to hardcoded cloud_name if settings fails
                 try:
                     from django.conf import settings
-                    cloud_name = getattr(settings, 'CLOUDINARY_STORAGE', {}).get('CLOUD_NAME', 'duna87jkw')
+                    cloud_name = getattr(settings, 'CLOUDINARY_STORAGE', {}).get('CLOUD_NAME')
                 except Exception:
-                    cloud_name = 'duna87jkw'
+                    cloud_name = None
 
                 url, _ = cloudinary.utils.cloudinary_url(
                     public_id,

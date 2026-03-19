@@ -1,10 +1,12 @@
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import UserProfile, Notification
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework import serializers
+
 from apps.core.validators import DataValidator
+from .models import UserProfile, Notification
 
 User = get_user_model()
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -30,8 +32,11 @@ class GoogleAuthSerializer(serializers.Serializer):
     id_token = serializers.CharField()
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=8)
     username = serializers.CharField(required=False, allow_blank=True)
+
+    def validate_password(self, value):
+        validate_password(value)
+        return value
     
     class Meta:
         model = User
@@ -75,6 +80,10 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     uid = serializers.CharField()
     token = serializers.CharField()
     new_password = serializers.CharField(min_length=8)
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:

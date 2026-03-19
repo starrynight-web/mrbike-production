@@ -7,6 +7,8 @@ from apps.core.responses import StandardResponse
 from apps.core.permissions import IsSuperAdminOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 import os
 from .models import UsedBikeListing, ReportListing
 from .serializers import (
@@ -15,6 +17,7 @@ from .serializers import (
     ReportListingSerializer
 )
 from .filters import UsedBikeListingFilter
+from .services import UsedBikeListingService
 
 class IsSellerOrReadOnly(permissions.BasePermission):
     """
@@ -44,6 +47,10 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
             self.lookup_url_kwarg = 'pk'
 
         return super().get_object()
+
+    @method_decorator(cache_page(60 * 5, key_prefix="marketplace_list"))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
         queryset = UsedBikeListing.objects.all().select_related('seller', 'bike_model')
@@ -91,8 +98,10 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         )
 
     def get_permissions(self):
+        from apps.core.permissions import IsVerifiedSeller, IsEmailVerified
+        
         if self.action == 'create':
-            return [IsAuthenticated()]
+            return [IsAuthenticated(), IsEmailVerified()]
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsSellerOrReadOnly()]
         elif self.action in ['approve', 'reject']:
@@ -114,103 +123,38 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
-        print(f"DEBUG: Approval triggered for listing ID: {pk}")
-        listing = self.get_object()
-        
         category = request.data.get('category')
-        if category:
-            listing.category = category
-            
-        listing.status = 'active'
-        listing.is_verified = True
-        listing.reviewed_by = request.user
-        listing.reviewed_at = timezone.now()
-        listing.save()
-        print(f"DEBUG: Listing {pk} saved as active")
-
         try:
-            from apps.users.services.email_service import email_service
-            from apps.users.models import Notification
-            
-            seller = listing.seller
-            if seller.email:
-                frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
-                listing_url = f"{frontend_url}/used-bike/{listing.slug or str(listing.id)}"
-                
-                print(f"DEBUG: Sending approval email to {seller.email} (Verified: {seller.is_email_verified})")
-                email_sent = email_service.send_approval_email(
-                    to_email=seller.email,
-                    listing_title=listing.title,
-                    listing_url=listing_url,
-                    to_name=seller.first_name or seller.username
-                )
-                print(f"DEBUG: Approval email sent status: {email_sent}")
-            else:
-                print(f"WARN: Seller {seller.username} has no email address")
-            
-            Notification.objects.create(
-                user=seller,
-                title="Listing Approved!",
-                message=f'Your listing "{listing.title}" has been approved and is now live!'
+            listing = UsedBikeListingService.approve_listing(
+                listing_id=pk, 
+                reviewer=request.user, 
+                category=category
             )
+            data = {"status": "active", "id": listing.id}
+            return StandardResponse.success(data=data, message="Listing has been approved and is now active.")
+        except UsedBikeListing.DoesNotExist:
+            return StandardResponse.error(message="Listing not found.", status_code=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            import traceback
-            print(f"ERROR: Failed to send approval notification for listing {pk}: {str(e)}")
-            traceback.print_exc()
-        
-        data = {"status": "active", "id": listing.id}
-        return StandardResponse.success(data=data, message="Listing has been approved and is now active.")
+            return StandardResponse.error(message=str(e))
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
-        print(f"DEBUG: Rejection triggered for listing ID: {pk}")
-        listing = self.get_object()
         reason = request.data.get('reason', '')
-        
         if not reason:
-            return Response(
-                {"error": "A rejection reason is required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        listing.status = 'rejected'
-        listing.rejection_reason = reason
-        listing.reviewed_by = request.user
-        listing.reviewed_at = timezone.now()
-        listing.save()
-        print(f"DEBUG: Listing {pk} saved as rejected")
+            return StandardResponse.error(message="A rejection reason is required.", status_code=status.HTTP_400_BAD_REQUEST)
         
         try:
-            from apps.users.services.email_service import email_service
-            from apps.users.models import Notification
-            
-            seller = listing.seller
-            if seller.email:
-                frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
-                dashboard_url = f"{frontend_url}/dashboard/my-listings"
-                
-                print(f"DEBUG: Sending rejection email to {seller.email} (Verified: {seller.is_email_verified})")
-                email_sent = email_service.send_rejection_email(
-                    to_email=seller.email,
-                    listing_title=listing.title,
-                    reason=reason,
-                    listing_url=dashboard_url,
-                    to_name=seller.first_name or seller.username
-                )
-                print(f"DEBUG: Rejection email sent status: {email_sent}")
-            else:
-                print(f"WARN: Seller {seller.username} has no email address")
-            
-            Notification.objects.create(
-                user=seller,
-                title="Listing Not Approved",
-                message=f'Your listing "{listing.title}" was not approved. Reason: {reason}'
+            listing = UsedBikeListingService.reject_listing(
+                listing_id=pk,
+                reviewer=request.user,
+                reason=reason
             )
+            data = {"status": "rejected", "id": listing.id}
+            return StandardResponse.success(data=data, message="Listing has been rejected and seller has been notified.")
+        except UsedBikeListing.DoesNotExist:
+            return StandardResponse.error(message="Listing not found.", status_code=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(f"ERROR: Failed to send rejection notification for listing {pk}: {str(e)}")
-        
-        data = {"status": "rejected", "id": listing.id}
-        return StandardResponse.success(data=data, message="Listing has been rejected and seller has been notified.")
+            return StandardResponse.error(message=str(e))
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def report(self, request, pk=None):

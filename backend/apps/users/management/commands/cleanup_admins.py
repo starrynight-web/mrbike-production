@@ -10,10 +10,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Accounts specifically requested/identified for removal
+        from django.conf import settings
         legacy_emails = [
             'admin_gr_s_n_r_t_e@unleft.space',
             'super_tester@mrbikebd.com',
-            'admin@mrbikebd.com',
+            settings.SUPER_ADMIN_EMAIL,
             'demo@mrbikebd.com'
         ]
         

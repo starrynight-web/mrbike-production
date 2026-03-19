@@ -6,6 +6,7 @@ import { Header, Footer, MobileNav } from "@/components/layout";
 import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { CompareBar } from "@/components/bikes";
 import { APP_CONFIG, SEO_DEFAULTS } from "@/config/constants";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -90,19 +91,65 @@ export const metadata: Metadata = {
   verification: {
     google: "your-google-verification-code",
   },
+  alternates: {
+    canonical: APP_CONFIG.url,
+    languages: {
+      "en-US": "/en",
+      "bn-BD": "/bn",
+    },
+  },
 };
-
-// ... existing imports
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Root layout with global providers
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": APP_CONFIG.name,
+    "url": APP_CONFIG.url,
+    "logo": `${APP_CONFIG.url}/favicon/favicon-96x96.png`,
+    "sameAs": [
+      APP_CONFIG.socialLinks.facebook,
+      APP_CONFIG.socialLinks.instagram,
+      APP_CONFIG.socialLinks.youtube,
+      APP_CONFIG.socialLinks.twitter
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": APP_CONFIG.phone,
+      "contactType": "customer service",
+      "email": APP_CONFIG.email,
+      "areaServed": "BD",
+      "availableLanguage": ["Bengali", "English"]
+    }
+  };
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": APP_CONFIG.name,
+    "url": APP_CONFIG.url,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${APP_CONFIG.url}/search?q={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    }
+  };
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en-US" suppressHydrationWarning>
       <head>
+        <JsonLd data={organizationSchema} />
+        <JsonLd data={websiteSchema} />
+        <link rel="alternate" hrefLang="en-US" href={`${APP_CONFIG.url}/en`} />
+        <link rel="alternate" hrefLang="bn-BD" href={`${APP_CONFIG.url}/bn`} />
+        <link rel="alternate" hrefLang="x-default" href={APP_CONFIG.url} />
         <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
         <link
           rel="icon"

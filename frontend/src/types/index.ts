@@ -76,6 +76,8 @@ export interface Bike {
   fuel_capacity?: number | string;
   curb_weight?: number | string;
   tyre_type?: string;
+  meta_title?: string;
+  meta_description?: string;
 }
 
 export interface BikeVariant {
@@ -202,6 +204,9 @@ export interface NewsArticle {
   published_at: string | Date;
   created_at: string | Date;
   updated_at: string | Date;
+  meta_title?: string;
+  meta_description?: string;
+  summary?: string;
 }
 
 export interface Author {
@@ -292,6 +297,9 @@ export interface ApiUsedBikeListing {
     url: string;
     is_primary: boolean;
   }[];
+  year?: number;
+  meta_title?: string;
+  meta_description?: string;
 }
 
 export type BikeCondition = "new" | "excellent" | "good" | "fair" | "poor";

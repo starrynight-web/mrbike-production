@@ -1,4 +1,4 @@
-import type { Bike, UsedBike, ApiUsedBikeListing, Review } from "@/types";
+import type { Bike, UsedBike, ApiUsedBikeListing, Review, BikeCondition } from "@/types";
 import { User } from "@/types";
 
 /**
@@ -12,7 +12,7 @@ import { User } from "@/types";
  * @returns Sanitized URL string
  */
 export function sanitizeImageUrl(
-    url: any,
+    url: string | null | undefined,
     fallback: string = "/bikes/default.webp"
 ): string {
     // Non-string values → fallback
@@ -47,13 +47,10 @@ export function sanitizeImageUrl(
 
     // Cloudinary public_id detection: looks like "mrbikebd/bikes/abc123"
     // These are not full URLs but need to be converted to Cloudinary CDN URLs
-    if (trimmed.includes("/") && !trimmed.startsWith("/") && !trimmed.startsWith(".")) {
-        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-        if (cloudName) {
-            return `https://res.cloudinary.com/${cloudName}/image/upload/${trimmed}`;
-        }
-        // Can't build URL without cloud name; return fallback
-        return fallback;
+    if (trimmed.includes("/") && !trimmed.startsWith("/") && !trimmed.startsWith(".") && !trimmed.startsWith("http")) {
+        // NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME should be available if prefixed correctly
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "duna87jkw";
+        return `https://res.cloudinary.com/${cloudName}/image/upload/${trimmed}`;
     }
 
     // Fix relative paths: ensure leading slash
@@ -78,7 +75,7 @@ export function sanitizeImageUrl(
 /**
  * Maps a raw API used bike listing to the frontend UsedBike model
  */
-export function mapUsedBike(item: any): UsedBike {
+export function mapUsedBike(item: Partial<ApiUsedBikeListing> & Record<string, any>): UsedBike {
     const bikeId = item.id?.toString() || `temp_${Date.now()}_${Math.random()}`;
     const status = item.status || "active";
 
@@ -97,7 +94,7 @@ export function mapUsedBike(item: any): UsedBike {
         price: Number(item.price) || 0,
         year: item.manufacturing_year || item.year || new Date().getFullYear(),
         kmDriven: item.mileage || item.kmDriven || 0,
-        condition: item.condition || "good",
+        condition: (item.condition as BikeCondition) || "good",
         accidentHistory: !!item.accident_history,
         location: {
             city: typeof item.location === 'object' ? (item.location.city || item.location_city || "Unknown") : (item.location || item.location_city || "Unknown"),
@@ -126,6 +123,16 @@ export function mapUsedBike(item: any): UsedBike {
     };
 }
 
+/**
+ * Helper to extract number from string (e.g., "150 cc" -> 150)
+ */
+function extractNumber(val: any): number {
+    if (typeof val === 'number') return val;
+    if (!val || typeof val !== 'string') return 0;
+    const match = val.match(/(\d+(\.\d+)?)/);
+    return match ? parseFloat(match[1]) : 0;
+}
+
 export function mapBike(bike: any): Bike {
     const brandName = bike.brand?.name || bike.brand_name || (typeof bike.brand === 'string' ? bike.brand : "Unknown Brand");
     
@@ -146,13 +153,13 @@ export function mapBike(bike: any): Bike {
         avgFuelConsumption: detailed.avg_fuel_consumption,
         // Existing fields mapping if needed (parity check)
         engineType: detailed.engine_type || bike.specs?.engineType,
-        displacement: Number(detailed.displacement || bike.specs?.displacement || 0),
+        displacement: extractNumber(detailed.displacement || bike.specs?.displacement || bike.engine_capacity || bike.engine_cc || 0),
         maxPower: detailed.max_power || bike.specs?.maxPower,
         maxTorque: detailed.max_torque || bike.specs?.maxTorque,
         cooling: detailed.cooling || bike.specs?.cooling,
         fuelSystem: detailed.fuel_system || bike.specs?.fuelSystem,
         transmission: detailed.transmission || bike.specs?.transmission,
-        kerbWeight: Number(detailed.kerb_weight || bike.specs?.kerbWeight || 0),
+        kerbWeight: extractNumber(detailed.kerb_weight || bike.specs?.kerbWeight || bike.curb_weight || 0),
         frontBrake: detailed.brakes_front || bike.specs?.frontBrake,
         rearBrake: detailed.brakes_rear || bike.specs?.rearBrake,
         abs: detailed.abs_channel || bike.specs?.abs,

@@ -26,7 +26,7 @@ v1_patterns = [
 ]
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('_mrb-control/', admin.site.urls),
     path('sitemap.xml', sitemap_view, name='sitemap'),
     
     # Versioned API
@@ -37,3 +37,7 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
+
+# Custom Error Handlers
+handler404 = 'apps.core.views.handler404'
+handler500 = 'apps.core.views.handler500'

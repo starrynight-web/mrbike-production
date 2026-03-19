@@ -1,24 +1,18 @@
+import bleach
 import re
 from django.core.exceptions import ValidationError
-from django.utils.html import strip_tags, escape
 
 class DataValidator:
-    """
-    Utility class for validating and sanitizing user input.
-    """
-    
     @staticmethod
     def sanitize_string(value):
         """
-        Removes HTML tags and escapes special characters.
+        Removes HTML tags and escapes special characters using bleach.
         """
         if not value or not isinstance(value, str):
             return value
         
-        # Remove HTML tags
-        clean_text = strip_tags(value)
-        # Escape HTML special characters
-        return escape(clean_text).strip()
+        # bleach.clean with empty tags/attributes is equivalent to strip_tags but safer
+        return bleach.clean(value, tags=[], attributes={}, strip=True).strip()
 
     @staticmethod
     def validate_phone(value):

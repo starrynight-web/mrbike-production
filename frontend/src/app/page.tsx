@@ -14,7 +14,7 @@ import {
   Plug,
   Bike as BikeIcon,
 } from "lucide-react";
-import { BIKE_CATEGORIES, ALLOWED_BRANDS } from "@/config/constants";
+import { BIKE_CATEGORIES, ALLOWED_BRANDS, APP_CONFIG } from "@/config/constants";
 import type { Bike, UsedBike } from "@/types";
 import { api } from "@/lib/api-service";
 import { sanitizeImageUrl, mapBike, mapUsedBike } from "@/lib/data-utils";
@@ -25,6 +25,7 @@ import type { Brand, NewsArticle } from "@/types";
 import { UsedBikesCarousel } from "@/components/used-bikes/used-bikes-carousel";
 import { CategoryShowcase } from "@/components/bikes/category-showcase";
 import { AdBanner } from "@/components/ads/ad-banner";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export default async function HomePage() {
   let featuredBikes: Bike[] = [];
@@ -65,8 +66,21 @@ export default async function HomePage() {
     fetchError = true;
   }
 
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": featuredBikes.map((bike, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "url": `${APP_CONFIG.url}/bike/${bike.slug}`,
+      "name": bike.name,
+      "image": bike.primary_image || bike.thumbnailUrl
+    }))
+  };
+
   return (
     <div className="flex flex-col">
+      <JsonLd data={itemListSchema} />
       {/* ==================== HERO SECTION ==================== */}
       <section className="relative overflow-hidden bg-neutral-950 py-16 md:py-24">
         {/* Dark Overlay */}

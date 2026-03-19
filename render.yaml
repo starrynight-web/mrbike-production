@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: mrbikebd-backend
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input
+    # Note: Running migrations automatically on start is convenient for small/medium apps.
+    # For large apps, consider a separate 'job' or manual migration.
+    startCommand: python manage.py migrate && gunicorn core.wsgi:application
+    rootDir: backend
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: core.settings.production
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SECRET_KEY
+        generateValue: true # Render will generate a unique key if you don't provide one
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mrbikebd-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: mrbikebd-redis
+          property: connectionString
+      - key: CLOUDINARY_URL
+        sync: false # Set manually in Dashboard
+
+databases:
+  - name: mrbikebd-db
+    plan: free # Change to starter/standard for production
+
+redis:
+  - name: mrbikebd-redis
+    plan: free # Change to starter/standard for production
+    ipAllowList: [] # Only allow internal connections

@@ -59,10 +59,20 @@ export interface BikeSpecification {
   tyres_type?: string;
   wheels_front?: string;
   wheels_rear?: string;
-  lighting?: any;
-  instrument_cluster?: any;
-  battery?: any;
-  additional_features?: any[];
+  lighting?: {
+    headlight?: string;
+    tail_light?: string;
+    indicators?: string;
+  };
+  instrument_cluster?: {
+    type?: string;
+    features?: string[];
+  };
+  battery?: {
+    voltage?: string;
+    capacity?: string;
+  };
+  additional_features?: string[];
   gear_shift_pattern?: string;
   spark_plugs?: number;
   cooling_type?: string;
@@ -207,8 +217,8 @@ class AdminAPI {
     sort?: "name" | "price" | "rating";
     limit?: number;
     offset?: number;
-  }) {
-    const response = await api.get<any>(
+  }): Promise<{ results: Bike[]; count: number }> {
+    const response = await api.get<{ results: Bike[]; count: number }>(
       "/bikes/",
       { params },
     );

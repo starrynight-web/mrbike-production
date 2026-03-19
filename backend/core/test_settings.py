@@ -8,14 +8,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
     'django_filters',
+    'django_q',
+    'apps.core',
     'apps.users',
     'apps.bikes',
     'apps.marketplace',
-    'apps.editorial',
-    'apps.engine',
+    'apps.news',
+    'apps.interactions',
 ]
 DATABASES = {
     'default': {

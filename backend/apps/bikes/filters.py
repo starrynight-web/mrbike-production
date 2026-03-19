@@ -5,6 +5,9 @@ from .models import BikeModel
 class BikeModelFilter(django_filters.FilterSet):
     brand = django_filters.CharFilter(method='filter_brand')
     category = django_filters.CharFilter(field_name='category', lookup_expr='iexact')
+    # Frontend compatible aliases
+    priceMin = django_filters.NumberFilter(field_name='price', lookup_expr='gte')
+    priceMax = django_filters.NumberFilter(field_name='price', lookup_expr='lte')
     minPrice = django_filters.NumberFilter(field_name='price', lookup_expr='gte')
     maxPrice = django_filters.NumberFilter(field_name='price', lookup_expr='lte')
     ccMin = django_filters.NumberFilter(field_name='engine_capacity', lookup_expr='gte')
@@ -12,7 +15,7 @@ class BikeModelFilter(django_filters.FilterSet):
 
     class Meta:
         model = BikeModel
-        fields = ['brand', 'category', 'minPrice', 'maxPrice', 'ccMin', 'ccMax']
+        fields = ['brand', 'category', 'priceMin', 'priceMax', 'minPrice', 'maxPrice', 'ccMin', 'ccMax']
 
     def filter_brand(self, queryset, name, value):
         # Support both ?brand=slug1&brand=slug2 AND ?brand=slug1,slug2

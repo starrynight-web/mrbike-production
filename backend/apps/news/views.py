@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions, parsers, status
+from apps.core.permissions import IsSuperAdminOnly
 from .models import Article
 from .serializers import ArticleSerializer
+from .services import ArticleService
 from apps.core.responses import StandardResponse
 
 class ArticleListCreateView(generics.ListCreateAPIView):
@@ -14,11 +16,11 @@ class ArticleListCreateView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            return [permissions.IsAdminUser()]
+            return [IsSuperAdminOnly()]
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        article = serializer.save(author=self.request.user)
+        ArticleService.create_article(serializer.validated_data, self.request.user)
         # Wrap create response in success() if we want to customize, but usually 201 is better handled.
         # However, for consistency with our FE ApiService:
         pass
@@ -44,7 +46,7 @@ class ArticleDetailView(generics.RetrieveAPIView):
 class ArticleAdminUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    permission_classes = [IsSuperAdminOnly]
     
     parser_classes = (parsers.MultiPartParser, parsers.FormParser)
     lookup_field = 'pk'

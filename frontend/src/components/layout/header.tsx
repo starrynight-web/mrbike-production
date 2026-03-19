@@ -14,9 +14,10 @@ import {
   Store,
   Bell,
   Shield,
-  PlusCircle,
+   PlusCircle,
+  Menu,
+  Disc,
 } from "lucide-react";
-import { TireIcon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -268,7 +269,7 @@ export function Header() {
                   size="icon"
                   className="lg:hidden h-9 w-9 rounded-lg border bg-muted/50 hover:bg-muted shadow-sm"
                 >
-                  <TireIcon
+                  <Disc
                     className={cn(
                       "h-5 w-5 transition-transform duration-500 ease-in-out",
                       isMobileMenuOpen && "rotate-[360deg]",

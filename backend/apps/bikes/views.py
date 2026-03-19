@@ -26,13 +26,16 @@ class BrandViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'origin']
     
+    @method_decorator(cache_page(60 * 60, key_prefix='brand_list'))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    @method_decorator(cache_page(60 * 60, key_prefix='brand_detail'))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
     def get_object(self):
+        # ... exists ...
         """Allow getting brand by ID or slug"""
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
         lookup_value = self.kwargs.get(lookup_url_kwarg)
@@ -61,7 +64,7 @@ class BrandViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsAdminUser()]
+            return [IsSuperAdminOnly()]
         return [permissions.AllowAny()]
 
 class BikeModelViewSet(viewsets.ModelViewSet):
@@ -78,14 +81,15 @@ class BikeModelViewSet(viewsets.ModelViewSet):
         
         search_query = self.request.query_params.get('search')
         if search_query:
-            from django.contrib.postgres.search import SearchVector
-            queryset = queryset.annotate(
-                search=SearchVector('name', 'brand__name', 'engine_type', 'category')
-            ).filter(search=search_query)
-            
+            from django.db.models import Q
+            queryset = queryset.filter(
+                Q(name__icontains=search_query) |
+                Q(brand__name__icontains=search_query) |
+                Q(category__icontains=search_query) |
+                Q(engine_type__icontains=search_query)
+            )
         return queryset
 
-    # Removed cache_page to fix Issue #1 (newly added bikes not appearing immediately)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -109,12 +113,12 @@ class BikeModelViewSet(viewsets.ModelViewSet):
 
     permission_classes_by_action = {
         'default': [permissions.AllowAny],
-        'create': [IsAdminUser],
-        'update': [IsAdminUser],
-        'partial_update': [IsAdminUser],
-        'destroy': [IsAdminUser],
-        'upload_image': [IsAdminUser],
-        'duplicate': [IsAdminUser],
+        'create': [IsSuperAdminOnly],
+        'update': [IsSuperAdminOnly],
+        'partial_update': [IsSuperAdminOnly],
+        'destroy': [IsSuperAdminOnly],
+        'upload_image': [IsSuperAdminOnly],
+        'duplicate': [IsSuperAdminOnly],
     }
     
     def get_permissions(self):

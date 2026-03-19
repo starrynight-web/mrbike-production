@@ -68,7 +68,8 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
             'registration_type', 'expires_at', 'category', 'is_verified',
             'status', 'is_featured', 'is_urgent', 'views_count',
             'created_at', 'updated_at', 'images', 'bike_model_name',
-            'brand_name', 'year', 'image_url', 'reports_count'
+            'brand_name', 'year', 'image_url', 'reports_count',
+            'meta_title', 'meta_description'
         ]
         read_only_fields = [
             'views_count', 'is_verified', 'created_at', 'updated_at',
@@ -159,42 +160,30 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
         # User is passed by view perform_create
         listing = UsedBikeListing.objects.create(**validated_data)
         
-        from .image_processor import ImageProcessingService
-        import cloudinary.uploader
+        from django_q.tasks import async_task
+        from django.db import transaction
         import logging
         
         logger = logging.getLogger(__name__)
 
         for i, image in enumerate(images_data):
-            # Attempt processing and manual upload to bypass Djongo adaptation errors
             try:
                 is_primary = (i == 0)
+                image.seek(0)
+                image_bytes = image.read()
                 
-                # 1. Upload original image
-                orig_result = cloudinary.uploader.upload(
-                    image,
-                    folder='mrbikebd/used-bikes/originals/',
-                    resource_type='image'
-                )
+                # Use lambda for late binding of parameters to on_commit
+                transaction.on_commit(lambda b=image_bytes, n=image.name, p=is_primary, idx=i: async_task(
+                    'apps.marketplace.tasks.process_listing_image',
+                    listing.id,
+                    b,
+                    n,
+                    p,
+                    idx
+                ))
                 
-                # 2. Skip backend processing to reduce latency (frontend already compresses)
-                # Cloudinary handles dynamic optimization via get_best_url property
-                webp_public_id = None
-                compressed_public_id = None
-                
-                # 3. Create ListingImage record with PUBLIC IDs (strings) to satisfy Djongo
-                ListingImage.objects.create(
-                    listing=listing,
-                    original_image=orig_result['public_id'],
-                    webp_image=webp_public_id,
-                    compressed_image=compressed_public_id,
-                    is_primary=is_primary,
-                    order=i,
-                    file_size_original=image.size if hasattr(image, 'size') else None,
-                )
-                
-                logger.debug(f"Created ListingImage {i} for listing {listing.id}")
+                logger.debug(f"Registered on_commit hook for image {i} of listing {listing.id}")
             except Exception as e:
-                logger.error(f"Failed to manually upload/save ListingImage {i} for listing {listing.id}: {str(e)}")
+                logger.error(f"Failed to register on_commit for image {i} of listing {listing.id}: {str(e)}")
         
         return listing

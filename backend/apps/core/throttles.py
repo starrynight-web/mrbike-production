@@ -18,18 +18,18 @@ class AuthThrottle(SimpleRateThrottle):
     """
     scope = 'auth'
     
-    def get_cache_key(self):
-        if self.request.user and self.request.user.is_authenticated:
+    def get_cache_key(self, request, view):
+        if request.user and request.user.is_authenticated:
             # Throttle by user ID for authenticated users
             return self.cache_format % {
                 'scope': self.scope,
-                'ident': self.request.user.id
+                'ident': request.user.id
             }
         else:
             # Throttle by IP for anonymous users
             return self.cache_format % {
                 'scope': self.scope,
-                'ident': self.get_client_ip(self.request)
+                'ident': self.get_client_ip(request)
             }
     
     def get_client_ip(self, request):
@@ -156,9 +156,23 @@ class BurstThrottle(SimpleRateThrottle):
             else:
                 ident = self.request.META.get('REMOTE_ADDR', 'unknown')
         
+class InquiryThrottle(SimpleRateThrottle):
+    """
+    Rate limit for inquiries
+    - 5 inquiries per hour per IP
+    """
+    scope = 'inquiry'
+    
+    def get_cache_key(self, request, view):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR', 'unknown')
+        
         return self.cache_format % {
             'scope': self.scope,
-            'ident': ident
+            'ident': ip
         }
 
 

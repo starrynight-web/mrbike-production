@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, AllowAny
+from apps.core.permissions import IsSuperAdminOnly
 from django.db import connections
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
@@ -10,10 +11,32 @@ from django.db.models import Count, Sum
 from django.utils import timezone
 from datetime import timedelta
 
+from django.http import JsonResponse
+import logging
+
 User = get_user_model()
+logger = logging.getLogger(__name__)
+
+def handler404(request, exception=None):
+    """Custom 404 handler for JSON responses"""
+    return JsonResponse({
+        'status': 'error',
+        'message': 'The requested resource was not found.',
+        'code': 404
+    }, status=404)
+
+def handler500(request):
+    """Custom 500 handler for JSON responses"""
+    # Log the full error to help debugging
+    logger.error("Internal Server Error: %s", request.path, exc_info=True)
+    return JsonResponse({
+        'status': 'error',
+        'message': 'An internal server error occurred. Our team has been notified.',
+        'code': 500
+    }, status=500)
 
 class AdminStatsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsSuperAdminOnly]
 
     def get(self, request):
         stats = {
@@ -31,7 +54,7 @@ class AdminStatsView(APIView):
         return Response(stats)
 
 class AdminFilterOptionsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsSuperAdminOnly]
 
     def get(self, request):
         brands = Brand.objects.values('id', 'name')
@@ -45,7 +68,7 @@ class AdminFilterOptionsView(APIView):
         })
 
 class AdminAnalyticsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsSuperAdminOnly]
 
     def get(self, request):
         # Basic mock data for analytics that the frontend might expect
@@ -62,7 +85,7 @@ class AdminAnalyticsView(APIView):
             "user_growth": [] # Mocked for now
         })
 class AdminSettingsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsSuperAdminOnly]
 
     def get(self, request):
         # Default settings - in production these would be in a DB

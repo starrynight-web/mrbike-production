@@ -81,6 +81,7 @@ function FilterContent({
                 adventure: Mountain,
                 cafe_racer: Bike,
                 offroad: Mountain,
+                electric: Zap,
               }[cat.value] || Bike;
 
             return (
@@ -454,9 +455,11 @@ export function BikeFiltersSidebar({ brands }: { brands: Brand[] }) {
     selectedBrands,
     selectedCategories,
     priceRange,
+    ccRange,
     setSelectedBrands,
     setSelectedCategories,
     setPriceRange,
+    setCcRange,
     resetFilters,
   } = useFilterStore();
 
@@ -500,6 +503,7 @@ export function BikeFiltersSidebar({ brands }: { brands: Brand[] }) {
                     adventure: Mountain,
                     cafe_racer: Bike,
                     offroad: Mountain,
+                    electric: Zap,
                   }[cat.value] || Bike;
 
                 return (
@@ -541,6 +545,32 @@ export function BikeFiltersSidebar({ brands }: { brands: Brand[] }) {
                   className={`w-full text-left px-2 py-1.5 rounded text-sm transition-colors ${priceRange[0] === range.min
                       ? "bg-primary/10 text-primary font-medium"
                       : "hover:bg-muted"
+                    }`}
+                >
+                  {range.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+          
+          {/* Engine CC */}
+          <div>
+            <h4 className="text-sm font-medium mb-3">Engine (CC)</h4>
+            <div className="space-y-1">
+              {CC_RANGES.map((range) => (
+                <button
+                  key={range.label}
+                  onClick={() =>
+                    setCcRange([
+                      range.min,
+                      range.max === Infinity ? 1000 : range.max,
+                    ])
+                  }
+                  className={`w-full text-left px-2 py-1.5 rounded text-sm transition-colors ${ccRange[0] === range.min
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-muted"
                     }`}
                 >
                   {range.label}

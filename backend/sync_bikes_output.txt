@@ -1,0 +1,3 @@
+﻿[OK] Development: Using PostgreSQL/Supabase
+[OK] Development: Redis connection successful
+Error: E:\mr\db.json not found.

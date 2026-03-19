@@ -9,10 +9,12 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings.development')
 django.setup()
 
 from django.contrib.auth import get_user_model
+from django.conf import settings
+
 User = get_user_model()
 
-TARGET_EMAIL = 'mrbikecloude@gmail.com'
-TARGET_PASS = 'mrbike@3456@gr_sf_mn_gme_nr_ta_unlef@6202'
+TARGET_EMAIL = settings.SUPER_ADMIN_EMAIL
+TARGET_PASS = os.getenv('SUPER_ADMIN_PASSWORD', 'change-me-in-production')
 
 print(f"--- Admin Consolidation Starting ---")
 

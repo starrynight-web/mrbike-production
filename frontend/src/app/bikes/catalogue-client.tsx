@@ -11,7 +11,7 @@ import type { BikeFilters as BikeFiltersType, Bike } from "@/types";
 
 export function BikeCataloguePage() {
   const searchParams = useSearchParams();
-  const { selectedBrands, selectedCategories, priceRange, sortBy } =
+  const { selectedBrands, selectedCategories, priceRange, ccRange, sortBy } =
     useFilterStore();
 
   // Build filters from URL and store
@@ -21,6 +21,8 @@ export function BikeCataloguePage() {
       selectedCategories.length > 0 ? selectedCategories.join(",") : undefined,
     priceMin: priceRange[0] > 0 ? priceRange[0] : undefined,
     priceMax: priceRange[1] < 10000000 ? priceRange[1] : undefined,
+    ccMin: ccRange[0] > 0 ? ccRange[0] : undefined,
+    ccMax: ccRange[1] < 1000 ? ccRange[1] : undefined,
     sortBy: sortBy,
     search: searchParams.get("search") || undefined,
     page: parseInt(searchParams.get("page") || "1"),

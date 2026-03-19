@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_filters',
     'django_q',
+    'csp',
     
     # Local apps
     'apps.core',
@@ -36,6 +37,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'csp.middleware.CSPMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -112,6 +114,8 @@ REST_FRAMEWORK = {
         'image_upload': '10/hour',
         'login': '5/min',
         'register': '10/hour',
+        'email_throttle': '10/hour',
+        'inquiry': '5/hour',
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
@@ -166,6 +170,10 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@mrbikebd.com')
 # Frontend URL
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
+# Super Admin Configuration
+SUPER_ADMIN_EMAIL = os.getenv("SUPER_ADMIN_EMAIL", "admin@mrbikebd.com")
+REVALIDATE_SECRET = os.getenv("REVALIDATE_SECRET", "mrbike-revalidate-secret-2026")
+
 # CORS Settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -190,6 +198,18 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in CORS_ALLOWED_ORIGINS
 ]
 SECURE_REFERRER_POLICY = 'same-origin'
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Content Security Policy (CSP) Settings
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com")
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'", "https://va.vercel-scripts.com")
+CSP_IMG_SRC = ("'self'", "data:", "https://res.cloudinary.com", "https://*.supabase.co")
+CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com")
+CSP_CONNECT_SRC = ("'self'", "https://*.supabase.co", "https://*.sentry.io")
+CSP_FRAME_ANCESTORS = ("'self'",)
+CSP_INCLUDE_NONCE_IN = ["script-src"]
 
 # Django-Q Configuration (Section 4.10)
 Q_CLUSTER = {
@@ -209,3 +229,37 @@ Q_CLUSTER = {
 # but documented here for the auditor.
 # 1. marketplace.tasks.check_listing_expiry (Frequency: @daily)
 # 2. marketplace.tasks.notify_approaching_expiry (Frequency: @daily)
+
+# Logging Configuration (Structured JSON)
+try:
+    import pythonjsonlogger.jsonlogger
+    HAS_JSON_LOGGER = True
+except ImportError:
+    HAS_JSON_LOGGER = False
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'json': {
+            '()': 'pythonjsonlogger.jsonlogger.JsonFormatter',
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s',
+        } if HAS_JSON_LOGGER else {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s',
+        },
+        'simple': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'json' if HAS_JSON_LOGGER and os.getenv('DJANGO_LOG_JSON', 'False') == 'True' else 'simple',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}

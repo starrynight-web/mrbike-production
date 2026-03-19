@@ -7,7 +7,7 @@ from decimal import Decimal
 # Set up Django environment
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings.development')
 django.setup()
 
 from apps.bikes.models import Brand, BikeModel, BikeVariant, BikeSpecification

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { BikeDetailClient } from "./detail-client";
 import { APP_CONFIG, SEO_DEFAULTS } from "@/config/constants";
 import { apiServer } from "@/lib/api-server";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 interface BikePageProps {
     params: Promise<{ slug: string }>;
@@ -45,7 +46,7 @@ export async function generateMetadata({ params }: BikePageProps): Promise<Metad
                     url: bike.primary_image || bike.thumbnailUrl || SEO_DEFAULTS.defaultOgImage,
                     width: 1200,
                     height: 630,
-                    alt: bikeName,
+                    alt: `${brandName} ${bikeName}`,
                 },
             ],
         },
@@ -78,6 +79,8 @@ export default async function BikePage({ params }: BikePageProps) {
         notFound();
     }
 
+    const reviews = await apiServer.getBikeReviews(bikeData.id);
+
     // Structured Data (JSON-LD)
     const jsonLd = {
         "@context": "https://schema.org",
@@ -101,7 +104,20 @@ export default async function BikePage({ params }: BikePageProps) {
             "@type": "AggregateRating",
             "ratingValue": bikeData.rating.average,
             "reviewCount": bikeData.rating.count || 1
-        } : undefined
+        } : undefined,
+        "review": Array.isArray(reviews) ? reviews.map((r: any) => ({
+            "@type": "Review",
+            "reviewRating": {
+                "@type": "Rating",
+                "ratingValue": r.rating
+            },
+            "author": {
+                "@type": "Person",
+                "name": r.userName || r.user_name || "Anonymous"
+            },
+            "reviewBody": r.comment,
+            "datePublished": r.created_at || r.createdAt
+        })) : []
     };
 
     const breadcrumbLd = {
@@ -131,14 +147,8 @@ export default async function BikePage({ params }: BikePageProps) {
 
     return (
         <>
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
-            />
+            <JsonLd data={jsonLd} />
+            <JsonLd data={breadcrumbLd} />
             <BikeDetailClient slug={slug} initialData={bikeData} />
         </>
     );

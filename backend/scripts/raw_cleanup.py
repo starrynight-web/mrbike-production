@@ -12,7 +12,8 @@ def run_cleanup():
         conn = psycopg2.connect(DATABASE_URL)
         conn.autocommit = True
         with conn.cursor() as cur:
-            target = 'mrbikecloude@gmail.com'
+            from django.conf import settings
+            target = settings.SUPER_ADMIN_EMAIL
             print(f"Target Admin: {target}")
             
             # 1. Get user IDs to purge

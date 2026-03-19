@@ -5,6 +5,8 @@ import { SEO_DEFAULTS, APP_CONFIG } from "@/config/constants";
 import { NewsDetailClient } from "./news-detail-client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiServer } from "@/lib/api-server";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { generateNewsSchema } from "@/lib/seo-utils";
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -34,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             type: "article",
             images: [
                 {
-                    url: article.thumbnail_url || article.image || SEO_DEFAULTS.defaultOgImage,
+                    url: article.featured_image || SEO_DEFAULTS.defaultOgImage,
                     width: 1200,
                     height: 630,
                     alt: title,
@@ -57,22 +59,7 @@ export default async function NewsDetailPage({ params }: Props) {
     const article = await apiServer.getArticle(slug);
     if (!article) notFound();
 
-    // Structured Data (JSON-LD)
-    const jsonLd = {
-        "@context": "https://schema.org",
-        "@type": "NewsArticle",
-        "headline": article.title,
-        "image": [
-            article.thumbnail_url || article.image || SEO_DEFAULTS.defaultOgImage
-        ],
-        "datePublished": article.published_at || article.created_at,
-        "dateModified": article.updated_at || article.published_at || article.created_at,
-        "author": [{
-            "@type": "Person",
-            "name": article.author?.username || "MrBike Editor",
-            "url": `${APP_CONFIG.url}/profile/${article.author?.username}`
-        }]
-    };
+    const jsonLd = generateNewsSchema(article);
 
     const breadcrumbLd = {
         "@context": "https://schema.org",
@@ -101,14 +88,8 @@ export default async function NewsDetailPage({ params }: Props) {
 
     return (
         <main className="min-h-screen bg-background">
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
-            />
+            <JsonLd data={jsonLd} />
+            <JsonLd data={breadcrumbLd} />
             <Suspense fallback={<NewsDetailSkeleton />}>
                 <NewsDetailClient slug={slug} initialData={article} />
             </Suspense>

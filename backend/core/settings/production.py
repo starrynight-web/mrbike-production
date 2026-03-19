@@ -12,7 +12,10 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
     raise ImproperlyConfigured("SECRET_KEY must be set in production.")
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "mrbikebd.com,www.mrbikebd.com,mrbikebd.vercel.app").split(",")
+ALLOWED_HOSTS = os.getenv(
+    "ALLOWED_HOSTS", 
+    "mrbikebd.com,www.mrbikebd.com,mrbikebd.vercel.app,mrbikebd-backend.onrender.com"
+).split(",")
 
 # Database setup (Strict PostgreSQL)
 DATABASE_URL = os.getenv("DATABASE_URL")

@@ -14,7 +14,7 @@ export function useBrands() {
   });
 }
 
-export function useBrand(slug: string) {
+export function useBrand(slug: string, initialData?: Brand | null) {
   return useQuery({
     queryKey: ["brands", slug],
     queryFn: async () => {
@@ -25,10 +25,11 @@ export function useBrand(slug: string) {
     },
     enabled: !!slug,
     staleTime: 60 * 60 * 1000,
+    initialData,
   });
 }
 
-export function useBrandBikes(slug: string) {
+export function useBrandBikes(slug: string, initialData?: Bike[]) {
   return useQuery({
     queryKey: ["brands", slug, "bikes"],
     queryFn: async () => {
@@ -38,5 +39,6 @@ export function useBrandBikes(slug: string) {
     },
     enabled: !!slug,
     staleTime: 5 * 60 * 1000,
+    initialData,
   });
 }

@@ -16,7 +16,8 @@ print("--- Diagnostic Start ---")
 try:
     print(f"Vendor: {connection.vendor}")
     User = get_user_model()
-    target_email = 'mrbikecloude@gmail.com'
+    from django.conf import settings
+    target_email = settings.SUPER_ADMIN_EMAIL
     
     users_to_del = User.objects.exclude(email=target_email)
     print(f"Users to delete: {users_to_del.count()}")

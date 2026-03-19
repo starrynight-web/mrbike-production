@@ -4,10 +4,12 @@ import { notFound } from "next/navigation";
 import { SEO_DEFAULTS, APP_CONFIG } from "@/config/constants";
 import { UsedBikeDetailClient } from "./detail-client";
 import { Skeleton } from "@/components/ui/skeleton";
-
-export const revalidate = 3600; // Revalidate every hour
 import { apiServer } from "@/lib/api-server";
 import { mapUsedBike } from "@/lib/data-utils";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { generateUsedBikeSchema } from "@/lib/seo-utils";
+
+export const revalidate = 3600; // Revalidate every hour
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -61,25 +63,11 @@ export default async function UsedBikeDetailPage({ params }: Props) {
   if (!rawBikeData) notFound();
   
   const bikeData = mapUsedBike(rawBikeData);
-
-  // Structured Data (JSON-LD)
+  
+  // Refined Structured Data using our SEO utility
   const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": `${bikeData.year} ${bikeData.bikeName}`,
-    "image": bikeData.thumbnailUrl || (bikeData.images && bikeData.images[0]),
-    "description": bikeData.description,
-    "offers": {
-      "@type": "Offer",
-      "priceCurrency": "BDT",
-      "price": bikeData.price,
-      "itemCondition": "https://schema.org/UsedCondition",
-      "availability": "https://schema.org/InStock"
-    },
-    "location": {
-      "@type": "Place",
-      "name": bikeData.location.city
-    }
+    ...generateUsedBikeSchema(rawBikeData),
+    // Explicitly add location or other fields if missing in utility
   };
 
   const breadcrumbLd = {
@@ -109,14 +97,8 @@ export default async function UsedBikeDetailPage({ params }: Props) {
 
   return (
     <main className="min-h-screen">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
-      />
+      <JsonLd data={jsonLd} />
+      <JsonLd data={breadcrumbLd} />
       <Suspense fallback={<UsedBikeDetailSkeleton />}>
         <UsedBikeDetailClient slug={slug} initialData={bikeData} />
       </Suspense>

@@ -1,4 +1,12 @@
 import { API_ENDPOINTS } from "@/config/constants";
+import { 
+  Bike, 
+  Review, 
+  NewsArticle, 
+  ApiUsedBikeListing, 
+  Brand,
+  ApiResponse 
+} from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -28,7 +36,7 @@ export const apiServer = {
       
       // Handle StandardResponse format { success, data, message }
       if (responseData && typeof responseData === 'object' && 'success' in responseData) {
-        return responseData.data as T;
+        return (responseData.data !== undefined ? responseData.data : responseData) as T;
       }
 
       return responseData as T;
@@ -38,15 +46,21 @@ export const apiServer = {
     }
   },
 
-  // Specific helpers to match the 10/10 roadmap requirements
+  // Specific helpers for ISR
   async getBike(slug: string) {
-    return this.get<any>(API_ENDPOINTS.BIKE_DETAIL(slug), {
+    return this.get<Bike>(API_ENDPOINTS.BIKE_DETAIL(slug), {
         next: { revalidate: 3600, tags: [`bike-${slug}`] }
     });
   },
 
+  async getBikeReviews(bikeId: string | number) {
+    return this.get<Review[]>(API_ENDPOINTS.BIKE_REVIEWS(bikeId), {
+        next: { revalidate: 3600, tags: [`bike-reviews-${bikeId}`] }
+    });
+  },
+
   async getSimilarBikes(slug: string) {
-    return this.get<any[]>(API_ENDPOINTS.BIKE_SIMILAR(slug), {
+    return this.get<Bike[]>(API_ENDPOINTS.BIKE_SIMILAR(slug), {
         next: { revalidate: 3600 }
     });
   },
@@ -57,14 +71,12 @@ export const apiServer = {
         next: { revalidate: 86400 } // Cache slugs for 24h
     });
     
-    // If it's paginated, we might only get the first page for static params
-    // which is fine for "popular" bikes.
     const results = data?.results || (Array.isArray(data) ? data : []);
-    return results.map((bike: any) => ({ slug: bike.slug }));
+    return results.map((bike: Bike) => ({ slug: bike.slug }));
   },
 
   async getArticle(slug: string) {
-    return this.get<any>(API_ENDPOINTS.NEWS_DETAIL(slug), {
+    return this.get<NewsArticle>(API_ENDPOINTS.NEWS_DETAIL(slug), {
         next: { revalidate: 1800, tags: [`news-${slug}`] }
     });
   },
@@ -74,12 +86,18 @@ export const apiServer = {
         next: { revalidate: 3600 }
     });
     const results = data?.results || (Array.isArray(data) ? data : []);
-    return results.map((article: any) => ({ slug: article.slug }));
+    return results.map((article: NewsArticle) => ({ slug: article.slug }));
   },
 
   async getUsedBike(slug: string) {
-    return this.get<any>(API_ENDPOINTS.USED_BIKE_DETAIL(slug), {
+    return this.get<ApiUsedBikeListing>(API_ENDPOINTS.USED_BIKE_DETAIL(slug), {
         next: { revalidate: 30, tags: [`used-bike-${slug}`] }
+    });
+  },
+
+  async getBrand(slug: string) {
+    return this.get<Brand>(API_ENDPOINTS.BRAND_BIKES(slug), {
+        next: { revalidate: 86400, tags: [`brand-${slug}`] }
     });
   },
 
@@ -88,6 +106,6 @@ export const apiServer = {
         next: { revalidate: 30 }
     });
     const results = data?.results || (Array.isArray(data) ? data : []);
-    return results.map((bike: any) => ({ slug: bike.slug || String(bike.id) }));
+    return results.map((bike: ApiUsedBikeListing) => ({ slug: bike.slug || String(bike.id) }));
   }
 };

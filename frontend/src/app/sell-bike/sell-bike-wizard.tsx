@@ -344,36 +344,53 @@ export function SellBikeWizard() {
               <div className="bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
                 <Bike className="h-10 w-10 text-primary" />
               </div>
-              <div>
-                <h2 className="text-2xl font-bold mb-2">
-                  Login to Sell Your Bike on MrBikeBD
-                </h2>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  You need to be logged in to post an ad. This helps us verify
-                  sellers and keep the marketplace safe.
-                </p>
-              </div>
-
-              {status === "unauthenticated" ? (
-                <div className="flex flex-col gap-3 max-w-xs mx-auto">
-                  <Button onClick={handleLogin} className="w-full" size="lg">
-                    Continue with Google
-                  </Button>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
-                        Or
-                      </span>
-                    </div>
-                  </div>
-                  <Button variant="outline" onClick={handleLogin}>
-                    Continue with Phone
-                  </Button>
+              
+              {status === "loading" ? (
+                <div className="space-y-4">
+                  <Loader2 className="h-10 w-10 animate-spin mx-auto text-primary" />
+                  <p className="text-muted-foreground font-medium text-lg">Checking your session...</p>
                 </div>
-              ) : null}
+              ) : (
+                <>
+                  <div>
+                    <h2 className="text-2xl font-bold mb-2">
+                       {status === "authenticated" ? "Ready to sell your bike!" : "Login to Sell Your Bike on MrBikeBD"}
+                    </h2>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                      {status === "authenticated" 
+                        ? "You are logged in and ready to post. Click 'Next' to proceed." 
+                        : "You need to be logged in to post an ad. This helps us verify sellers and keep the marketplace safe."}
+                    </p>
+                  </div>
+
+                  {status === "unauthenticated" && (
+                    <div className="flex flex-col gap-3 max-w-xs mx-auto">
+                      <Button onClick={handleLogin} className="w-full" size="lg">
+                        Continue with Google
+                      </Button>
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-background px-2 text-muted-foreground">
+                            Or
+                          </span>
+                        </div>
+                      </div>
+                      <Button variant="outline" onClick={handleLogin}>
+                        Continue with Phone
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {status === "authenticated" && (
+                    <Button onClick={() => setCurrentStep(2)} className="w-full max-w-xs mx-auto" size="lg">
+                       Start Listing <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  )}
+                </>
+              )}
             </div>
           )}
 
@@ -773,26 +790,31 @@ export function SellBikeWizard() {
           )}
 
           {currentStep === 3 && (
-            <div className="space-y-6">
-              <div className="border-2 border-dashed rounded-xl p-10 text-center hover:bg-muted/50 transition-colors cursor-pointer relative min-h-[200px] flex items-center justify-center">
-                <Input
+            <div className="space-y-6" id="sell-bike-step-3">
+              <div className="border-2 border-dashed rounded-xl p-10 text-center hover:bg-muted/50 transition-colors cursor-pointer relative min-h-[300px] flex flex-col items-center justify-center overflow-hidden">
+                <input
                   type="file"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50"
                   accept="image/*"
                   multiple
                   onChange={handleImageUpload}
+                  title="Click to upload bike photos"
                 />
-                <div className="flex flex-col items-center gap-2 relative z-0">
-                  <div className="bg-primary/10 p-4 rounded-full">
-                    <Camera className="h-8 w-8 text-primary" />
+                <div className="flex flex-col items-center gap-4 relative z-0 pointer-events-none">
+                  <div className="bg-primary/10 p-5 rounded-full ring-8 ring-primary/5">
+                    <Camera className="h-10 w-10 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-lg">
-                    Click to upload photos
-                  </h3>
-                  <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-                    Upload up to 5 clear photos of your bike. Good photos sell
-                    faster!
-                  </p>
+                  <div className="space-y-1">
+                    <h3 className="font-semibold text-xl text-foreground">
+                      Add clear photos of your bike
+                    </h3>
+                    <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+                      Upload up to 5 photos. High-quality images attract 3x more buyers!
+                    </p>
+                  </div>
+                  <div className="flex gap-2 text-xs font-medium text-primary/80 bg-primary/5 px-3 py-1 rounded-full border border-primary/20">
+                    JPG, PNG • Min. 1 photo required
+                  </div>
                 </div>
               </div>
 

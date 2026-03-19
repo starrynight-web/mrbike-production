@@ -64,6 +64,13 @@ class Article(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
+        # Input Sanitization (Bleach for rich text)
+        from apps.core.utils import sanitize_html
+        if self.content:
+            self.content = sanitize_html(self.content)
+        if self.excerpt:
+            self.excerpt = sanitize_html(self.excerpt)
+
         if not self.slug:
             self.slug = slugify(self.title)
         
