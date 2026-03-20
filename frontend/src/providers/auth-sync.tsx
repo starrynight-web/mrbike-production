@@ -11,6 +11,7 @@ interface NextAuthUser {
   name?: string | null;
   image?: string | null;
   role?: string;
+  isEmailVerified?: boolean;
 }
 
 export function AuthSync() {
@@ -27,11 +28,11 @@ export function AuthSync() {
             const user = session.user as NextAuthUser;
             
             // Sync tokens to localStorage for axios interceptors
-            if (session.accessToken) {
-                localStorage.setItem("accessToken", session.accessToken);
+            if ((session as any).accessToken) {
+                localStorage.setItem("accessToken", (session as any).accessToken);
             }
-            if (session.refreshToken) {
-                localStorage.setItem("refreshToken", session.refreshToken);
+            if ((session as any).refreshToken) {
+                localStorage.setItem("refreshToken", (session as any).refreshToken);
             }
 
             login({
@@ -41,6 +42,7 @@ export function AuthSync() {
                 image: user.image || undefined,
                 role: (user.role as UserRole) || "user",
                 phoneVerified: false,
+                isEmailVerified: user.isEmailVerified || false,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });

@@ -89,7 +89,7 @@ export default function AdminDashboard() {
     const handleApprove = async (listingId: number) => {
         try {
             setApprovingId(listingId);
-            await adminAPI.approveListing(listingId);
+            await adminAPI.approveListing(listingId, "standard");
             toast.success("Listing approved successfully!");
             setPendingApprovals(pendingApprovals.filter(p => p.id !== listingId));
             await loadDashboardData();

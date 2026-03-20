@@ -53,8 +53,7 @@ export function AccountManagement() {
     setIsSaving(true);
     try {
       const response = await api.updateProfile({
-        first_name: formData.name.split(" ")[0] || "",
-        last_name: formData.name.split(" ").slice(1).join(" ") || "",
+        name: formData.name,
         phone: formData.phone,
         location: formData.location,
       });

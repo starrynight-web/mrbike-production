@@ -284,15 +284,15 @@ export const CACHE_TTL = {
 export const RATE_LIMITS = {
   api: {
     windowMs: 60000, // 1 minute
-    maxRequests: 100,
+    maxRequests: 999999,
   },
   auth: {
     windowMs: 300000, // 5 minutes
-    maxRequests: 10,
+    maxRequests: 999999,
   },
   upload: {
     windowMs: 60000, // 1 minute
-    maxRequests: 10,
+    maxRequests: 999999,
   },
 } as const;
 

@@ -18,7 +18,7 @@ class BrevoEmailService:
         if not self.api_key:
             logger.warning("BREVO_API_KEY not set. Email functionality will be disabled.")
         else:
-            logger.info(f"Brevo API initialized with key: {self.api_key[:5]}...{self.api_key[-5:]}")
+            logger.info("Brevo API initialized successfully.")
         
         # Configure API key authorization
         self.configuration = sib_api_v3_sdk.Configuration()
@@ -71,10 +71,8 @@ class BrevoEmailService:
             return False
 
     def send_verification_email(self, to_email: str, token: str, to_name: Optional[str] = None) -> bool:
-        """Queue email verification link"""
-        from django_q.tasks import async_task
-        async_task('apps.users.tasks.send_async_email', 'send_verification_email_sync', to_email, token, to_name)
-        return True
+        """Send email verification link synchronously so failures are caught"""
+        return self.send_verification_email_sync(to_email, token, to_name)
 
     def send_verification_email_sync(self, to_email: str, token: str, to_name: Optional[str] = None) -> bool:
         """Actual synchronous send for verification email"""
@@ -130,10 +128,8 @@ class BrevoEmailService:
         return self.send_email(to_email, f"Listing Approved: {listing_title} - MrBikeBD", html_content, to_name)
 
     def send_login_otp(self, to_email: str, otp_code: str, to_name: Optional[str] = None) -> bool:
-        """Queue login OTP email"""
-        from django_q.tasks import async_task
-        async_task('apps.users.tasks.send_async_email', 'send_login_otp_sync', to_email, otp_code, to_name)
-        return True
+        """Send login OTP email synchronously to ensure admins are never locked out"""
+        return self.send_login_otp_sync(to_email, otp_code, to_name)
 
     def send_login_otp_sync(self, to_email: str, otp_code: str, to_name: Optional[str] = None) -> bool:
         context = {'name': to_name or to_email, 'otp_code': otp_code}

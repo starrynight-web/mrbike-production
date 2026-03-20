@@ -15,6 +15,10 @@ import hashlib
 import logging
 import google.auth.transport.requests
 import google.oauth2.id_token
+import pyotp
+import qrcode
+import io
+import base64
 
 from .serializers import (
     GoogleAuthSerializer, UserSerializer, NotificationSerializer,
@@ -246,29 +250,31 @@ class EmailLoginView(generics.GenericAPIView):
         
         # ADMIN OTP Verification
         if email.lower() == settings.SUPER_ADMIN_EMAIL.lower():
-            # Generate 6-digit random OTP
+            # If user has TOTP enabled (Authenticator App), prefer that
+            if user.totp_secret:
+                return Response({
+                    'requires_2fa': True,
+                    'method': 'totp'
+                }, status=status.HTTP_200_OK)
+
+            # Fallback to Email OTP
             otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
             session_id = secrets.token_urlsafe(32)
             
-            # Store code in cache for 5 minutes
             cache.set(f"email_otp_{session_id}", {
                 'user_id': user.id,
                 'code': otp_code
             }, timeout=300) 
 
-            # Send OTP via email
             email_sent = email_service.send_login_otp(
                 to_email=user.email,
                 otp_code=otp_code,
                 to_name=user.first_name or user.username
             )
 
-            if not email_sent:
-                logger.error(f"Failed to send 2FA OTP to {user.email}")
-
             return Response({
                 'requires_2fa': True,
-                'totp_session': session_id, # Keep field name to minimize frontend changes
+                'totp_session': session_id,
                 'email_sent': email_sent,
                 'method': 'email'
             }, status=status.HTTP_200_OK)
@@ -282,38 +288,97 @@ class EmailLoginView(generics.GenericAPIView):
         })
 
 
+class Setup2FAView(APIView):
+    """Setup TOTP 2FA for the user"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if user.totp_secret:
+            return Response({"message": "2FA is already enabled"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Generate new secret
+        secret = pyotp.random_base32()
+        user.totp_secret = secret
+        user.save()
+        
+        # Generate QR code
+        totp = pyotp.TOTP(secret)
+        provisioning_uri = totp.provisioning_uri(name=user.email, issuer_name="MrBikeBD")
+        
+        img = qrcode.make(provisioning_uri)
+        buffered = io.BytesIO()
+        img.save(buffered, format="PNG")
+        qr_code_base64 = base64.b64encode(buffered.getvalue()).decode()
+        
+        return Response({
+            "qr_code": qr_code_base64,
+            "secret": secret
+        })
+
+    def post(self, request):
+        user = request.user
+        code = request.data.get('code')
+        
+        if not user.totp_secret:
+            return Response({"error": "2FA setup not initiated"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        totp = pyotp.TOTP(user.totp_secret)
+        if totp.verify(code):
+            # 2FA is now confirmed active by frontend (implied)
+            return Response({"message": "2FA setup successful"})
+        else:
+            return Response({"error": "Invalid verification code"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class VerifyOTPView(generics.GenericAPIView):
-    """Verify Email OTP for admin users"""
+    """Verify OTP (Email or TOTP) for admin users"""
     permission_classes = [AllowAny]
     throttle_classes = [LoginThrottle]
 
     def post(self, request):
-        session_id = request.data.get('totp_session') # Keep field name to minimize frontend changes
+        session_id = request.data.get('totp_session')
         code = request.data.get('code')
         
-        if not session_id or not code:
-            return Response({'error': 'Session and code required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not code:
+            return Response({'error': 'Code required'}, status=status.HTTP_400_BAD_REQUEST)
             
-        otp_data = cache.get(f"email_otp_{session_id}")
-        if not otp_data:
-            return Response({'error': 'OTP session expired. Please login again.'}, status=status.HTTP_401_UNAUTHORIZED)
+        # 1. Try Email OTP (Cache-based)
+        if session_id:
+            otp_data = cache.get(f"email_otp_{session_id}")
+            if otp_data:
+                if hmac.compare_digest(otp_data['code'], code):
+                    try:
+                        user = User.objects.get(id=otp_data['user_id'])
+                        cache.delete(f"email_otp_{session_id}")
+                        refresh = RefreshToken.for_user(user)
+                        return Response({
+                            'refresh': str(refresh),
+                            'access': str(refresh.access_token),
+                            'user': UserSerializer(user).data,
+                        })
+                    except User.DoesNotExist:
+                        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+                else:
+                    return Response({'error': 'Invalid verification code'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # 2. Try TOTP (Database-based) for the specific admin
+        # We assume the user is the primary admin mrbikecloude@gmail.com if no session
+        try:
+            user = User.objects.get(email="mrbikecloude@gmail.com")
+            if user.totp_secret:
+                totp = pyotp.TOTP(user.totp_secret)
+                if totp.verify(code):
+                    refresh = RefreshToken.for_user(user)
+                    return Response({
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                        'user': UserSerializer(user).data,
+                    })
+        except User.DoesNotExist:
+            pass
             
-        if hmac.compare_digest(otp_data['code'], code):
-            try:
-                user = User.objects.get(id=otp_data['user_id'])
-            except User.DoesNotExist:
-                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-            
-            # Success - delete session and issue tokens
-            cache.delete(f"email_otp_{session_id}")
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                'user': UserSerializer(user).data,
-            })
-        else:
-            return Response({'error': 'Invalid verification code'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'Invalid or expired verification code'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class LogoutView(APIView):

@@ -3,7 +3,9 @@ from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from apps.core.sitemap import sitemap_view
+from django.conf import settings
+from django.http import JsonResponse
+from django.utils import timezone
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -12,7 +14,7 @@ schema_view = get_schema_view(
       description="Backend API for MrBikeBD ecosystem",
    ),
    public=True,
-   permission_classes=(permissions.AllowAny,),
+   permission_classes=(permissions.AllowAny,) if settings.DEBUG else (permissions.IsAdminUser,),
 )
 
 # API v1 versioning
@@ -25,9 +27,12 @@ v1_patterns = [
     path('interactions/', include('apps.interactions.urls')),
 ]
 
+def health_check(request):
+    return JsonResponse({"status": "ok", "message": "MrBikeBD API is running.", "timestamp": timezone.now().isoformat()})
+
 urlpatterns = [
     path('_mrb-control/', admin.site.urls),
-    path('sitemap.xml', sitemap_view, name='sitemap'),
+    path('health/', health_check, name='health_check'),
     
     # Versioned API
     path('api/v1/', include(v1_patterns)),

@@ -127,17 +127,17 @@ export function NewsClient() {
                     <div className="h-10 w-10 rounded-full bg-muted overflow-hidden relative">
                       <Image
                         src={getSafeImageUrl(
-                          featuredNews.author.profile_image,
+                          featuredNews.author?.profile_image,
                           "/placeholder-avatar.png"
                         )}
-                        alt={featuredNews.author.username}
+                        alt={featuredNews.author?.username || "Author"}
                         fill
                         className="object-cover"
                       />
                     </div>
                     <div>
                       <p className="font-semibold text-sm">
-                        {featuredNews.author.username}
+                        {featuredNews.author?.username || "Anonymous"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {featuredNews.views.toLocaleString()} reads

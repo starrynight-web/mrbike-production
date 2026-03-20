@@ -51,13 +51,13 @@ class MarketplaceCreateThrottle(SimpleRateThrottle):
     """
     scope = 'marketplace_create'
     
-    def get_cache_key(self):
-        if not self.request.user or not self.request.user.is_authenticated:
+    def get_cache_key(self, request, view):
+        if not request.user or not request.user.is_authenticated:
             return None  # Only throttle authenticated users
         
         return self.cache_format % {
             'scope': self.scope,
-            'ident': self.request.user.id
+            'ident': request.user.id
         }
 
 
@@ -68,18 +68,19 @@ class AdminActionThrottle(SimpleRateThrottle):
     """
     scope = 'admin_action'
     
-    def get_cache_key(self):
-        if not self.request.user or not self.request.user.is_staff:
+    def get_cache_key(self, request, view):
+        if not request.user or not request.user.is_staff:
             return None
         
         return self.cache_format % {
             'scope': self.scope,
-            'ident': self.request.user.id
+            'ident': request.user.id
         }
     
     def throttle_success(self, request, view):
         """Log admin actions for audit trail"""
-        result = super().throttle_success(request, view)
+        # Call parent with no extra args — SimpleRateThrottle.throttle_success takes only self
+        result = super().throttle_success()
         
         if result and request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
             logger.info(
@@ -107,13 +108,13 @@ class ImageUploadThrottle(SimpleRateThrottle):
     """
     scope = 'image_upload'
     
-    def get_cache_key(self):
-        if not self.request.user or not self.request.user.is_authenticated:
+    def get_cache_key(self, request, view):
+        if not request.user or not request.user.is_authenticated:
             return None
         
         return self.cache_format % {
             'scope': self.scope,
-            'ident': self.request.user.id
+            'ident': request.user.id
         }
 
 
@@ -125,12 +126,12 @@ class IPBasedThrottle(SimpleRateThrottle):
     """
     scope = 'ip_based'
     
-    def get_cache_key(self):
-        x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
+    def get_cache_key(self, request, view):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
             ip = x_forwarded_for.split(',')[0].strip()
         else:
-            ip = self.request.META.get('REMOTE_ADDR', 'unknown')
+            ip = request.META.get('REMOTE_ADDR', 'unknown')
         
         return self.cache_format % {
             'scope': self.scope,
@@ -146,15 +147,20 @@ class BurstThrottle(SimpleRateThrottle):
     """
     scope = 'burst'
     
-    def get_cache_key(self):
-        if self.request.user and self.request.user.is_authenticated:
-            ident = self.request.user.id
+    def get_cache_key(self, request, view):
+        if request.user and request.user.is_authenticated:
+            ident = request.user.id
         else:
-            x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
             if x_forwarded_for:
                 ident = x_forwarded_for.split(',')[0].strip()
             else:
-                ident = self.request.META.get('REMOTE_ADDR', 'unknown')
+                ident = request.META.get('REMOTE_ADDR', 'unknown')
+        
+        return self.cache_format % {
+            'scope': self.scope,
+            'ident': ident
+        }
         
 class InquiryThrottle(SimpleRateThrottle):
     """

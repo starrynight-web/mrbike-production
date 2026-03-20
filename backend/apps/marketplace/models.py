@@ -152,7 +152,6 @@ class UsedBikeListing(models.Model):
         if self.description:
             self.description = sanitize_html(self.description)
 
-        super().save(*args, **kwargs)
         if not self.expires_at:
             self.expires_at = timezone.now() + timezone.timedelta(days=15)
 

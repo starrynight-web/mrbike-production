@@ -5,7 +5,7 @@ DEBUG = True
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-mrbikebd-development-key-@@@")
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # SQLite fallback for development if DATABASE_URL is missing
 DATABASES = {

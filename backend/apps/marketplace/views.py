@@ -9,6 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+import django.views.decorators.vary
 import os
 from .models import UsedBikeListing, ReportListing
 from .serializers import (
@@ -49,11 +50,20 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         return super().get_object()
 
     @method_decorator(cache_page(60 * 5, key_prefix="marketplace_list"))
+    @method_decorator(django.views.decorators.vary.vary_on_headers('Authorization', 'Cookie'))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        from django.db.models import F
+        UsedBikeListing.objects.filter(pk=instance.pk).update(views_count=F('views_count') + 1)
+        instance.refresh_from_db(fields=['views_count'])
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     def get_queryset(self):
-        queryset = UsedBikeListing.objects.all().select_related('seller', 'bike_model')
+        queryset = UsedBikeListing.objects.all().select_related('seller', 'bike_model', 'bike_model__brand')
         user = self.request.user
         
         # Priority 1: Admin moderation entries
@@ -101,7 +111,7 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         from apps.core.permissions import IsVerifiedSeller, IsEmailVerified
         
         if self.action == 'create':
-            return [IsAuthenticated(), IsEmailVerified()]
+            return [IsAuthenticated(), IsVerifiedSeller()]
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsSellerOrReadOnly()]
         elif self.action in ['approve', 'reject']:
@@ -135,7 +145,9 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         except UsedBikeListing.DoesNotExist:
             return StandardResponse.error(message="Listing not found.", status_code=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return StandardResponse.error(message=str(e))
+            import logging
+            logging.error(f"Error approving listing {pk}: {e}")
+            return StandardResponse.error(message="An error occurred while approving the listing.", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
@@ -154,7 +166,9 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         except UsedBikeListing.DoesNotExist:
             return StandardResponse.error(message="Listing not found.", status_code=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return StandardResponse.error(message=str(e))
+            import logging
+            logging.error(f"Error rejecting listing {pk}: {e}")
+            return StandardResponse.error(message="An error occurred while rejecting the listing.", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def report(self, request, pk=None):

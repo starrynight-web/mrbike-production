@@ -49,6 +49,7 @@ class User(AbstractUser):
     profile_image = models.URLField(max_length=500, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
+    totp_secret = models.CharField(max_length=32, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def save(self, *args, **kwargs):

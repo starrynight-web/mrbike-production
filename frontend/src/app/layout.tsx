@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
 import { Header, Footer, MobileNav } from "@/components/layout";
@@ -20,11 +20,6 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_CONFIG.url),
@@ -148,7 +143,6 @@ export default function RootLayout({
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         <link rel="alternate" hrefLang="en-US" href={`${APP_CONFIG.url}/en`} />
-        <link rel="alternate" hrefLang="bn-BD" href={`${APP_CONFIG.url}/bn`} />
         <link rel="alternate" hrefLang="x-default" href={APP_CONFIG.url} />
         <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
         <link
@@ -167,7 +161,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} font-sans min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-screen flex flex-col`}
       >
         <Providers>
           <ScrollToTop />

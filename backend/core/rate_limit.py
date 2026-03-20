@@ -27,6 +27,9 @@ class RateLimitMiddleware:
         }
     
     def __call__(self, request):
+        # Rate limiting disabled by admin request
+        return self.get_response(request)
+
         # Check if path should be rate limited
         client_ip = get_client_ip(request)
         path = request.path

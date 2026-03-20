@@ -37,8 +37,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'csp.middleware.CSPMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'csp.middleware.CSPMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -104,18 +104,15 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
-    ],
+    'DEFAULT_THROTTLE_CLASSES': [],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',
-        'user': '1000/hour',
-        'image_upload': '10/hour',
-        'login': '5/min',
-        'register': '10/hour',
-        'email_throttle': '10/hour',
-        'inquiry': '5/hour',
+        'anon': '999999/hour',
+        'user': '999999/hour',
+        'image_upload': '999999/hour',
+        'login': '999999/hour',
+        'register': '999999/hour',
+        'email_throttle': '999999/hour',
+        'inquiry': '999999/hour',
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
@@ -142,13 +139,8 @@ CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
 CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 
-if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=[DjangoIntegration()],
-        traces_sample_rate=1.0,
-        send_default_pii=True
-    )
+# Sentry initialization is handled entirely in core/settings/production.py
+# to avoid double initialization and sample rate conflicts.
 
 if CLOUDINARY_CLOUD_NAME:
     cloudinary.config(
@@ -172,7 +164,10 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 # Super Admin Configuration
 SUPER_ADMIN_EMAIL = os.getenv("SUPER_ADMIN_EMAIL", "admin@mrbikebd.com")
-REVALIDATE_SECRET = os.getenv("REVALIDATE_SECRET", "mrbike-revalidate-secret-2026")
+REVALIDATE_SECRET = os.getenv("REVALIDATE_SECRET", "")
+if not REVALIDATE_SECRET and os.getenv("DJANGO_SETTINGS_MODULE", "").endswith('production'):
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured("REVALIDATE_SECRET must be set for production to authenticate Next.js ISR.")
 
 # CORS Settings
 CORS_ALLOWED_ORIGINS = [

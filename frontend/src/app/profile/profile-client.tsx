@@ -438,7 +438,7 @@ export function ProfileClient() {
                     <div className="flex gap-4 text-sm text-muted-foreground">
                       <span>{(listing.mileage || 0).toLocaleString()} km</span>
                       <span>•</span>
-                      <span>{listing.location}</span>
+                      <span>{typeof listing.location === 'object' ? (listing.location as any)?.full || (listing.location as any)?.city : String(listing.location || '')}</span>
                     </div>
                     <div className="flex gap-2 pt-2">
                       <Button 

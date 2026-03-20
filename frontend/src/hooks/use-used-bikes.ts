@@ -51,7 +51,7 @@ export function useUsedBike(slug: string, initialData?: UsedBike) {
     queryFn: async () => {
       const response = await api.getUsedBike(slug);
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch used bike");
-      return mapUsedBike(response.data);
+      return mapUsedBike(response.data!);
     },
     initialData: initialData,
     staleTime: 5 * 60 * 1000,

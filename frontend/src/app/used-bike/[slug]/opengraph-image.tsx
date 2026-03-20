@@ -34,7 +34,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
 
   const title = `${bike.manufacturing_year || bike.year} ${bike.bike_model_name || bike.title}`;
   const price = `৳${bike.price.toLocaleString()}`;
-  const location = bike.location || "Bangladesh";
+  const location = typeof bike.location === 'object' ? (bike.location as any)?.full || (bike.location as any)?.city : String(bike.location || "Bangladesh");
 
   return new ImageResponse(
     (
