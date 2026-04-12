@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-service";
 import { API_ENDPOINTS } from "@/config/constants";
-import { mapBike } from "@/lib/data-utils";
+import { mapBike, mapBrand } from "@/lib/data-utils";
 import type { BikeFilters, Bike, Brand, Review } from "@/types";
 
 // ============================================
@@ -122,7 +122,7 @@ export function useBrands() {
     queryFn: async () => {
       const response = await api.getBrands();
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch brands");
-      return response.data as Brand[];
+      return response.data?.map(mapBrand) || [];
     },
     staleTime: 60 * 60 * 1000, // 1 hour - brands rarely change
   });

@@ -1,5 +1,89 @@
-import type { Bike, UsedBike, ApiUsedBikeListing, Review } from "@/types";
+import type { Bike, UsedBike, ApiUsedBikeListing, Review, Brand, NewsArticle, UsedBikeFilters } from "@/types";
+import type { ApiBrand, UsedBikeListParams, UserStatsResponse } from "@/types/api-types";
+import type { ApiArticle } from "@/types/api-types";
 import { User } from "@/types";
+
+/**
+ * Maps a raw API UserStatsResponse to frontend UserStats format
+ */
+export function mapUserStats(statsResponse: UserStatsResponse | any): any {
+    return {
+        listings_count: statsResponse.listings_count || 0,
+        wishlist_count: statsResponse.wishlists_count || 0,
+        reviews_count: statsResponse.reviews_count || 0,
+        member_since: statsResponse.member_since || new Date().toISOString(),
+    };
+}
+
+/**
+ * Maps a raw API brand to the frontend Brand model
+ * Converts snake_case API fields to camelCase frontend format
+ */
+export function mapBrand(apiBrand: ApiBrand | any): Brand {
+    return {
+        id: apiBrand.id?.toString() || "",
+        slug: apiBrand.slug || "",
+        name: apiBrand.name || "Unknown Brand",
+        logo: sanitizeImageUrl(apiBrand.logo),
+        description: apiBrand.description,
+        bikeCount: apiBrand.bike_count || 0,
+        usedBikeCount: apiBrand.used_bike_count,
+        country: apiBrand.country,
+    };
+}
+
+/**
+ * Maps a raw API article to the frontend NewsArticle model
+ * Converts snake_case API fields to camelCase frontend format
+ */
+export function mapArticle(apiArticle: ApiArticle | any): NewsArticle {
+    return {
+        id: apiArticle.id?.toString() || "",
+        slug: apiArticle.slug || "",
+        title: apiArticle.title || "",
+        excerpt: apiArticle.excerpt || "",
+        content: apiArticle.content || "",
+        featured_image: sanitizeImageUrl(apiArticle.featured_image),
+        author: apiArticle.author || { id: "", username: "Unknown" },
+        category: apiArticle.category?.slug || apiArticle.category || "industry",
+        tags: apiArticle.tags || [],
+        views: apiArticle.views || 0,
+        is_published: apiArticle.is_published,
+        published_at: apiArticle.published_at || new Date(),
+        created_at: apiArticle.created_at || new Date(),
+        updated_at: apiArticle.updated_at || new Date(),
+    };
+}
+
+/**
+ * Transforms frontend filters to API request parameters
+ * Converts camelCase arrays to API format (comma-separated strings)
+ */
+export function transformUsedBikeFilters(filters?: UsedBikeFilters): UsedBikeListParams | undefined {
+    if (!filters) return undefined;
+    
+    const params: UsedBikeListParams = {};
+    
+    // Convert array filters to comma-separated strings
+    if (filters.brand && Array.isArray(filters.brand) && filters.brand.length > 0) {
+        params.brand = filters.brand.join(',');
+    }
+    
+    if (filters.condition && Array.isArray(filters.condition) && filters.condition.length > 0) {
+        params.condition = filters.condition.join(',');
+    }
+    
+    // Direct mappings with snake_case conversion
+    if (filters.minPrice !== undefined) params.min_price = filters.minPrice;
+    if (filters.maxPrice !== undefined) params.max_price = filters.maxPrice;
+    if (filters.location) params.location_city = filters.location;
+    if (filters.search) params.search = filters.search;
+    if (filters.page !== undefined) params.page = filters.page;
+    if (filters.sort) params.ordering = filters.sort;
+    if (filters.featured !== undefined) params.featured = filters.featured;
+    
+    return params;
+}
 
 /**
  * Sanitizes image URLs for Next.js Image component

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-service";
 import { ApiUsedBikeListing, Review } from "@/types";
-import { mapReview } from "@/lib/data-utils";
+import { mapReview, mapUserStats } from "@/lib/data-utils";
 
 export interface UserStats {
   listings_count: number;
@@ -16,7 +16,7 @@ export function useUserStats() {
     queryFn: async () => {
       const response = await api.getUserStats();
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch user stats");
-      return response.data as UserStats;
+      return mapUserStats(response.data);
     },
     staleTime: 5 * 60 * 1000,
   });

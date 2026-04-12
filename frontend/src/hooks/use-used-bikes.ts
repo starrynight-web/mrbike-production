@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-service";
-import { mapUsedBike } from "@/lib/data-utils";
+import { mapUsedBike, transformUsedBikeFilters } from "@/lib/data-utils";
 import type { UsedBikeFilters, UsedBike } from "@/types";
 
 // ============================================
@@ -23,7 +23,8 @@ export function useUsedBikes(filters?: UsedBikeFilters) {
   return useQuery({
     queryKey: usedBikeQueryKeys.list(filters),
     queryFn: async () => {
-      const response = await api.getUsedBikes(filters);
+      const apiFilters = transformUsedBikeFilters(filters);
+      const response = await api.getUsedBikes(apiFilters);
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch used bikes");
 
       const rawBikes = (response.data as any[]) || [];

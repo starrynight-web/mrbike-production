@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-service";
+import { mapArticle } from "@/lib/data-utils";
 import type { NewsArticle, PaginationMeta } from "@/types";
 
 export function useNews(filters?: { category?: string; page?: number; limit?: number }) {
@@ -14,7 +15,7 @@ export function useNews(filters?: { category?: string; page?: number; limit?: nu
             if (!response.success) throw new Error(response.error?.message || "Failed to fetch news");
 
             return {
-                articles: (response.data as NewsArticle[]) || [],
+                articles: (response.data || []).map(mapArticle),
                 meta: response.meta as PaginationMeta
             };
         },
@@ -28,7 +29,7 @@ export function useNewsArticle(slug: string, initialData?: NewsArticle) {
         queryFn: async () => {
             const response = await api.getArticleBySlug(slug);
             if (!response.success) throw new Error(response.error?.message || "Failed to fetch article");
-            return response.data as NewsArticle;
+            return mapArticle(response.data);
         },
         initialData: initialData,
         enabled: !!slug,

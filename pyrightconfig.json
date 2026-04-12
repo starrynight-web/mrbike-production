@@ -10,17 +10,8 @@
     "venvPath": "e:/mr",
     "venv": ".venv",
     "extraPaths": [
-        "./",
-        "backend"
-    ],
-    "executionEnvironments": [
-        {
-            "root": "backend",
-            "pythonVersion": "3.14",
-            "extraPaths": [
-                "backend"
-            ]
-        }
+        "./backend",
+        "./backend/apps"
     ],
     "typeCheckingMode": "basic",
     "useLibraryCodeForTypes": true
