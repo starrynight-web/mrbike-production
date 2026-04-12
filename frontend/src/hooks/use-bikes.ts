@@ -37,7 +37,7 @@ export const queryKeys = {
  * Fetch paginated list of bikes with filters
  */
 export function useBikes(filters?: BikeFilters, options: any = {}) {
-  return useQuery({
+  return useQuery<{ bikes: Bike[]; meta: any }>({
     queryKey: queryKeys.bikes.list(filters),
     ...options,
     queryFn: async (): Promise<{ bikes: Bike[]; meta: any }> => {
