@@ -7,7 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 // 4.5 — Code Splitting: 70KB detail-client is lazy-loaded, not in the critical path bundle
 const BikeDetailClient = dynamic(() => import("./detail-client").then((m) => m.BikeDetailClient), {
-  ssr: false,
   loading: () => (
     <div className="container mx-auto px-4 py-8 space-y-6">
       <Skeleton className="h-12 w-2/3" />
