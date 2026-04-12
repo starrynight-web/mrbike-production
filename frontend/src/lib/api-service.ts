@@ -2,6 +2,22 @@ import axios, { InternalAxiosRequestConfig, AxiosResponse } from "axios";
 import { getSession, signOut } from "next-auth/react";
 import { API_ENDPOINTS } from "@/config/constants";
 import { QueryParams, ApiResponse, ApiError } from "@/types";
+import { toast } from "sonner";
+import type {
+  ApiBike,
+  ApiBrand,
+  ApiArticle,
+  ApiUsedBikeListing,
+  BackendUser,
+  BikesListParams,
+  UsedBikeListParams,
+  NewsListParams,
+  CreateListingRequest,
+  CreateReviewRequest,
+  UpdateProfileRequest,
+  UserStatsResponse,
+  AdminStatsResponse,
+} from "@/types/api-types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -42,13 +58,15 @@ class ApiService {
       async (config: InternalAxiosRequestConfig) => {
         try {
           const session = await getSession();
-
-          // Always attach token when session has one.
-          // Backend views define their own permissions (AllowAny for public, IsAuthenticated for protected).
-          // Sending a valid token to an AllowAny endpoint is harmless and lets staff/admin
-          // features (like seeing pending listings or draft articles) work correctly.
+          
           if (session?.accessToken) {
             config.headers.Authorization = `Bearer ${session.accessToken}`;
+          } else {
+            // Fallback to localStorage if session is not yet loaded or missing
+            const localToken = typeof window !== 'undefined' ? localStorage.getItem("accessToken") : null;
+            if (localToken) {
+              config.headers.Authorization = `Bearer ${localToken}`;
+            }
           }
         } catch (error) {
           console.error("[API] Session retrieval error:", error);
@@ -63,9 +81,13 @@ class ApiService {
       async (error) => {
         const originalRequest = error.config;
 
+        // Loop protection: avoid retrying more than twice for authentication
+        originalRequest._authRetryCount = originalRequest._authRetryCount || 0;
+
         // Handle 401 — attempt token refresh then retry
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
+        if (error.response?.status === 401 && originalRequest._authRetryCount < 1) {
+          originalRequest._authRetryCount++;
+          
           try {
             // Force NextAuth to re-evaluate the JWT (triggers refreshAccessToken)
             const newSession = await getSession();
@@ -77,9 +99,27 @@ class ApiService {
             console.error("[API] Token refresh failed:", refreshError);
           }
 
-          // Refresh failed — sign out as last resort
-          if (typeof window !== "undefined") {
-            signOut({ callbackUrl: '/login' });
+          // Only sign out if we are NOT on a sensitive page where user might lose data
+          const isPersistentAuthFailure = error.response?.status === 401;
+          const isSensitivePage = typeof window !== "undefined" && 
+                                 (window.location.pathname.includes('/sell-bike') || 
+                                  window.location.pathname.includes('/dashboard/settings'));
+
+          // Auth failed persistently — sign out as last resort, unless on sensitive page
+          if (typeof window !== "undefined" && isPersistentAuthFailure) {
+            if (!isSensitivePage) {
+              console.error("[API] Authentication failed persistently. Cleaning up session...");
+              // Remove stale tokens to prevent loop
+              localStorage.removeItem("accessToken");
+              localStorage.removeItem("refreshToken");
+              
+              // Only sign out once to avoid redirect loops
+              if (!window.location.pathname.includes('/login')) {
+                signOut({ callbackUrl: '/login' });
+              }
+            } else {
+              toast.error("Your session has expired. Please open a new tab and log in again to keep your work.");
+            }
           }
         }
 
@@ -159,33 +199,33 @@ class ApiService {
   }
 
   // Bike APIs
-  async getBikes(params: QueryParams = {}) {
-    return this.request<any[]>(this.client.get(API_ENDPOINTS.BIKES, { params }));
+  async getBikes(params: BikesListParams = {}) {
+    return this.request<ApiBike[]>(this.client.get(API_ENDPOINTS.BIKES, { params }));
   }
 
   async getBikeBySlug(slug: string) {
-    return this.request<any>(this.client.get(API_ENDPOINTS.BIKE_DETAIL(slug)));
+    return this.request<ApiBike>(this.client.get(API_ENDPOINTS.BIKE_DETAIL(slug)));
   }
 
   async getBrands() {
-    return this.request<any[]>(this.client.get(API_ENDPOINTS.BRANDS));
+    return this.request<ApiBrand[]>(this.client.get(API_ENDPOINTS.BRANDS));
   }
 
   async resendVerificationEmail() {
-    return this.request<any>(this.client.post(API_ENDPOINTS.AUTH_RESEND_VERIFICATION));
+    return this.request<{ message: string }>(this.client.post(API_ENDPOINTS.AUTH_RESEND_VERIFICATION));
   }
 
   // Marketplace APIs
-  async getUsedBikes(params: QueryParams = {}) {
-    return this.request<any[]>(this.client.get(API_ENDPOINTS.USED_BIKES, { params }));
+  async getUsedBikes(params: UsedBikeListParams = {}) {
+    return this.request<ApiUsedBikeListing[]>(this.client.get(API_ENDPOINTS.USED_BIKES, { params }));
   }
 
   async getUsedBike(id: string) {
-    return this.request<any>(this.client.get(API_ENDPOINTS.USED_BIKE_DETAIL(id)));
+    return this.request<ApiUsedBikeListing>(this.client.get(API_ENDPOINTS.USED_BIKE_DETAIL(id)));
   }
 
   async createUsedBike(data: FormData) {
-    return this.request<any>(this.client.post(API_ENDPOINTS.USED_BIKE_CREATE, data, {
+    return this.request<ApiUsedBikeListing>(this.client.post(API_ENDPOINTS.USED_BIKE_CREATE, data, {
       headers: { "Content-Type": "multipart/form-data" },
       timeout: 300000, // 5 minutes for image-heavy uploads
     }));
@@ -197,23 +237,23 @@ class ApiService {
 
   // Interaction APIs
   async getWishlist() {
-    return this.request<any[]>(this.client.get(API_ENDPOINTS.WISHLIST));
+    return this.request<ApiUsedBikeListing[]>(this.client.get(API_ENDPOINTS.WISHLIST));
   }
 
   async toggleWishlist(bikeId: string | number) {
-    return this.request<any>(this.client.post(API_ENDPOINTS.WISHLIST_TOGGLE(bikeId)));
+    return this.request<{ wishlisted: boolean }>(this.client.post(API_ENDPOINTS.WISHLIST_TOGGLE(bikeId)));
   }
 
   async getBikeReviews(bikeId: string | number) {
-    return this.request<any[]>(this.client.get(API_ENDPOINTS.BIKE_REVIEWS(bikeId)));
+    return this.request<{ id: number; rating: number; comment: string; user: BackendUser; created_at: string }[]>(this.client.get(API_ENDPOINTS.BIKE_REVIEWS(bikeId)));
   }
 
   async submitReview(bikeId: string | number, rating: number, comment: string) {
-    return this.request<any>(this.client.post(API_ENDPOINTS.REVIEW_CREATE(bikeId), { rating, comment }));
+    return this.request<{ id: number; rating: number; comment: string }>(this.client.post(API_ENDPOINTS.REVIEW_CREATE(bikeId), { rating, comment }));
   }
 
   async getUserReviews() {
-    return this.request<any[]>(this.client.get(API_ENDPOINTS.USER_REVIEWS));
+    return this.request<{ id: number; rating: number; comment: string; bike_name: string; bike_slug: string }[]>(this.client.get(API_ENDPOINTS.USER_REVIEWS));
   }
 
   async sendInquiry(data: Record<string, unknown>) {
@@ -230,25 +270,44 @@ class ApiService {
   }
 
   // News APIs
-  async getNews(params: QueryParams = {}) {
-    return this.request(this.client.get(API_ENDPOINTS.NEWS, { params }));
+  async getNews(params: NewsListParams = {}) {
+    return this.request<ApiArticle[]>(this.client.get(API_ENDPOINTS.NEWS, { params }));
   }
 
   async getArticleBySlug(slug: string) {
-    return this.request(this.client.get(API_ENDPOINTS.NEWS_DETAIL(slug)));
+    return this.request<ApiArticle>(this.client.get(API_ENDPOINTS.NEWS_DETAIL(slug)));
   }
 
   // User Profile APIs
   async getUserStats() {
-    return this.request(this.client.get(API_ENDPOINTS.USER_STATS));
+    return this.request<UserStatsResponse>(this.client.get(API_ENDPOINTS.USER_STATS));
   }
 
-  async updateProfile(data: any) {
-    return this.request(this.client.patch(API_ENDPOINTS.USER_PROFILE, data));
+  async updateProfile(data: UpdateProfileRequest) {
+    return this.request<BackendUser>(this.client.patch(API_ENDPOINTS.USER_PROFILE, data));
   }
 
   async getNotifications() {
     return this.request(this.client.get(API_ENDPOINTS.USER_NOTIFICATIONS));
+  }
+
+  // Shop APIs
+  async getShops(params: QueryParams = {}) {
+    return this.request<any[]>(this.client.get(API_ENDPOINTS.SHOPS, { params }));
+  }
+
+  async getShopDetail(slug: string) {
+    return this.request<any>(this.client.get(API_ENDPOINTS.SHOP_DETAIL(slug)));
+  }
+
+  async getMyShop() {
+    return this.request<any>(this.client.get(API_ENDPOINTS.SHOP_ME));
+  }
+
+  async updateMyShop(data: any) {
+    // If data is FormData (containing files), handle it
+    const headers = data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {};
+    return this.request<any>(this.client.patch(API_ENDPOINTS.SHOP_ME, data, { headers }));
   }
 
   // Generic HTTP Methods for compatibility

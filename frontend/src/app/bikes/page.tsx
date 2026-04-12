@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { BikeCataloguePage } from "./catalogue-client";
 import { APP_CONFIG, SEO_DEFAULTS } from "@/config/constants";
 
+export const revalidate = 3600; // ISR cache for 1 hour
+
 export const metadata: Metadata = {
   title: "Bike Catalogue - All Motorcycles",
   description:
@@ -66,6 +68,33 @@ function CatalogueSkeleton() {
 export default function BikesPage() {
   return (
     <main className="min-h-screen bg-background pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is the price of Yamaha bike in Bangladesh 2026?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yamaha bike prices in Bangladesh start from ৳1.5 lakh for commuter bikes like the FZS and go up to ৳8+ lakh for the R15 V4. Check MrBikeBD for the latest 2026 prices."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Which is the best bike for daily commute in Dhaka?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "For daily commute in Dhaka, 100cc to 125cc commuter bikes like Honda Dream 110, TVS Metro Plus, and Bajaj Discover are highly recommended due to their excellent mileage and low maintenance."
+                }
+              }
+            ]
+          })
+        }}
+      />
       <Suspense fallback={<CatalogueSkeleton />}>
         <BikeCataloguePage />
       </Suspense>

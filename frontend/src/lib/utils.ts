@@ -197,13 +197,12 @@ export function getSafeImageUrl(
     return url.replace("image/upload/", "");
   }
 
-  // Ensure relative URLs start with a leading slash
-  if (
-    !url.startsWith("http") &&
-    !url.startsWith("/") &&
-    !url.startsWith("data:") &&
-    !url.startsWith("blob:")
-  ) {
+  if (!url.startsWith("http") && !url.startsWith("/") && !url.startsWith("data:") && !url.startsWith("blob:")) {
+    // If the string contains a slash but doesn't start with one, it might be a Cloudinary public_id
+    if (url.includes('/') && !url.startsWith('/')) {
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'demo';
+        return `https://res.cloudinary.com/${cloudName}/image/upload/v1/${url}`;
+    }
     return `/${url}`;
   }
 

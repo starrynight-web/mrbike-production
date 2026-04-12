@@ -2,6 +2,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from .models import Review, Wishlist, Inquiry
 from .serializers import ReviewSerializer, WishlistSerializer, InquirySerializer
 from apps.bikes.models import BikeModel
@@ -15,7 +16,10 @@ class BikeReviewListView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer
     
     def get_queryset(self):
-        return Review.objects.filter(bike_id=self.kwargs['bike_id'])
+        identifier = self.kwargs['bike_id']
+        if str(identifier).isdigit():
+            return Review.objects.filter(Q(bike_id=identifier) | Q(bike__slug=identifier))
+        return Review.objects.filter(bike__slug=identifier)
     
     def get_permissions(self):
         if self.request.method == 'POST':
@@ -23,7 +27,11 @@ class BikeReviewListView(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        bike = get_object_or_404(BikeModel, pk=self.kwargs['bike_id'])
+        identifier = self.kwargs['bike_id']
+        if str(identifier).isdigit():
+            bike = get_object_or_404(BikeModel, Q(pk=identifier) | Q(slug=identifier))
+        else:
+            bike = get_object_or_404(BikeModel, slug=identifier)
         # If user already reviewed this bike, update the existing review
         existing_review = Review.objects.filter(user=self.request.user, bike=bike).first()
         if existing_review:
@@ -37,10 +45,14 @@ class WishlistToggleView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, bike_id):
-        bike = get_object_or_404(BikeModel, pk=bike_id)
+        identifier = bike_id
+        if str(identifier).isdigit():
+            bike = get_object_or_404(BikeModel, Q(pk=identifier) | Q(slug=identifier))
+        else:
+            bike = get_object_or_404(BikeModel, slug=identifier)
         wishlist, created = Wishlist.objects.get_or_create(user=request.user)
         
-        if wishlist.bikes.filter(id=bike_id).exists():
+        if wishlist.bikes.filter(id=bike.id).exists():
             wishlist.bikes.remove(bike)
             status_msg = "removed"
         else:

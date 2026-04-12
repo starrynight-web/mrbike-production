@@ -27,7 +27,8 @@ import {
   CheckCircle2,
   Star,
   Bike,
-  Fuel
+  Fuel,
+  Store
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -371,18 +372,40 @@ export function UsedBikeDetailClient({ slug, initialData }: UsedBikeDetailClient
               </div>
 
               <div className="pt-8 border-t border-zinc-100 dark:border-zinc-800 space-y-8">
-                <div className="flex items-center gap-5">
-                  <div className="h-16 w-16 rounded-2xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-zinc-100 dark:border-zinc-700">
-                    <User className="h-8 w-8 text-zinc-300" />
+                {bike.shop_info ? (
+                  <div className="flex items-center gap-5 group cursor-pointer" onClick={() => window.location.href = `/shop/${bike.shop_info?.slug}`}>
+                    <div className="h-16 w-16 rounded-2xl bg-zinc-50 dark:bg-zinc-800 overflow-hidden shrink-0 border border-zinc-100 dark:border-zinc-700 transition-transform group-hover:scale-105">
+                      {bike.shop_info.logo ? (
+                        <img src={bike.shop_info.logo} alt={bike.shop_info.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Store className="h-8 w-8 text-zinc-300 m-auto mt-4" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-orange-500">Verified Shop</p>
+                        {bike.shop_info.is_verified && <CheckCircle2 className="h-3 w-3 text-blue-500 fill-blue-50" />}
+                      </div>
+                      <p className="text-xl font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-orange-500 transition-colors uppercase tracking-tight">{bike.shop_info.name}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
+                        <MapPin className="h-3.5 w-3.5" /> {bike.shop_info.location_city}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Seller</p>
-                    <p className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{bike.sellerName}</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
-                      <MapPin className="h-3.5 w-3.5" /> {bike.location.city}
-                    </p>
+                ) : (
+                  <div className="flex items-center gap-5">
+                    <div className="h-16 w-16 rounded-2xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-zinc-100 dark:border-zinc-700">
+                      <User className="h-8 w-8 text-zinc-300" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Individual Seller</p>
+                      <p className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{bike.sellerName}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
+                        <MapPin className="h-3.5 w-3.5" /> {bike.location.city}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="grid grid-cols-1 gap-4">
                   <Button
@@ -390,7 +413,7 @@ export function UsedBikeDetailClient({ slug, initialData }: UsedBikeDetailClient
                     className="w-full h-16 rounded-2xl bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-950 text-white font-bold text-lg hover:opacity-90 transition-all shadow-xl shadow-zinc-900/10"
                     onClick={() => window.open(`tel:${contactPhone}`)}
                   >
-                    <Phone className="mr-3 h-5 w-5" /> Call Seller
+                    <Phone className="mr-3 h-5 w-5" /> Call Now
                   </Button>
                   
                   {whatsappPhone && (
@@ -404,6 +427,18 @@ export function UsedBikeDetailClient({ slug, initialData }: UsedBikeDetailClient
                     </Button>
                   )}
                 </div>
+
+                {bike.shop_info && (
+                   <Button 
+                    variant="link" 
+                    className="w-full text-orange-500 hover:text-orange-600 font-bold text-sm uppercase tracking-wider"
+                    asChild
+                   >
+                     <Link href={`/shop/${bike.shop_info.slug}`}>
+                        Visit Shop Profile <ChevronRight className="ml-1 h-4 w-4" />
+                     </Link>
+                   </Button>
+                )}
               </div>
             </div>
 

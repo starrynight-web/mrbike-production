@@ -8,11 +8,12 @@ from apps.core.permissions import IsSuperAdminOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 import os
-from .models import UsedBikeListing, ReportListing
+from .models import UsedBikeListing, ReportListing, Shop
 from .serializers import (
     UsedBikeListingSerializer, 
     UsedBikeListingCreateSerializer,
-    ReportListingSerializer
+    ReportListingSerializer,
+    ShopSerializer
 )
 from .filters import UsedBikeListingFilter
 
@@ -27,6 +28,42 @@ class IsSellerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return obj.seller == request.user
+
+class IsShopOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.owner == request.user
+
+class ShopViewSet(viewsets.ModelViewSet):
+    queryset = Shop.objects.all().select_related('owner')
+    serializer_class = ShopSerializer
+    lookup_field = 'slug'
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'description', 'location_city', 'location_area']
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsShopOwnerOrReadOnly()]
+        if self.action in ['create']:
+            return [IsAuthenticated()]
+        return [AllowAny()]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    @action(detail=False, methods=['get', 'patch'], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        shop, created = Shop.objects.get_or_create(owner=request.user)
+        if request.method == 'GET':
+            serializer = self.get_serializer(shop)
+            return Response(serializer.data)
+        
+        serializer = self.get_serializer(shop, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UsedBikeListingViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -49,17 +86,20 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         queryset = UsedBikeListing.objects.all().select_related('seller', 'bike_model')
         user = self.request.user
         
-        # Priority 1: Admin moderation entries
-        if user and user.is_staff and self.action in ['list', 'retrieve', 'approve', 'reject']:
-            status_param = self.request.query_params.get('status')
-            if status_param in ['pending', 'rejected', 'active', 'sold', 'expired']:
-                return queryset.filter(status=status_param).order_by('-created_at')
-            elif status_param == 'all':
+        # Priority 1: Admin moderation entries (Super Admin ONLY)
+        if user and user.is_authenticated and self.action in ['list', 'retrieve', 'approve', 'reject']:
+            from apps.core.permissions import IsSuperAdminOnly
+            if IsSuperAdminOnly().has_permission(self.request, self):
+                status_param = self.request.query_params.get('status')
+                if status_param in ['pending', 'rejected', 'active', 'sold', 'expired']:
+                    return queryset.filter(status=status_param).order_by('-created_at')
+                elif status_param == 'all':
+                    return queryset.order_by('-created_at')
+                # Default for super admin
                 return queryset.order_by('-created_at')
-            return queryset.order_by('-created_at')
 
-        # Priority 2: Public feed
-        queryset = queryset.filter(status='active')
+        # Priority 2: Public feed (For everyone else, including normal authenticated users)
+        queryset = queryset.filter(status='active').select_related('shop')
         return queryset.order_by('-is_featured', '-created_at')
 
     def get_serializer_class(self):
@@ -225,7 +265,7 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
             )
         return StandardResponse.error(message="Invalid report data.", errors=serializer.errors)
 
-    @action(detail=True, methods=['get'], permission_classes=[permissions.IsAdminUser])
+    @action(detail=True, methods=['get'], permission_classes=[IsSuperAdminOnly])
     def reports(self, request, pk=None):
         listing = self.get_object()
         reports = listing.reports.all()

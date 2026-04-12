@@ -14,26 +14,12 @@ from apps.bikes.models import BikeModel, Brand
 from apps.marketplace.models import UsedBikeListing
 from apps.users.models import User
 from apps.interactions.models import Review
-
-class IsAdminUser(permissions.BasePermission):
-    """Custom permission to only allow the super admin user.
-    STRICT: Only the designated super admin email has access to admin features.
-    """
-    import os
-    SUPER_ADMIN_EMAIL = os.getenv('SUPER_ADMIN_EMAIL', 'admin_gr_s_n_r_t_e@unleft.space')
-    
-    def has_permission(self, request, view):
-        # STRICT: Only allow THIS specific email address (not just is_staff)
-        return (
-            request.user and 
-            request.user.is_authenticated and 
-            request.user.email == self.SUPER_ADMIN_EMAIL
-        )
+from apps.core.permissions import IsSuperAdminOnly
 
 
 class AdminStatsView(APIView):
     """Get admin dashboard statistics"""
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsSuperAdminOnly]
     
     def get(self, request):
         # Date ranges
@@ -92,7 +78,7 @@ class AdminStatsView(APIView):
 
 class AdminFilterOptionsView(APIView):
     """Get filter options for admin panel"""
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsSuperAdminOnly]
     
     def get(self, request):
         # Get unique brands
@@ -109,7 +95,7 @@ class AdminFilterOptionsView(APIView):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdminOnly])
 def approve_listing(request, listing_id):
     """Approve a used bike listing"""
     try:
@@ -130,7 +116,7 @@ def approve_listing(request, listing_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsSuperAdminOnly])
 def reject_listing(request, listing_id):
     """Reject a used bike listing"""
     rejection_reason = request.data.get('reason', 'No reason provided')

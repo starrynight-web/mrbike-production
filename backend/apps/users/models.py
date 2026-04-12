@@ -52,12 +52,9 @@ class User(AbstractUser):
     updated_at = models.DateTimeField(auto_now=True)
     
     def save(self, *args, **kwargs):
-        # Automatically set is_staff for administrative roles (Section 3.4)
-        if self.role in ['admin', 'moderator']:
-            self.is_staff = True
-        elif not self.is_superuser:
-            # Demote non-admin roles if they aren't superusers
-            self.is_staff = False
+        # NOTE: We do NOT auto-promote users to is_staff based on role anymore.
+        # All administrative endpoints verify access via IsSuperAdminOnly utilizing SUPER_ADMIN_EMAIL.
+        # The 'admin' and 'moderator' roles are just metadata labels now.
         super().save(*args, **kwargs)
     
     # Required for custom user model

@@ -6,6 +6,8 @@ import { NewsDetailClient } from "./news-detail-client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiServer } from "@/lib/api-server";
 
+export const revalidate = 1800; // 30 mins cache
+
 interface Props {
     params: Promise<{ slug: string }>;
 }
@@ -71,7 +73,15 @@ export default async function NewsDetailPage({ params }: Props) {
             "@type": "Person",
             "name": article.author?.username || "MrBike Editor",
             "url": `${APP_CONFIG.url}/profile/${article.author?.username}`
-        }]
+        }],
+        "publisher": {
+            "@type": "Organization",
+            "name": "MrBikeBD",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://mrbikebd.com/images/logo.png"
+            }
+        }
     };
 
     const breadcrumbLd = {

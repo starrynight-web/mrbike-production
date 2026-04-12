@@ -1,0 +1,93 @@
+ D backend/api_response.json
+ M backend/apps/bikes/__pycache__/admin.cpython-314.pyc
+ M backend/apps/bikes/__pycache__/apps.cpython-314.pyc
+ M backend/apps/bikes/__pycache__/models.cpython-314.pyc
+ M backend/apps/bikes/models.py
+ M backend/apps/bikes/recommendation_views.py
+ M backend/apps/bikes/views.py
+ M backend/apps/interactions/models.py
+ M backend/apps/marketplace/__pycache__/admin.cpython-314.pyc
+ M backend/apps/marketplace/__pycache__/apps.cpython-314.pyc
+ M backend/apps/marketplace/__pycache__/models.cpython-314.pyc
+ M backend/apps/marketplace/models.py
+ M backend/apps/marketplace/serializers.py
+ M backend/apps/marketplace/urls.py
+ M backend/apps/marketplace/views.py
+ M backend/apps/users/__pycache__/models.cpython-314.pyc
+ M backend/apps/users/views.py
+ D backend/bike_dump.json
+ D backend/check_all_bike_images.py
+ D backend/check_api.py
+ D backend/check_recent_bikes.py
+ D backend/check_users.py
+ D backend/check_users_debug.py
+ M backend/core/__pycache__/urls.cpython-314.pyc
+ M backend/core/settings/base.py
+ D backend/debug_images.py
+ D backend/debug_out.txt
+ D backend/debug_out2.txt
+ D backend/diag_admin.py
+ D backend/diag_login_logic.py
+ D backend/diag_migrate.py
+ D backend/diag_migrate_apply.py
+ D backend/diagnose_final.py
+ D backend/diagnose_final_v2.py
+ D backend/diagnose_output.txt
+ D backend/enforce_admin.py
+ D backend/get_otp.py
+ D backend/listings_debug.txt
+ D backend/listings_fixed.txt
+ D backend/listings_info.txt
+ D backend/listings_utf8.txt
+ D backend/make_placeholder.py
+ D backend/migrate_error.txt
+ D backend/migration_sql.sql
+ D backend/out.txt
+ D backend/output.txt
+ D backend/raw_out.txt
+ D backend/reproduce_images.py
+ M backend/requirements.txt
+ D backend/shell_test_create.py
+ D backend/shell_verify.py
+ D backend/test_brevo.py
+ D backend/test_brevo_api.py
+ D backend/test_brevo_api_direct.py
+ D backend/test_clean_url.py
+ D backend/test_cloudinary.py
+ D backend/test_listing_api.py
+ D backend/test_raw.py
+ D backend/tmp_check_indexes.py
+ D backend/tmp_test_api.py
+ D backend/update_slugs.py
+ D backend/verify_brands.py
+ D backend/verify_fixes.py
+ M frontend/src/app/bike/[slug]/detail-client.tsx
+ M frontend/src/app/dashboard/layout.tsx
+ M frontend/src/app/profile/profile-client.tsx
+ M frontend/src/app/sell-bike/sell-bike-wizard.tsx
+ M frontend/src/app/used-bike/[slug]/detail-client.tsx
+ M frontend/src/components/bikes/bike-filters.tsx
+ M frontend/src/components/used-bikes/used-bike-card.tsx
+ M frontend/src/config/constants.ts
+ M frontend/src/lib/admin-api.ts
+ M frontend/src/lib/api-service.ts
+ M frontend/src/providers/auth-sync.tsx
+ M frontend/src/types/index.ts
+ D frontend/tsc_output.txt
+ D frontend/tsc_output_utf8.txt
+?? backend/apps/bikes/migrations/0012_marketcompetitormapping.py
+?? backend/apps/bikes/services/
+?? backend/apps/interactions/migrations/0003_userviewhistory.py
+?? backend/apps/marketplace/management/
+?? backend/apps/marketplace/migrations/0008_shop_usedbikelisting_shop.py
+?? backend/apps/users/services/platform_stats.py
+?? backend/apps/users/services/profile_aggregation.py
+?? backend/scripts/seed_recommendations.py
+?? backend/test_out.txt
+?? frontend/dev_output.txt
+?? frontend/git_status.txt
+?? frontend/src/app/dashboard/shop/
+?? frontend/src/app/shop/
+?? frontend/src/components/recommendations/
+?? frontend/src/hooks/use-recommendations.ts
+?? frontend/src/hooks/use-shop.ts

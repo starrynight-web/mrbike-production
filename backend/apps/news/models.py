@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
 from cloudinary.models import CloudinaryField
+from django.contrib.postgres.search import SearchVectorField, SearchVector
+from django.contrib.postgres.indexes import GinIndex
 
 class NewsCategory(models.Model):
     name = models.CharField(max_length=100)
@@ -62,6 +64,9 @@ class Article(models.Model):
     published_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Advanced Search Vector
+    search_vector = SearchVectorField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -75,6 +80,12 @@ class Article(models.Model):
             self.published_at = None
             
         super().save(*args, **kwargs)
+        
+        # Update search_vector separately to avoid recursion and handle Postgres vectorization
+        if self.pk:
+            Article.objects.filter(pk=self.pk).update(
+                search_vector=SearchVector('title', weight='A') + SearchVector('content', weight='B')
+            )
 
     def __str__(self):
         return self.title
@@ -84,4 +95,5 @@ class Article(models.Model):
         indexes = [
             models.Index(fields=['is_published', '-published_at']),
             models.Index(fields=['category']),
+            GinIndex(fields=['search_vector']),
         ]

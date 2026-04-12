@@ -21,8 +21,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: "daily",
-    priority: route === "" ? 1.0 : 0.8,
+    changeFrequency: route === "" ? "hourly" : "daily",
+    priority: route === "" ? 1.0 : route === "/bikes" ? 0.9 : 0.8,
   }));
 
   // 2. Dynamic Bike Routes
@@ -48,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     newsEntries = newsResults.map((article: any) => ({
       url: `${baseUrl}/news/${article.slug}`,
       lastModified: new Date(article.updated_at || new Date()),
-      changeFrequency: "monthly",
+      changeFrequency: "daily",
       priority: 0.7,
     }));
   } catch (e) {
@@ -64,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${baseUrl}/used-bike/${bike.slug}`,
       lastModified: new Date(bike.updated_at || new Date()),
       changeFrequency: "daily",
-      priority: 0.6,
+      priority: 0.8,
     }));
   } catch (e) {
     console.error("Sitemap: Failed to fetch used bikes", e);
@@ -78,8 +78,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     brandEntries = brandResults.map((brand: any) => ({
       url: `${baseUrl}/brands/${brand.slug}`,
       lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
+      changeFrequency: "weekly",
+      priority: 0.8,
     }));
   } catch (e) {
     console.error("Sitemap: Failed to fetch brands", e);

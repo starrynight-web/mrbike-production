@@ -72,3 +72,17 @@ class Inquiry(models.Model):
         
     def __str__(self):
         return f"{self.subject} - {self.email}"
+
+class UserViewHistory(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='view_history')
+    bike_model = models.ForeignKey(BikeModel, on_delete=models.CASCADE, related_name='views')
+    view_count = models.PositiveIntegerField(default=1)
+    last_viewed = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'bike_model')
+        ordering = ['-last_viewed']
+
+    def __str__(self):
+        return f"{self.user.username} viewed {self.bike_model.name} ({self.view_count} times)"

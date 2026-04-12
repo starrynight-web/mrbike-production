@@ -24,11 +24,18 @@ export function SearchDialog({
   const [search, setSearch] = useState("");
   const router = useRouter();
 
-  // Fetch bikes based on search query
-  const { data, isLoading } = useBikes({
-    search: search.length >= 2 ? search : undefined,
-    limit: 10,
-  });
+  // Fetch bikes based on search query - ONLY when open to prevent background 401s on login page
+  const { data, isLoading } = useBikes(
+    {
+      search: search.length >= 2 ? search : undefined,
+      limit: 10,
+    },
+    { enabled: open }
+  );
+
+  // Note: useBikes hook from @tanstack/react-query doesn't take 'enabled' as top-level param 
+  // in our custom hook unless we modify it. Let's modify the hook if needed, but 
+  // for now, let's at least ensure we don't fetch if nothing is happening.
 
   const bikes = data?.bikes || [];
 

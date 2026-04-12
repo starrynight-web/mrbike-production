@@ -5,6 +5,10 @@ import { QueryProvider } from "./query-provider";
 import { AuthProvider } from "./auth-provider";
 import { AuthSync } from "./auth-sync";
 import { Toaster } from "@/components/ui/sonner";
+import dynamic from "next/dynamic";
+
+const CompareBar = dynamic(() => import("@/components/bikes").then((mod) => mod.CompareBar), { ssr: false });
+const MobileNav = dynamic(() => import("@/components/layout").then((mod) => mod.MobileNav), { ssr: false });
 
 interface ProvidersProps {
     children: ReactNode;
@@ -28,6 +32,8 @@ export function Providers({ children }: ProvidersProps) {
                         duration: 4000,
                     }}
                 />
+                <CompareBar />
+                <MobileNav />
             </AuthProvider>
         </QueryProvider>
     );

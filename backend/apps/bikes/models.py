@@ -25,6 +25,10 @@ class Brand(models.Model):
 
     class Meta:
         ordering = ['name']
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['is_popular']),
+        ]
 
 class BikeModel(models.Model):
     CATEGORY_CHOICES = [
@@ -223,3 +227,16 @@ class BikeSpecification(models.Model):
     
     def __str__(self):
         return f"Specs for {self.bike_model.name}"
+
+class MarketCompetitorMapping(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    source_bike = models.ForeignKey(BikeModel, on_delete=models.CASCADE, related_name='competitor_source')
+    competitor_bike = models.ForeignKey(BikeModel, on_delete=models.CASCADE, related_name='competitor_target')
+    is_aspirational = models.BooleanField(default=True, help_text="True if the competitor is a highly desired premium brand/model.")
+
+    class Meta:
+        unique_together = ('source_bike', 'competitor_bike')
+        verbose_name_plural = "Market Competitor Mappings"
+
+    def __str__(self):
+        return f"{self.source_bike.name} vs {self.competitor_bike.name} (Aspirational: {self.is_aspirational})"

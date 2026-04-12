@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/select";
 import { AdMediumRectangle } from "@/components/ads/ad-medium-rectangle";
 import { toast } from "sonner";
+import { EmotionalTriggers } from "@/components/recommendations/emotional-triggers";
 
 interface BikeDetailClientProps {
   slug: string;
@@ -398,7 +399,7 @@ function SimilarNewBikes({ slug }: { slug: string }) {
           {(Array.isArray(similarBikes) ? similarBikes : []).map(
             (bike: BikeModel) => {
               const bikeId = bike.id || bike.slug;
-              const bikeName = bike.name || "";
+              const bikeName = `${bike.brand_name || (bike.brand as any)?.name || ""} ${bike.name}`.trim();
               const bikePrice = bike.price || bike.priceRange?.min || 0;
 
               // Handle various image structures from API
@@ -896,49 +897,9 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
             </div>
           </div>
 
-          {/* Similar Used Bikes Carousel */}
-          <div className="bg-card border rounded-xl p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Similar Used Bikes</h3>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/used-bikes">View All</Link>
-              </Button>
-            </div>
-            {similarUsedBikes.length > 0 ? (
-              <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
-                {similarUsedBikes.map((usedBike: UsedBike) => (
-                  <Link
-                    key={usedBike.id}
-                    href={`/used-bike/${usedBike.slug}`}
-                    className="shrink-0 w-40 bg-muted/50 rounded-lg overflow-hidden border hover:shadow-md transition-shadow block"
-                  >
-                    <div className="aspect-[4/3] bg-muted relative">
-                      <Image
-                        src={usedBike.thumbnailUrl || defaultImage}
-                        alt={usedBike.bikeName}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="p-2.5">
-                      <p className="text-xs font-medium line-clamp-1">
-                        {usedBike.bikeName}
-                      </p>
-                      <p className="text-primary font-semibold text-sm">
-                        {formatPrice(usedBike.price)}
-                      </p>
-                      <p className="text-xs text-muted-foreground capitalize">
-                        {usedBike.condition}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-sm text-center py-8">
-                No similar used bikes available
-              </p>
-            )}
+          {/* Emotional Triggers: Personalized Used Bike Recommendations */}
+          <div className="lg:col-span-2">
+            <EmotionalTriggers slug={slug} bikeName={bike.name} />
           </div>
         </div>
 

@@ -24,7 +24,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'django_filters',
-    'django_q',
     
     # Local apps
     'apps.core',
@@ -102,19 +101,18 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',
-        'user': '1000/hour',
-        'image_upload': '10/hour',
-        'login': '5/min',
-        'register': '10/hour',
-    },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    # 'DEFAULT_THROTTLE_CLASSES': [
+    #     'rest_framework.throttling.AnonRateThrottle',
+    #     'rest_framework.throttling.UserRateThrottle'
+    # ],
+    # 'DEFAULT_THROTTLE_RATES': {
+    #     'anon': '200/minute',
+    #     'user': '1000/minute',
+    #     'uploads': '20/hour',
+    #     'auth': '10/minute',
+    # },
 }
 
 # Simple JWT Settings
@@ -142,7 +140,7 @@ if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
-        traces_sample_rate=1.0,
+        traces_sample_rate=0.1 if os.getenv('DJANGO_ENV') == 'production' else 1.0,
         send_default_pii=True
     )
 
@@ -190,19 +188,6 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in CORS_ALLOWED_ORIGINS
 ]
 SECURE_REFERRER_POLICY = 'same-origin'
-
-# Django-Q Configuration (Section 4.10)
-Q_CLUSTER = {
-    'name': 'MrBikeBD-Tasks',
-    'workers': 4,
-    'recycle': 500,
-    'timeout': 60,
-    'compress': True,
-    'save_limit': 250,
-    'queue_limit': 500,
-    'label': 'Django Q tasks',
-    'redis': os.getenv('REDIS_URL', 'redis://localhost:6379/1')
-}
 
 # Scheduled Tasks (Section 4.10)
 # These would typically be set up in the database via Django Admin/Django-Q interface, 

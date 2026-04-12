@@ -67,13 +67,13 @@ export default function AdminLayout({
       router.push("/login");
       return;
     }
-    // Redirect to home if authenticated but not admin
-    if (user && user.role !== "admin") {
+    // Redirect to home if authenticated but not an admin
+    if (user && user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'staff') {
       router.push("/");
     }
   }, [user, isAuthenticated, router, isLoading]);
 
-  if (isLoading || !isAuthenticated || !user || user.role !== "admin") {
+  if (isLoading || !isAuthenticated || !user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'staff')) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

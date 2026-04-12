@@ -185,31 +185,8 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google" && account.id_token) {
-        try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/google/`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id_token: account.id_token }),
-            }
-          );
-
-          const data = await res.json();
-
-          if (res.ok && data) {
-            (user as any).accessToken = data.access;
-            (user as any).refreshToken = data.refresh;
-            (user as any).role = data.user.role;
-            (user as any).isEmailVerified = data.user.is_email_verified;
-            return true;
-          }
-          console.error("Backend Google auth failed:", data);
-          return false;
-        } catch (error) {
-          console.error("Link to backend failed:", error);
-          return false;
-        }
+        // Basic check, actual backend auth happens in jwt callback
+        return true;
       }
       return true;
     },
@@ -227,7 +204,34 @@ export const authOptions: AuthOptions = {
       return session;
     },
     async jwt({ token, user, account }) {
-      // Initial sign in
+      // Handle Google OAuth initial sign in
+      if (account?.provider === "google" && account.id_token) {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/google/`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_token: account.id_token }),
+            }
+          );
+
+          const data = await res.json();
+
+          if (res.ok && data) {
+            token.accessToken = data.access;
+            token.refreshToken = data.refresh;
+            token.role = data.user.role;
+            token.isEmailVerified = data.user.is_email_verified;
+            token.accessTokenExpires = Date.now() + 60 * 60 * 1000; // 60 minutes
+            return token;
+          }
+        } catch (error) {
+          console.error("Link to backend failed in JWT callback:", error);
+        }
+      }
+
+      // Handle normal Email/Password initial sign in
       if (user) {
         token.role = (user as any).role || "user";
         token.accessToken = (user as any).accessToken;

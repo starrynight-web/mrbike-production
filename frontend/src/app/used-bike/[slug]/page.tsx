@@ -5,7 +5,7 @@ import { SEO_DEFAULTS, APP_CONFIG } from "@/config/constants";
 import { UsedBikeDetailClient } from "./detail-client";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export const revalidate = 3600; // Revalidate every hour
+export const revalidate = 300; // Revalidate every 5 mins for volatile listings
 import { apiServer } from "@/lib/api-server";
 import { mapUsedBike } from "@/lib/data-utils";
 

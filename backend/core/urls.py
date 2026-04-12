@@ -4,6 +4,16 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from apps.core.sitemap import sitemap_view
+from apps.core.health import health_check
+import os
+
+# Override default Django admin access to strictly require super admin email
+def custom_has_permission(request):
+    super_admin_email = os.getenv('SUPER_ADMIN_EMAIL', 'admin_gr_s_n_r_t_e@unleft.space')
+    return request.user.is_authenticated and request.user.email == super_admin_email
+
+admin.site.has_permission = custom_has_permission
+
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -26,8 +36,9 @@ v1_patterns = [
 ]
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('mrbikebd-sys-admin/', admin.site.urls),
     path('sitemap.xml', sitemap_view, name='sitemap'),
+    path('health/', health_check, name='health'),
     
     # Versioned API
     path('api/v1/', include(v1_patterns)),

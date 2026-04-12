@@ -11,8 +11,8 @@ django.setup()
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
-TARGET_EMAIL = 'mrbikecloude@gmail.com'
-TARGET_PASS = 'mrbike@3456@gr_sf_mn_gme_nr_ta_unlef@6202'
+TARGET_EMAIL = os.getenv('SUPER_ADMIN_EMAIL', 'mrbikecloude@gmail.com')
+TARGET_PASS = os.getenv('SUPER_ADMIN_PASSWORD', 'mrbike@3456@gr_sf_mn_gme_nr_ta_unlef@6202')
 
 print(f"--- Admin Consolidation Starting ---")
 

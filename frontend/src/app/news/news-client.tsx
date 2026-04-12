@@ -215,7 +215,7 @@ export function NewsClient() {
                     </CardContent>
                     <CardFooter className="p-4 pt-0">
                       <div className="flex flex-wrap gap-2">
-                        {Array.isArray(article.tags) && article.tags.map((tag: any) => (
+                        {Array.isArray(article.tags) && article.tags.map((tag: string | { name: string }) => (
                           <span
                             key={typeof tag === 'string' ? tag : tag.name}
                             className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md flex items-center gap-1"

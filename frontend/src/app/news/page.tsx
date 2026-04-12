@@ -4,6 +4,8 @@ import { SEO_DEFAULTS } from "@/config/constants";
 import { NewsClient } from "./news-client";
 import { Skeleton } from "@/components/ui/skeleton";
 
+export const revalidate = 1800; // 30 min cache
+
 export const metadata: Metadata = {
   title: `Motorcycle News, Reviews & Updates${SEO_DEFAULTS.titleSuffix}`,
   description:

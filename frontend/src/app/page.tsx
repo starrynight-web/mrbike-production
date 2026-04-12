@@ -26,6 +26,12 @@ import { UsedBikesCarousel } from "@/components/used-bikes/used-bikes-carousel";
 import { CategoryShowcase } from "@/components/bikes/category-showcase";
 import { AdBanner } from "@/components/ads/ad-banner";
 
+export const metadata = {
+  title: "Bike Price In Bangladesh 2026 | MrBikeBD — Bangladesh's #1 Motorcycle Platform",
+  description: "Find latest motorcycle prices in Bangladesh 2026. Compare 300+ bikes from Yamaha, Honda, Suzuki, KTM, Bajaj. Buy/sell used bikes. Bangladesh's most trusted bike portal.",
+  keywords: ["bike price in Bangladesh 2026", "motorcycle price BD", "used bike for sale Bangladesh", "Yamaha bike price Bangladesh", "Honda bike price BD", "buy sell bike Bangladesh", "second hand bike Bangladesh"],
+};
+
 export default async function HomePage() {
   let featuredBikes: Bike[] = [];
   let usedBikes: UsedBike[] = [];
@@ -95,8 +101,7 @@ export default async function HomePage() {
             </Badge> */}
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-white">
-              Find Your <span className="text-primary">Perfect</span> Motor
-              <span className="text-primary">cycle</span>
+              Bike Price In <span className="text-primary">Bangladesh 2026</span> — <br className="hidden md:block"/>MrBike<span className="text-primary">BD</span>
             </h1>
 
             <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">

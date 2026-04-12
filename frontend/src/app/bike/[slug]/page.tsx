@@ -1,8 +1,27 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { BikeDetailClient } from "./detail-client";
+import dynamic from "next/dynamic";
 import { APP_CONFIG, SEO_DEFAULTS } from "@/config/constants";
 import { apiServer } from "@/lib/api-server";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// 4.5 — Code Splitting: 70KB detail-client is lazy-loaded, not in the critical path bundle
+const BikeDetailClient = dynamic(() => import("./detail-client").then((m) => m.BikeDetailClient), {
+  ssr: false,
+  loading: () => (
+    <div className="container mx-auto px-4 py-8 space-y-6">
+      <Skeleton className="h-12 w-2/3" />
+      <Skeleton className="h-96 w-full rounded-xl" />
+      <div className="grid grid-cols-3 gap-4">
+        <Skeleton className="h-32" />
+        <Skeleton className="h-32" />
+        <Skeleton className="h-32" />
+      </div>
+    </div>
+  ),
+});
+
+export const revalidate = 3600; // ISR cache for 1 hour
 
 interface BikePageProps {
     params: Promise<{ slug: string }>;
@@ -22,24 +41,31 @@ export async function generateMetadata({ params }: BikePageProps): Promise<Metad
 
     const bikeName = bike.name;
     const brandName = bike.brand?.name || bike.brand_name || "";
-    const description = bike.meta_description || bike.description || `${bikeName} price in Bangladesh. Check specifications, mileage, images, and reviews.`;
-    const title = bike.meta_title || `${brandName} ${bikeName} - Price, Specs, Mileage & Review`;
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
+    const formattedPrice = bike.price ? bike.price.toLocaleString('en-IN') : 'N/A';
+
+    const title = bike.meta_title || `${currentYear} ${brandName} ${bikeName} Price in Bangladesh — MrBikeBD`;
+    const description = bike.meta_description || `${brandName} ${bikeName} price in Bangladesh is ৳${formattedPrice}. Check specs, reviews, EMI, and compare with similar bikes. Updated ${currentMonthStr} ${currentYear}.`;
 
     return {
         title: title,
         description: description,
         keywords: [
-            bikeName,
-            brandName,
-            `${bikeName} price`,
+            `${brandName} ${bikeName} price in bd`,
+            `${bikeName} price bangladesh`,
             `${bikeName} specs`,
-            "motorcycle Bangladesh",
+            `${brandName} ${bikeName} review`,
+            "motorcycle price Bangladesh",
         ],
         openGraph: {
-            title: `${brandName} ${bikeName}${SEO_DEFAULTS.titleSuffix}`,
+            title: title,
             description: description,
             url: `${APP_CONFIG.url}/bike/${slug}`,
-            type: "website",
+            type: "article",
+            publishedTime: bike.created_at || new Date().toISOString(),
+            modifiedTime: bike.updated_at || new Date().toISOString(),
             images: [
                 {
                     url: bike.primary_image || bike.thumbnailUrl || SEO_DEFAULTS.defaultOgImage,

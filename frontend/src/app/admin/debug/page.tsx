@@ -1,5 +1,6 @@
 import { getAppRoutes } from "@/lib/debug-utils";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,15 +31,7 @@ export const dynamic = "force-dynamic"; // Ensure we scan on every request
 export default async function DebugRoutesPage() {
   // Security check: Only allow in development
   if (process.env.NODE_ENV === "production") {
-    return (
-      <div className="container py-20 text-center">
-        <h1 className="text-2xl font-bold text-red-500">Access Denied</h1>
-        <p>This debug tool is only available in development environment.</p>
-        <Button asChild className="mt-4">
-          <Link href="/">Go Home</Link>
-        </Button>
-      </div>
-    );
+    notFound();
   }
 
   const routes = await getAppRoutes();

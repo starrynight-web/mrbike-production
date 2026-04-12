@@ -6,7 +6,7 @@ export function useNews(filters?: { category?: string; page?: number; limit?: nu
     return useQuery({
         queryKey: ["news", filters],
         queryFn: async () => {
-            const queryParams: any = {};
+            const queryParams: Record<string, string | number> = {};
             if (filters?.category) queryParams.category__slug = filters.category;
             if (filters?.page) queryParams.page = filters.page;
 

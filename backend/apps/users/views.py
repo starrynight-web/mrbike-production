@@ -2,8 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from apps.core.responses import StandardResponse
-from rest_framework.throttling import UserRateThrottle
 from rest_framework.permissions import AllowAny
+from apps.core.permissions import IsSuperAdminOnly
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.cache import cache
 from django.conf import settings
@@ -25,6 +25,8 @@ from apps.marketplace.models import UsedBikeListing
 from apps.interactions.models import Wishlist, Review
 from .models import Notification, EmailVerificationToken
 from .services.email_service import email_service
+from .services.profile_aggregation import get_full_profile_data
+from .services.platform_stats import get_global_admin_stats
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -33,17 +35,6 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-# Throttle Classes
-class LoginThrottle(UserRateThrottle):
-    """Rate limit login attempts to 5 per minute"""
-    scope = 'login'
-    rate = '5/min'
-
-
-class RegisterThrottle(UserRateThrottle):
-    """Rate limit registration to 10 per hour"""
-    scope = 'register'
-    rate = '10/hour'
 
 
 def generate_unique_username(identifier: str, UserModel, max_attempts: int = 10) -> str:
@@ -65,7 +56,6 @@ def generate_unique_username(identifier: str, UserModel, max_attempts: int = 10)
 
 class GoogleAuthView(generics.GenericAPIView):
     permission_classes = [AllowAny]
-    throttle_classes = [LoginThrottle]
     serializer_class = GoogleAuthSerializer
 
     def post(self, request, *args, **kwargs):
@@ -107,35 +97,7 @@ class GoogleAuthView(generics.GenericAPIView):
                 is_email_verified=True,  # Google-verified emails are trusted
             )
             created = True
-        
-        # ADMIN OTP Verification (Only for mrbikecloude@gmail.com)
-        if email.lower() == 'mrbikecloude@gmail.com':
-            # Generate 6-digit random OTP
-            otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
-            session_id = secrets.token_urlsafe(32)
-            
-            # Store code in cache for 5 minutes
-            cache.set(f"email_otp_{session_id}", {
-                'user_id': user.id,
-                'code': otp_code
-            }, timeout=300) 
-
-            # Send OTP via email
-            email_sent = email_service.send_login_otp(
-                to_email=user.email,
-                otp_code=otp_code,
-                to_name=user.first_name or user.username
-            )
-
-            if not email_sent:
-                logger.error(f"Failed to send 2FA OTP to {user.email}")
-
-            return Response({
-                'requires_2fa': True,
-                'totp_session': session_id,
-                'email_sent': email_sent,
-                'method': 'email'
-            }, status=status.HTTP_200_OK)
+        # Note: Google OAuth bypasses 2FA because Google itself serves as a secure authentication method.
 
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -173,7 +135,6 @@ class NotificationListView(generics.ListAPIView):
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
-    throttle_classes = [RegisterThrottle]
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
@@ -209,7 +170,6 @@ class RegisterView(generics.CreateAPIView):
 class EmailLoginView(generics.GenericAPIView):
     """Login with email and password. Requires email verification."""
     permission_classes = [AllowAny]
-    throttle_classes = [LoginThrottle]
     serializer_class = EmailLoginSerializer
 
     def post(self, request, *args, **kwargs):
@@ -242,8 +202,8 @@ class EmailLoginView(generics.GenericAPIView):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        # ADMIN OTP Verification (Only for mrbikecloude@gmail.com)
-        if email.lower() == 'mrbikecloude@gmail.com':
+        # ADMIN OTP Verification (For any staff or superuser)
+        if user.is_staff or user.is_superuser:
             # Generate 6-digit random OTP
             otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
             session_id = secrets.token_urlsafe(32)
@@ -283,7 +243,6 @@ class EmailLoginView(generics.GenericAPIView):
 class VerifyOTPView(generics.GenericAPIView):
     """Verify Email OTP for admin users"""
     permission_classes = [AllowAny]
-    throttle_classes = [LoginThrottle]
 
     def post(self, request):
         session_id = request.data.get('totp_session') # Keep field name to minimize frontend changes
@@ -382,7 +341,6 @@ class EmailVerifyView(APIView):
 class ResendVerificationView(APIView):
     """Resend email verification link"""
     permission_classes = [AllowAny]
-    throttle_classes = [RegisterThrottle]
 
     def post(self, request):
         email = request.data.get('email')
@@ -419,7 +377,6 @@ class ResendVerificationView(APIView):
 
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
-    throttle_classes = [LoginThrottle]
     serializer_class = PasswordResetRequestSerializer
 
     def post(self, request):
@@ -502,93 +459,21 @@ class ProfileDetailView(APIView):
         # 1. Basic Serialized User
         user_data = UserSerializer(user).data
         
-        # 2. Stats
-        listings_count = UsedBikeListing.objects.filter(seller=user).count()
-        wishlist = Wishlist.objects.filter(user=user).first()
-        wishlist_count = wishlist.bikes.count() if wishlist else 0
-        reviews_count = Review.objects.filter(user=user).count()
-        
-        stats = {
-            "listings_count": listings_count,
-            "wishlist_count": wishlist_count,
-            "reviews_count": reviews_count,
-            "member_since": user.date_joined.strftime("%b %y")
-        }
-
-        # 3. Active Listings
-        from apps.marketplace.serializers import UsedBikeListingSerializer
-        listings = UsedBikeListing.objects.filter(seller=user).order_by('-created_at')[:5]
-        listings_data = UsedBikeListingSerializer(listings, many=True).data
-
-        # 4. Wishlist Items
-        from apps.bikes.serializers import BikeModelSerializer
-        wishlist_bikes = wishlist.bikes.all()[:5] if wishlist else []
-        wishlist_data = BikeModelSerializer(wishlist_bikes, many=True).data
-
-        # 5. Reviews
-        from apps.interactions.serializers import ReviewSerializer
-        reviews = Review.objects.filter(user=user).select_related('bike_model').order_by('-created_at')[:5]
-        reviews_data = ReviewSerializer(reviews, many=True).data
-
-        data = {
-            "user": user_data,
-            "stats": stats,
-            "listings": listings_data,
-            "wishlist": wishlist_data,
-            "reviews": reviews_data
-        }
+        # 2. Aggregated Profile Data via Service Layer
+        data = get_full_profile_data(user)
+        data["user"] = user_data
         
         return StandardResponse.success(data=data, message="Full profile data retrieved")
-
-
 
 
 class GlobalAdminStatsView(APIView):
     """
     Returns global statistics for the platform admin dashboard.
-    Only accessible by staff/superusers.
+    Only accessible by super admin email.
     """
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsSuperAdminOnly]
 
     def get(self, request):
-        # Lazy imports to avoid Djongo SQL errors at module import time
-        from apps.marketplace.models import UsedBikeListing
-        from apps.news.models import Article
-        from django.db.models import Count
-
-        total_users = User.objects.count()
-        verified_users = User.objects.filter(is_email_verified=True).count()
-
-        # Marketplace stats
-        active_listings = UsedBikeListing.objects.filter(status='active').count()
-        pending_listings = UsedBikeListing.objects.filter(status='pending').count()
-        total_listings = UsedBikeListing.objects.count()
-
-        # News stats
-        published_news = Article.objects.filter(is_published=True).count()
-        draft_news = Article.objects.filter(is_published=False).count()
-
-        # Location breakdown
-        location_stats = list(
-            UsedBikeListing.objects.values('location').annotate(count=Count('id')).order_by('-count')[:5]
-        )
-
-        data = {
-            "users": {
-                "total": total_users,
-                "verified": verified_users,
-            },
-            "marketplace": {
-                "total": total_listings,
-                "active": active_listings,
-                "pending": pending_listings,
-                "locations": location_stats,
-            },
-            "content": {
-                "published_articles": published_news,
-                "draft_articles": draft_news,
-            },
-            "last_updated": timezone.now().isoformat()
-        }
+        data = get_global_admin_stats()
         return StandardResponse.success(data=data, message="Admin statistics retrieved successfully")
 

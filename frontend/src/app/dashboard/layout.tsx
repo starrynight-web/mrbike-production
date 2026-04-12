@@ -34,8 +34,9 @@ const navItems = [
   { href: "/dashboard/wishlist", label: "Wishlist (0)", icon: Heart },
   { href: "/dashboard/favorites", label: "Favorites (1)", icon: Star },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
-  { href: "/dashboard/my-reviews", label: "My Reviews", icon: Star }, // Added
-  { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard }, // Added
+  { href: "/dashboard/my-reviews", label: "My Reviews", icon: Star },
+  { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard },
+  { href: "/dashboard/shop", label: "My Shop", icon: LayoutDashboard },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 

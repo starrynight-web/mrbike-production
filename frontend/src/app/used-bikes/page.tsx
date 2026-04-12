@@ -4,22 +4,49 @@ import { SEO_DEFAULTS } from "@/config/constants";
 import { UsedBikesClient } from "./used-bikes-client";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// export const dynamic = "force-dynamic";
+export const revalidate = 300; // 5 min cache
 
 export const metadata: Metadata = {
-  title: `Used Bike Marketplace${SEO_DEFAULTS.titleSuffix}`,
+  title: "Used Bikes For Sale in Bangladesh 2026 — MrBikeBD Marketplace",
   description:
-    "Buy and sell second-hand motorcycles in Bangladesh. Verified listings, direct seller contact, and trusted deals.",
+    "Buy and sell second-hand motorcycles in Bangladesh. Browse verified used bike listings from Dhaka, Chittagong, Sylhet and all districts. Safe, trusted used bike marketplace.",
   openGraph: {
-    title: `Used Bike Marketplace${SEO_DEFAULTS.titleSuffix}`,
+    title: "Used Bikes For Sale in Bangladesh 2026 — MrBikeBD Marketplace",
     description:
-      "Buy and sell second-hand motorcycles in Bangladesh. Verified listings, direct seller contact, and trusted deals.",
+      "Buy and sell second-hand motorcycles in Bangladesh. Browse verified used bike listings from Dhaka, Chittagong, Sylhet and all districts. Safe, trusted used bike marketplace.",
   },
 };
 
 export default function UsedBikesPage() {
   return (
     <main className="min-h-screen bg-background pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Is it safe to buy a used bike on MrBikeBD?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, MrBikeBD manually reviews listings. However, we always recommend meeting the seller in person, verifying the registration papers (Bluebook), and checking the engine condition before making any payment."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How to check papers of a used bike in Bangladesh?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Always verify the BRTA registration certificate (Bluebook/Smart Card), tax token, and ensure the chassis number and engine number match the physical bike."
+                }
+              }
+            ]
+          })
+        }}
+      />
       <Suspense fallback={<UsedBikesSkeleton />}>
         <UsedBikesClient />
       </Suspense>

@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -113,10 +113,18 @@ export default function LoginPage() {
 }
 
 function LoginContent() {
+  const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push(callbackUrl);
+    }
+  }, [status, router, callbackUrl]);
 
   // Email login states
   const [email, setEmail] = useState("");
@@ -301,7 +309,7 @@ function LoginContent() {
             transition={{ duration: 0.3 }}
           >
             <div className="space-y-2 mb-6">
-              <h1 className="text-3xl font-bold tracking-tight">Welcome Back</h1>
+              <h1 className="text-3xl font-bold tracking-tight">Login TO Continue</h1>
               <p className="text-muted-foreground">Sign in with your email and password</p>
             </div>
 

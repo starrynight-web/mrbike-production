@@ -7,12 +7,16 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from .models import Brand, BikeModel
 from .serializers import BrandSerializer, BikeModelSerializer
+from django.db.models import F, Q
 from .filters import BikeModelFilter
 from django.conf import settings
 import logging
 from django.utils.text import get_valid_filename
 import uuid
 from PIL import Image, UnidentifiedImageError
+from .services.recommendation_engine import get_emotional_recommendations
+from apps.interactions.models import UserViewHistory
+from apps.marketplace.serializers import UsedBikeListingSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +30,11 @@ class BrandViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'origin']
     
+    @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    @method_decorator(cache_page(60 * 15))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -61,7 +67,7 @@ class BrandViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsAdminUser()]
+            return [IsSuperAdminOnly()]
         return [permissions.AllowAny()]
 
 class BikeModelViewSet(viewsets.ModelViewSet):
@@ -90,7 +96,31 @@ class BikeModelViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+        instance = self.get_object()
+        
+        # Track view history for personalized recommendations
+        if request.user.is_authenticated:
+            # We use atomic update if it exists or create new
+            UserViewHistory.objects.update_or_create(
+                user=request.user,
+                bike_model=instance,
+                defaults={'view_count': F('view_count') + 1}
+            )
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def emotional_recommendations(self, request, pk=None):
+        """
+        Custom endpoint for the emotional trigger recommendation engine.
+        """
+        bike = self.get_object()
+        recommendations = get_emotional_recommendations(bike, user=request.user)
+        
+        # Reuse UsedBikeListingSerializer for the recommendations
+        serializer = UsedBikeListingSerializer(recommendations, many=True)
+        return Response(serializer.data)
 
     def get_object(self):
         """
@@ -109,12 +139,12 @@ class BikeModelViewSet(viewsets.ModelViewSet):
 
     permission_classes_by_action = {
         'default': [permissions.AllowAny],
-        'create': [IsAdminUser],
-        'update': [IsAdminUser],
-        'partial_update': [IsAdminUser],
-        'destroy': [IsAdminUser],
-        'upload_image': [IsAdminUser],
-        'duplicate': [IsAdminUser],
+        'create': [IsSuperAdminOnly],
+        'update': [IsSuperAdminOnly],
+        'partial_update': [IsSuperAdminOnly],
+        'destroy': [IsSuperAdminOnly],
+        'upload_image': [IsSuperAdminOnly],
+        'duplicate': [IsSuperAdminOnly],
     }
     
     def get_permissions(self):

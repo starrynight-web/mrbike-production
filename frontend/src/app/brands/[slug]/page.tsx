@@ -4,6 +4,8 @@ import { SEO_DEFAULTS } from "@/config/constants";
 import { BrandDetailClient } from "./brand-detail-client";
 import { Skeleton } from "@/components/ui/skeleton";
 
+export const revalidate = 3600; // 1 hour cache
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
@@ -15,12 +17,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
     .join("-");
 
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  
+  const pageTitle = `${title} Bike Price in Bangladesh ${currentYear} — Latest Models`;
+  const pageDescription = `Check all ${title} motorcycle prices in Bangladesh. Find latest ${title} models, specs, mileage, showroom addresses, and user reviews on MrBikeBD.`;
+
   return {
-    title: `${title} Bikes in Bangladesh${SEO_DEFAULTS.titleSuffix}`,
-    description: `Check out the latest ${title} motorcycle prices, specs, and reviews in Bangladesh.`,
+    title: pageTitle,
+    description: pageDescription,
+    keywords: [
+      `${title} bike price in bd`,
+      `${title} motorcycle price bangladesh`,
+      `${title} upcoming bikes`,
+      `${title} showrooms in bangladesh`,
+    ],
     openGraph: {
-      title: `${title} Bikes in Bangladesh - Price & Specs`,
-      description: `Check out the latest ${title} motorcycle prices, specs, and reviews in Bangladesh.`,
+      title: pageTitle,
+      description: pageDescription,
     },
   };
 }

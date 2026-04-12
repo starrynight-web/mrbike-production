@@ -1,0 +1,472 @@
+
+File: E:\mr\frontend\src\app\ad-demo\page.tsx
+  Line 57: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`. (react/no-unescaped-entities)
+
+File: E:\mr\frontend\src\app\admin\bikes\page.tsx
+  Line 187: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 219: 'handleImageSelect' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+  Line 261: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 276: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 279: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 286: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 316: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 324: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 346: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 350: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 1103: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\admin\layout.tsx
+  Line 6: 'Image' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 16: 'Bell' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 17: 'User' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 18: 'ArrowLeft' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 24: 'Separator' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\admin\news\page.tsx
+  Line 196: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\admin\settings\2fa\page.tsx
+  Line 16: 'session' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+  Line 49: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 74: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\admin\settings\page.tsx
+  Line 4: 'motion' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 8: 'Mail' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 30: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\admin\used-bikes\page.tsx
+  Line 20: 'Scale' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 21: 'Fuel' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 309: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 310: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 311: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 312: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 357: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 700: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\advertise\inquire\page.tsx
+  Line 5: 'Phone' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 5: 'MapPin' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 45: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\mr\frontend\src\app\advertise\inquire\page.tsx:45:7
+  43 |       const planValue = planParam.toLowerCase().includes("premium") ? "premium" : 
+  44 |                         planParam.toLowerCase().includes("dealer") ? "dealer" : "standard";
+> 45 |       setFormData(prev => ({ ...prev, plan: planValue }));
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  46 |     }
+  47 |   }, [planParam]);
+  48 | (react-hooks/set-state-in-effect)
+
+File: E:\mr\frontend\src\app\advertise\page.tsx
+  Line 9: 'Mail' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 24: 'Input' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 25: 'Textarea' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 27: 'Label' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 39: 'isSubmitting' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+  Line 41: 'handleChange' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+  Line 47: 'handleSubmit' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\api\auth\[...nextauth]\route.ts
+  Line 6: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 88: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 132: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 178: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 186: 'profile' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 201: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 202: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 203: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 204: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 223: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 229: 'account' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 232: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 233: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 234: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 235: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\bike\[slug]\detail-client.tsx
+  Line 19: 'ImageOff' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 43: 'UsedBike' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 113: 'ApiVariant' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 128: 'IMAGE_COUNT' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+  Line 402: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 471: 'similarUsedBikes' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+  Line 490: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\brands\[slug]\brand-detail-client.tsx
+  Line 8: 'Separator' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 15: 'BadgeCheck' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\contact\page.tsx
+  Line 24: 'api' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\dashboard\favorites\page.tsx
+  Line 10: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`. (react/no-unescaped-entities)
+
+File: E:\mr\frontend\src\app\dashboard\layout.tsx
+  Line 5: 'useState' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 14: 'ChevronLeft' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 15: 'ChevronRight' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 17: 'CheckCircle2' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 27: 'Badge' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 28: 'Separator' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 65: 'scroll' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\dashboard\my-listings\page.tsx
+  Line 56: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 88: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`. (react/no-unescaped-entities)
+  Line 106: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\dashboard\my-reviews\page.tsx
+  Line 68: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 81: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 108: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`. (react/no-unescaped-entities)
+
+File: E:\mr\frontend\src\app\dashboard\notifications\page.tsx
+  Line 8: 'Mail' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\dashboard\page.tsx
+  Line 5: 'Card' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 6: 'CardContent' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 7: 'CardDescription' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 8: 'CardHeader' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 9: 'CardTitle' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 16: 'Loader2' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 17: 'TrendingUp' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 21: 'Badge' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 22: 'cn' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\dashboard\shop\shop-settings-client.tsx
+  Line 19: 'Share2' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 26: 'CardFooter' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 30: 'toast' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 54: 'isDirty' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+  Line 70: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\mr\frontend\src\app\dashboard\shop\shop-settings-client.tsx:70:7
+  68 |         map_location: shop.map_location || "",
+  69 |       });
+> 70 |       setLogoPreview(shop.logo || null);
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  71 |       setCoverPreview(shop.cover_image || null);
+  72 |     }
+  73 |   }, [shop, reset]); (react-hooks/set-state-in-effect)
+  Line 157: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element (@next/next/no-img-element)
+  Line 287: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`. (react/no-unescaped-entities)
+  Line 287: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`. (react/no-unescaped-entities)
+
+File: E:\mr\frontend\src\app\dashboard\wishlist\page.tsx
+  Line 10: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`. (react/no-unescaped-entities)
+
+File: E:\mr\frontend\src\app\dealers\page.tsx
+  Line 27: 'Badge' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 84: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\faqs\page.tsx
+  Line 3: 'ChevronDown' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 3: 'MessageSquare' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\login\page.tsx
+  Line 3: 'useEffect' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 200: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 233: 'error' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 233: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 261: 'error' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 454: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`. (react/no-unescaped-entities)
+
+File: E:\mr\frontend\src\app\news\[slug]\news-detail-client.tsx
+  Line 25: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 43: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 173: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\page.tsx
+  Line 4: 'Card' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 4: 'CardContent' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 8: 'Zap' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 9: 'Wind' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 10: 'Building2' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 11: 'CircleDot' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 12: 'Compass' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 13: 'Mountain' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 14: 'Plug' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 17: 'BIKE_CATEGORIES' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 20: 'sanitizeImageUrl' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 24: 'Brand' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 24: 'NewsArticle' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 43: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 54: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\profile\page.tsx
+  Line 3: 'ProfileClient' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\profile\profile-client.tsx
+  Line 465: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 574: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\register\page.tsx
+  Line 6: 'Bike' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 11: 'User' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 13: 'ArrowLeft' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 19: 'Card' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 20: 'CardContent' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 21: 'CardDescription' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 22: 'CardFooter' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 23: 'CardHeader' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 24: 'CardTitle' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 122: 'router' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\report\[id]\page.tsx
+  Line 18: 'CardHeader' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 18: 'CardTitle' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\sell-bike\sell-bike-wizard.tsx
+  Line 196: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 498: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 528: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 805: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`. (react/no-unescaped-entities)
+  Line 805: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`. (react/no-unescaped-entities)
+
+File: E:\mr\frontend\src\app\services\bike-registration\page.tsx
+  Line 17: 'Badge' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\shop\[slug]\page.tsx
+  Line 9: 'slug' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\shop\[slug]\shop-profile-client.tsx
+  Line 12: 'Calendar' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 13: 'Gauge' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 14: 'ExternalLink' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 20: 'CardContent' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 24: 'formatPrice' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 49: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 54: 'err' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 94: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element (@next/next/no-img-element)
+  Line 244: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`. (react/no-unescaped-entities)
+
+File: E:\mr\frontend\src\app\sitemap.ts
+  Line 31: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 32: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 33: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 46: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 47: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 48: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 61: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 62: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 63: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 76: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 77: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 78: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\app\support\page.tsx
+  Line 4: 'MapPin' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\used-bike\[slug]\detail-client.tsx
+  Line 8: 'CheckCircle' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 14: 'Clock' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 21: 'Info' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 22: 'AlertTriangle' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 35: 'Card' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 35: 'CardContent' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 35: 'CardHeader' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 35: 'CardTitle' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 36: 'Separator' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 39: 'formatPrice' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 39: 'formatRelativeTime' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 67: 'handleCall' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+  Line 379: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element (@next/next/no-img-element)
+
+File: E:\mr\frontend\src\app\used-bike\plans\inquire\page.tsx
+  Line 5: 'Mail' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 5: 'Shield' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 44: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\mr\frontend\src\app\used-bike\plans\inquire\page.tsx:44:7
+  42 |     if (planParam) {
+  43 |       const planValue = planParam.toLowerCase().includes("gold") ? "gold" : "silver";
+> 44 |       setFormData(prev => ({ ...prev, plan: planValue }));
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  45 |     }
+  46 |   }, [planParam]);
+  47 | (react-hooks/set-state-in-effect)
+
+File: E:\mr\frontend\src\app\used-bike\plans\page.tsx
+  Line 102: 'index' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\app\verify-email\page.tsx
+  Line 35: Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\mr\frontend\src\app\verify-email\page.tsx:35:13
+  33 |     useEffect(() => {
+  34 |         if (!token) {
+> 35 |             setStatus("error");
+     |             ^^^^^^^^^ Avoid calling setState() directly within an effect
+  36 |             setErrorMessage("Missing verification token.");
+  37 |             return;
+  38 |         } (react-hooks/set-state-in-effect)
+
+File: E:\mr\frontend\src\components\bikes\bike-filters.tsx
+  Line 3: 'useCallback' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\components\bikes\compare-your-choice-section.tsx
+  Line 16: 'MAX_COMPARE' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+  Line 50: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\components\layout\footer.tsx
+  Line 6: 'Bike' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\components\layout\header.tsx
+  Line 8: 'Heart' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 49: 'wishlistCount' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\components\layout\search-dialog.tsx
+  Line 3: 'useMemo' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\components\profile\account-management.tsx
+  Line 63: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 79: 'error' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\components\recommendations\emotional-triggers.tsx
+  Line 7: 'Bike' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\components\used-bikes\used-bike-card.tsx
+  Line 5: 'CardFooter' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 6: 'Button' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\components\used-bikes\used-bike-filters.tsx
+  Line 8: 'Label' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\config\constants.ts
+  Line 70: 'slug' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\hooks\use-bikes.ts
+  Line 46: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 104: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 143: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 144: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 222: '_data' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 222: 'variables' is defined but never used. (@typescript-eslint/no-unused-vars)
+
+File: E:\mr\frontend\src\hooks\use-recommendations.ts
+  Line 4: 'UsedBike' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 11: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\hooks\use-shop.ts
+  Line 6: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 19: 'err' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 30: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\hooks\use-used-bikes.ts
+  Line 29: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\hooks\use-user.ts
+  Line 3: 'Review' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 43: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 56: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\lib\admin-api.ts
+  Line 62: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 63: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 64: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 65: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 151: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 211: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 238: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 252: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 265: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 278: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 292: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 312: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 321: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 371: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 382: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 393: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 403: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 414: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 551: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 565: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 606: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 724: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\lib\api-server.ts
+  Line 43: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 49: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 56: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 63: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 67: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 73: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 77: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 81: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 87: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 91: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\lib\api-service.ts
+  Line 124: 'results' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+  Line 125: 'count' is assigned a value but never used. (@typescript-eslint/no-unused-vars)
+  Line 140: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 163: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 167: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 171: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 175: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 180: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 184: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 188: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 195: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 200: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 204: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 208: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 212: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 216: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 246: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 256: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 260: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 264: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 267: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 270: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 274: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 278: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 278: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 282: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 282: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 286: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\lib\data-utils.ts
+  Line 1: 'ApiUsedBikeListing' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 2: 'User' is defined but never used. (@typescript-eslint/no-unused-vars)
+  Line 15: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 81: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 93: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 107: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 129: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 167: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 168: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  Line 175: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+File: E:\mr\frontend\src\types\index.ts
+  Line 71: Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+
+Total issues: 290

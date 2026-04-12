@@ -367,7 +367,7 @@ class AdminAPI {
   /**
    * Approve used bike listing
    */
-  async approveListing(id: number, category: string) {
+  async approveListing(id: number, category?: string) {
     const response = await api.post<any>(`/marketplace/listings/${id}/approve/`, { category });
     if (!response.success) {
         throw new Error(response.error?.message || "Failed to approve listing");

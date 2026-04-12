@@ -36,10 +36,11 @@ export const queryKeys = {
 /**
  * Fetch paginated list of bikes with filters
  */
-export function useBikes(filters?: BikeFilters) {
+export function useBikes(filters?: BikeFilters, options: any = {}) {
   return useQuery({
     queryKey: queryKeys.bikes.list(filters),
-    queryFn: async () => {
+    ...options,
+    queryFn: async (): Promise<{ bikes: Bike[]; meta: any }> => {
       const response = await api.getBikes(filters);
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch bikes");
 

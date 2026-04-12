@@ -39,7 +39,7 @@ export interface User {
   updatedAt: Date;
 }
 
-export type UserRole = "user" | "seller" | "dealer" | "moderator" | "admin";
+export type UserRole = "user" | "seller" | "dealer" | "moderator" | "admin" | "superadmin" | "staff";
 
 // -------------------- BIKE TYPES --------------------
 export interface Bike {
@@ -257,6 +257,38 @@ export interface UsedBike {
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
+  shop?: ShopBasic;
+  shop_info?: ShopBasic;
+}
+
+export interface Shop {
+  id: number;
+  owner?: string | number;
+  name: string;
+  slug: string;
+  logo?: string;
+  cover_image?: string;
+  description?: string;
+  location_full?: string;
+  location_city?: string;
+  location_area?: string;
+  map_location?: string;
+  contact_number?: string;
+  whatsapp_number?: string;
+  is_verified: boolean;
+  is_active: boolean;
+  created_at: string;
+  listings_count?: number;
+  total_views?: number;
+}
+
+export interface ShopBasic {
+  id: number;
+  name: string;
+  slug: string;
+  logo?: string;
+  is_verified: boolean;
+  location_city?: string;
 }
 
 export interface ApiUsedBikeListing {
@@ -292,6 +324,7 @@ export interface ApiUsedBikeListing {
     url: string;
     is_primary: boolean;
   }[];
+  shop?: ShopBasic;
 }
 
 export type BikeCondition = "new" | "excellent" | "good" | "fair" | "poor";

@@ -51,4 +51,17 @@ except Exception:
 # Simple JWT Debug
 SIMPLE_JWT['SIGNING_KEY'] = SECRET_KEY
 
+# ─────────────────────────────────────────────
+# 4.7 — django-debug-toolbar (Dev Only)
+# ─────────────────────────────────────────────
+try:
+    import debug_toolbar  # noqa
+    INSTALLED_APPS += ['debug_toolbar']
+    MIDDLEWARE.insert(1, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    INTERNAL_IPS = ['127.0.0.1', '::1']
 
+    # Add debug toolbar URL — add to urls.py manually when needed:
+    # path('__debug__/', include('debug_toolbar.urls'))
+    print("[OK] Development: django-debug-toolbar enabled")
+except ImportError:
+    print("[INFO] Development: django-debug-toolbar not installed — run 'pip install django-debug-toolbar' to enable")

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UsedBikeListing, ListingImage, ReportListing
+from .models import UsedBikeListing, ListingImage, ReportListing, Shop
 from apps.bikes.serializers import BikeModelCompactSerializer
 from apps.bikes.models import BikeModel
 from apps.core.validators import DataValidator
@@ -28,8 +28,26 @@ class ReportListingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReportListing
-        fields = ['id', 'user', 'user_name', 'reason', 'description', 'created_at']
+        fields = ['id', 'user_name', 'reason', 'description', 'created_at']
         read_only_fields = ['created_at']
+
+class ShopSerializer(serializers.ModelSerializer):
+    owner_name = serializers.ReadOnlyField(source='owner.username')
+    
+    class Meta:
+        model = Shop
+        fields = [
+            'id', 'owner_name', 'name', 'slug', 'description',
+            'location_full', 'location_city', 'location_area', 'map_location',
+            'logo', 'cover_image', 'contact_number', 'whatsapp_number',
+            'is_verified', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['is_verified', 'slug']
+
+class ShopBasicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shop
+        fields = ['id', 'name', 'slug', 'logo', 'location_city', 'is_verified']
 
 class UsedBikeListingSerializer(serializers.ModelSerializer):
     seller_name = serializers.ReadOnlyField(source='seller.username')
@@ -38,6 +56,7 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
     location = serializers.SerializerMethodField()
     bike_details = serializers.SerializerMethodField()
     images = ListingImageSerializer(many=True, read_only=True)
+    shop_info = ShopBasicSerializer(source='shop', read_only=True)
     
     # ... rest remains same ...
 
@@ -58,7 +77,7 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsedBikeListing
         fields = [
-            'id', 'seller', 'seller_name', 'seller_phone', 'seller_location',
+            'id', 'seller_name', 'seller_phone', 'seller_location',
             'bike_model', 'bike_details', 'custom_brand', 'custom_model',
             'title', 'slug', 'price', 'mileage', 'manufacturing_year', 
             'registration_year', 'condition', 'description', 'location',
@@ -68,7 +87,7 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
             'registration_type', 'expires_at', 'category', 'is_verified',
             'status', 'is_featured', 'is_urgent', 'views_count',
             'created_at', 'updated_at', 'images', 'bike_model_name',
-            'brand_name', 'year', 'image_url', 'reports_count'
+            'brand_name', 'year', 'image_url', 'reports_count', 'shop', 'shop_info'
         ]
         read_only_fields = [
             'views_count', 'is_verified', 'created_at', 'updated_at',
@@ -77,7 +96,9 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
         ]
 
     def get_seller_phone(self, obj):
-        return getattr(obj.seller, 'phone', None) or obj.contact_number or ''
+        # Priority 1: Listing-specific contact number
+        # Priority 2: Seller's account phone number
+        return obj.contact_number or getattr(obj.seller, 'phone', None) or ''
 
     def get_bike_details(self, obj):
         if not obj.bike_model:
@@ -122,7 +143,7 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
             'location_division', 'contact_number', 'whatsapp_number', 'has_accident_history',
             'engine_condition', 'body_condition', 'ownership_count', 'engine_cc',
             'has_original_papers', 'registration_year', 'category',
-            'is_featured', 'is_urgent', 'uploaded_images', 'slug'
+            'is_featured', 'is_urgent', 'uploaded_images', 'slug', 'shop'
         ]
         extra_kwargs = {
             'custom_brand': {'required': False},

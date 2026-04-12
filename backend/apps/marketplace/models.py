@@ -11,6 +11,43 @@ from cloudinary.models import CloudinaryField
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 
+class Shop(models.Model):
+    owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shop')
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=250, unique=True, blank=True)
+    description = models.TextField(blank=True, null=True)
+    
+    # Location
+    location_full = models.CharField(max_length=255, help_text="Full shop address")
+    location_city = models.CharField(max_length=100, db_index=True)
+    location_area = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Map (Embed URL or Coordinates)
+    map_location = models.TextField(blank=True, null=True, help_text="Google Maps Embed Iframe or URL")
+    
+    # Media
+    logo = CloudinaryField('image', folder='mrbikebd/shops/logos/', blank=True, null=True)
+    cover_image = CloudinaryField('image', folder='mrbikebd/shops/covers/', blank=True, null=True)
+    
+    contact_number = models.CharField(max_length=20)
+    whatsapp_number = models.CharField(max_length=20, blank=True, null=True)
+    
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        from django.utils.text import slugify
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['-is_verified', '-created_at']
+
 class UsedBikeListing(models.Model):
     CONDITION_CHOICES = [
         ('excellent', 'Excellent'),
@@ -28,6 +65,7 @@ class UsedBikeListing(models.Model):
     ]
 
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='listings')
+    shop = models.ForeignKey(Shop, on_delete=models.SET_NULL, null=True, blank=True, related_name='listings')
     bike_model = models.ForeignKey(BikeModel, on_delete=models.SET_NULL, null=True, blank=True, related_name='marketplace_listings')
     
     # SEO & URL

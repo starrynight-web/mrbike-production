@@ -23,13 +23,13 @@ class SimilarBikesView(APIView):
                 category=bike.category,
                 price__gte=min_price,
                 price__lte=max_price
-            ).exclude(id=bike.id).order_by('-popularity_score')[:4]
+            ).exclude(brand=bike.brand).order_by('-popularity_score')[:4]
             
             # If not enough similar bikes, broaden search to same category regardless of price
             if similar_bikes.count() < 2:
                 similar_bikes = BikeModel.objects.filter(
                     category=bike.category
-                ).exclude(id=bike.id).order_by('-popularity_score')[:4]
+                ).exclude(brand=bike.brand).order_by('-popularity_score')[:4]
             
             serializer = BikeModelSerializer(similar_bikes, many=True)
             return Response(serializer.data)

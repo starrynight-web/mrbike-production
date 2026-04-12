@@ -81,6 +81,7 @@ function FilterContent({
                 adventure: Mountain,
                 cafe_racer: Bike,
                 offroad: Mountain,
+                electric: Plug,
               }[cat.value] || Bike;
 
             return (
@@ -500,6 +501,7 @@ export function BikeFiltersSidebar({ brands }: { brands: Brand[] }) {
                     adventure: Mountain,
                     cafe_racer: Bike,
                     offroad: Mountain,
+                    electric: Plug,
                   }[cat.value] || Bike;
 
                 return (
