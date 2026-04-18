@@ -17,7 +17,7 @@ import {
 import { BIKE_CATEGORIES } from "@/config/constants";
 import type { Bike, UsedBike } from "@/types";
 import { api } from "@/lib/api-service";
-import { sanitizeImageUrl, mapBike, mapUsedBike } from "@/lib/data-utils";
+import { sanitizeImageUrl, mapBike, mapUsedBike, mapBrand } from "@/lib/data-utils";
 import { HeroSearch } from "@/components/layout/hero-search";
 import { PopularBikesCarousel } from "@/components/bikes/popular-bikes-carousel";
 import { HomepageNewsSection } from "@/components/bikes/homepage-news-section";

@@ -330,6 +330,7 @@ export interface ApiUsedBikeListing {
     url: string;
     is_primary: boolean;
   }[];
+  active_boost?: boolean;
   shop?: ShopBasic;
 }
 
