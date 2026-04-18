@@ -14,7 +14,7 @@ import {
   Plug,
   Bike as BikeIcon,
 } from "lucide-react";
-import { BIKE_CATEGORIES, ALLOWED_BRANDS } from "@/config/constants";
+import { BIKE_CATEGORIES } from "@/config/constants";
 import type { Bike, UsedBike } from "@/types";
 import { api } from "@/lib/api-service";
 import { sanitizeImageUrl, mapBike, mapUsedBike } from "@/lib/data-utils";
@@ -25,6 +25,7 @@ import type { Brand, NewsArticle } from "@/types";
 import { UsedBikesCarousel } from "@/components/used-bikes/used-bikes-carousel";
 import { CategoryShowcase } from "@/components/bikes/category-showcase";
 import { AdBanner } from "@/components/ads/ad-banner";
+import { HomeHeroCarousel } from "@/components/layout/home-hero-carousel";
 
 export const metadata = {
   title: "Bike Price In Bangladesh 2026 | MrBikeBD — Bangladesh's #1 Motorcycle Platform",
@@ -37,9 +38,18 @@ export default async function HomePage() {
   let usedBikes: UsedBike[] = [];
   let fetchError = false;
 
+  let config: any = {};
+
   try {
+    const configResponse = await api.getPublicConfig();
+    config = configResponse.success ? configResponse.data : {};
+
+    const popularIds = config?.popular_bike_ids ? JSON.parse(config.popular_bike_ids) : [];
+    
     const [bikesResponse, usedBikesResponse] = await Promise.all([
-      api.getBikes({ limit: 8 }),
+      popularIds.length > 0 
+        ? api.getBikes({ ids: popularIds.join(','), limit: 6 }) 
+        : api.getBikes({ limit: 6 }),
       api.getUsedBikes({ limit: 4 }),
     ]);
 
@@ -47,7 +57,8 @@ export default async function HomePage() {
     if (bikesResponse.success) {
       try {
         const rawData = (bikesResponse.data as any[]) || [];
-        featuredBikes = rawData.map(mapBike);
+        // If we fetched by IDs, ensure they are in the order specified or at least limited correctly
+        featuredBikes = rawData.map(mapBike).slice(0, 6);
       } catch (err) {
         console.error("Error processing featured bikes:", err);
         featuredBikes = [];
@@ -71,84 +82,34 @@ export default async function HomePage() {
     fetchError = true;
   }
 
+  // Configuration processing
+  const heroImage = config?.hero_image || "/images/hero.webp";
+  const heroTitle = config?.hero_title || "Bike Price In Bangladesh 2026";
+  const heroSubtitle = config?.hero_subtitle || "Discover, compare, and buy motorcycles. Explore 300+ bikes, read reviews, and find the best deals in Bangladesh.";
+
+  let dynamicBrands: Brand[] = [];
+  try {
+    const brandsResponse = await api.getBrands();
+    if (brandsResponse.success && brandsResponse.data) {
+      dynamicBrands = brandsResponse.data.map(mapBrand);
+    }
+  } catch (e) {
+    console.error("Failed to fetch brands for homepage:", e);
+  }
+
   return (
     <div className="flex flex-col">
       {/* ==================== HERO SECTION ==================== */}
-      <section className="relative overflow-hidden bg-neutral-950 py-16 md:py-24">
-        {/* Dark Overlay */}
-        {/* <div className="absolute inset-0 z-10 bg-black/60" /> */}
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 z-10 bg-gradient-to-b from-transparent via-black/20 to-black/80" />
-        {/* Background decoration */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/images/hero.webp"
-            alt="Hero Background"
-            fill
-            className="object-cover"
-            // style={{ opacity: 0.9 }}
-            priority
-          />
-        </div>
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+      <HomeHeroCarousel 
+        slides={config?.hero_slides ? JSON.parse(config.hero_slides) : []}
+        fallbackTitle={heroTitle}
+        fallbackSubtitle={heroSubtitle}
+        fallbackImage={heroImage}
+      />
 
-        <div className="w-full px-4 md:px-8 relative z-20">
-          <div className="max-w-3xl mx-auto text-center">
-            {/* <Badge variant="secondary" className="mb-4">
-              <Zap className="w-3 h-3 mr-1" />
-              Bangladesh&apos;s #1 Motorcycle Platform
-            </Badge> */}
-
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-white">
-              Bike Price In <span className="text-primary">Bangladesh 2026</span> — <br className="hidden md:block"/>MrBike<span className="text-primary">BD</span>
-            </h1>
-
-            <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-              Discover, compare, and buy used motorcycles. Explore 300+ bikes,
-              read reviews, and find the best deals in Bangladesh.
-            </p>
-
-            {/* Search Bar */}
-            <HeroSearch />
-
-            {/* Category Pills */}
-            {/* <div className="flex flex-wrap justify-center gap-2">
-              {BIKE_CATEGORIES.map((category) => {
-                const Icon =
-                  {
-                    sport: Zap,
-                    naked: Wind,
-                    commuter: Building2,
-                    scooter: CircleDot,
-                    cruiser: Compass,
-                    adventure: Mountain,
-                    electric: Plug,
-                  }[category.value] || Bike;
-
-                return (
-                  <Link
-                    key={category.value}
-                    href={`/bikes?category=${category.value}`}
-                  >
-                    <Badge
-                      variant="outline"
-                      className="px-4 py-2 text-sm cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors flex items-center gap-2"
-                    >
-                      <Icon className="h-4 w-4" /> {category.label}
-                    </Badge>
-                  </Link>
-                );
-              })}
-            </div> */}
-          </div>
-        </div>
-
-        {/* Banner Ad inside Hero at the bottom */}
-        <div className="absolute bottom-0 left-0 right-0 z-30">
-          <AdBanner fullWidth />
-        </div>
-      </section>
+      <div className="relative -mt-16 z-30">
+        <AdBanner fullWidth />
+      </div>
 
       {/* ==================== POPULAR BIKES ==================== */}
       <section className="py-12 md:py-16">
@@ -207,24 +168,28 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
-            {ALLOWED_BRANDS.slice(0, 8).map((brand) => (
+            {dynamicBrands.slice(0, 16).map((brand, idx) => (
               <Link
-                key={brand.slug}
+                key={`${brand.slug}-${idx}`}
                 href={`/brands/${brand.slug}`}
                 className="flex flex-col items-center gap-2 p-4 rounded-xl bg-background hover:shadow-md transition-all hover:-translate-y-1"
               >
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden relative">
-                  <Image
-                    src={brand.logo}
-                    alt={brand.name}
-                    fill
-                    className="object-contain p-2"
-                    loading="lazy"
-                    sizes="64px"
-                  />
+                  {brand.logo ? (
+                    <Image
+                      src={brand.logo}
+                      alt={`${brand.name || "Brand"} logo`}
+                      fill
+                      className="object-contain p-2"
+                      loading="lazy"
+                      sizes="64px"
+                    />
+                  ) : (
+                    <BikeIcon className="w-8 h-8 text-muted-foreground/40" />
+                  )}
                 </div>
-                <span className="text-xs md:text-sm font-medium text-center">
-                  {brand.name}
+                <span className="text-xs md:text-sm font-medium text-center line-clamp-1">
+                  {brand.name || "Unknown Brand"}
                 </span>
               </Link>
             ))}

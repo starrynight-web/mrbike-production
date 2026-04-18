@@ -1,14 +1,20 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, AllowAny
-from django.db import connections
-from django.core.cache import cache
 from django.contrib.auth import get_user_model
-from apps.bikes.models import Brand, BikeModel
-from apps.marketplace.models import UsedBikeListing
-from django.db.models import Count, Sum
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models import Count
+from django.db import connections
+from django.core.cache import cache
+
+from .models import SiteConfig
+from .serializers import SiteConfigSerializer
+from .permissions import IsStaffWithRole, IsSuperAdminOnly
+from ..bikes.models import BikeModel, Brand
+from ..marketplace.models import UsedBikeListing
+import cloudinary.uploader
+import json
 
 User = get_user_model()
 
@@ -61,27 +67,64 @@ class AdminAnalyticsView(APIView):
             "listings_over_time": list(daily_listings),
             "user_growth": [] # Mocked for now
         })
+class PublicSiteConfigView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        configs = SiteConfig.objects.all()
+        data = {c.key: c.value for c in configs}
+        return Response(data)
+
 class AdminSettingsView(APIView):
-    permission_classes = [IsAdminUser]
+    """Dynamic site configuration managed by staff_settings."""
+    permission_classes = [IsStaffWithRole('staff_settings')]
 
     def get(self, request):
-        # Default settings - in production these would be in a DB
-        settings_data = {
-            "site_name": "MrBikeBD",
-            "site_description": "The largest motorcycle marketplace in Bangladesh.",
-            "contact_email": "support@mrbikebd.com",
-            "contact_phone": "+880 123456789",
-            "maintenance_mode": False,
-            "enable_registration": True,
-            "require_email_verification": True,
-            "max_listing_images": 10,
-            "listing_expiry_days": 90,
-        }
+        configs = SiteConfig.objects.all()
+        # Flat dictionary for easier frontend handling
+        settings_data = {cfg.key: cfg.value for cfg in configs}
         return Response(settings_data)
 
-    def patch(self, request):
-        # Update settings logic here
-        return Response({"message": "Settings updated successfully"})
+    def post(self, request):
+        updated_count = 0
+        for key, value in request.data.items():
+            # If it's a list/dict, store as JSON string
+            if isinstance(value, (list, dict)):
+                value_str = json.dumps(value)
+            else:
+                value_str = str(value)
+
+            SiteConfig.objects.update_or_create(
+                key=key,
+                defaults={'value': value_str, 'updated_by': request.user.email}
+            )
+            updated_count += 1
+        return Response({"message": f"Updated {updated_count} keys successfully."})
+
+class HeroImageUploadView(APIView):
+    """Upload hero image directly to Cloudinary and update config."""
+    permission_classes = [IsStaffWithRole('staff_settings')]
+    
+    def post(self, request):
+        image = request.FILES.get('image')
+        if not image:
+            return Response({'error': 'No image provided'}, status=400)
+            
+        try:
+            result = cloudinary.uploader.upload(
+                image, 
+                folder='mrbikebd/site/',
+                transformation=[{'quality': 'auto', 'fetch_format': 'auto'}]
+            )
+            url = result['secure_url']
+            
+            SiteConfig.objects.update_or_create(
+                key='hero_image',
+                defaults={'value': url, 'updated_by': request.user.email}
+            )
+            return Response({'url': url})
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
 
 class HealthCheckView(APIView):
     permission_classes = [AllowAny]

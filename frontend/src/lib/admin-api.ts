@@ -649,6 +649,17 @@ class AdminAPI {
   }
 
   // ===== BRANDS MANAGEMENT =====
+  
+  /**
+   * Import bike(s) from JSON
+   */
+  async importBikes(data: any) {
+    const response = await api.post<any>("/bikes/import_json/", data);
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to import bike data");
+    }
+    return response.data;
+  }
 
   /**
    * Get all brands
@@ -661,7 +672,7 @@ class AdminAPI {
   /**
    * Create brand
    */
-  async createBrand(data: { name: string; logo_url?: string }) {
+  async createBrand(data: { name: string; logo_url?: string; description?: string }) {
     const response = await api.post("/bikes/brands/", data);
     return response.data;
   }
@@ -722,7 +733,63 @@ class AdminAPI {
   }
 
   async updateSettings(data: any) {
-    const response = await api.patch("/admin/settings/", data);
+    const response = await api.post("/admin/settings/", data);
+    return response.data;
+  }
+
+  async uploadHeroImage(file: File) {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await api.post<any>("/admin/settings/hero-upload/", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (!response.success) throw new Error(response.error?.message || "Hero upload failed");
+    return response.data;
+  }
+
+  // ===== STAFF MANAGEMENT =====
+
+  async getStaff() {
+    const response = await api.get("/users/admin/staff/");
+    return response.data;
+  }
+
+  async createStaff(data: any) {
+    const response = await api.post("/users/admin/staff/create/", data);
+    if (!response.success) throw new Error(response.error?.message || "Staff creation failed");
+    return response.data;
+  }
+
+  async deleteStaff(id: number | string) {
+    const response = await api.delete(`/users/admin/staff/${id}/delete/`);
+    if (!response.success) throw new Error(response.error?.message || "Staff deletion failed");
+    return response.data;
+  }
+
+  // ===== PAYMENT MANAGEMENT =====
+
+  async getPendingPayments() {
+    const response = await api.get("/marketplace/payments/pending/");
+    return response.data;
+  }
+
+  async approveBoost(id: number) {
+    const response = await api.post(`/marketplace/payments/boost/${id}/approve/`);
+    return response.data;
+  }
+
+  async rejectBoost(id: number, reason: string) {
+    const response = await api.post(`/marketplace/payments/boost/${id}/reject/`, { reason });
+    return response.data;
+  }
+
+  async approveMembership(id: number) {
+    const response = await api.post(`/marketplace/payments/membership/${id}/approve/`);
+    return response.data;
+  }
+
+  async rejectMembership(id: number) {
+    const response = await api.post(`/marketplace/payments/membership/${id}/reject/`);
     return response.data;
   }
 }

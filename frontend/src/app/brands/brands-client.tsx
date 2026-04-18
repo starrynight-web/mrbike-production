@@ -6,28 +6,25 @@ import { useBrands } from "@/hooks/use-brands";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, Bike, Award } from "lucide-react";
-import { ALLOWED_BRANDS } from "@/config/constants";
 
 export function BrandsClient() {
-  const { data: brands = [], isLoading } = useBrands();
+  const { data: brands = [], isLoading: brandsLoading } = useBrands();
 
-  // Filter brands to only show allowed ones and map to include local logo
-  const displayBrands = ALLOWED_BRANDS.map((allowedBrand) => {
-    const apiBrand = brands.find(
-      (b) => b.slug.toLowerCase() === allowedBrand.slug.toLowerCase(),
-    );
-    return {
-      ...allowedBrand,
-      ...apiBrand, // Merge API data (like id, bikeCount if available)
-      logo: allowedBrand.logo, // Enforce local logo
-      bikeCount: apiBrand?.bikeCount || 0,
-      id: apiBrand?.id || allowedBrand.slug, // Fallback ID
-    };
-  });
-
-  if (isLoading) {
+  if (brandsLoading) {
     return <BrandsLoadingSkeleton />;
   }
+
+  // Calculate actual counts if provided by the backend, or default to 0
+  const displayBrands = brands.map((apiBrand, idx) => {
+    return {
+      ...apiBrand,
+      bikeCount: apiBrand?.bikeCount || 0,
+      slug: apiBrand.slug,
+      name: apiBrand.name,
+      logo: apiBrand.logo,
+      id: apiBrand.id || `brand-${idx}`,
+    };
+  });
 
   return (
     <div className="min-h-screen">
@@ -60,7 +57,7 @@ export function BrandsClient() {
                     {brand.logo ? (
                       <Image
                         src={brand.logo}
-                        alt={`${brand.name} logo`}
+                        alt={`${brand.name || "Brand"} logo`}
                         fill
                         className="object-contain" // Logos need contain
                       />
@@ -70,7 +67,7 @@ export function BrandsClient() {
                   </div>
                   <div className="text-center space-y-1">
                     <h3 className="font-bold text-lg group-hover:text-primary transition-colors">
-                      {brand.name}
+                      {brand.name || "Unknown Brand"}
                     </h3>
                     <Badge variant="secondary" className="text-xs font-normal">
                       {brand.bikeCount} Bikes

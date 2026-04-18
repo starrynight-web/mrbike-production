@@ -15,7 +15,6 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { Bike as BikeType } from "@/types";
-import { ALLOWED_BRANDS } from "@/config/constants";
 
 interface BrandDetailClientProps {
   slug: string;
@@ -44,10 +43,7 @@ export function BrandDetailClient({ slug }: BrandDetailClientProps) {
     );
   }
 
-  const brandLogo =
-    brand?.logo ||
-    ALLOWED_BRANDS.find((b) => b.slug === brand?.slug)?.logo ||
-    "";
+  const brandLogo = brand?.logo || "";
 
   return (
     <div className="min-h-screen pb-20">

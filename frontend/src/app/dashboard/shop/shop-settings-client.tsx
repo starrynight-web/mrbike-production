@@ -17,7 +17,12 @@ import {
   Loader2, 
   Eye, 
   Share2,
-  Info
+  Info,
+  Crown,
+  History,
+  CreditCard,
+  AlertTriangle,
+  Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +35,16 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { api } from "@/lib/api-service";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const shopSchema = z.object({
   name: z.string().min(3, "Shop name must be at least 3 characters"),
@@ -49,6 +64,53 @@ export default function ShopSettingsPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("general");
+  const [upgradingTo, setUpgradingTo] = useState<{id: number, name: string, price: number} | null>(null);
+  const [trxId, setTrxId] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("bkash");
+  const [submittingUpgrade, setSubmittingUpgrade] = useState(false);
+  const [submittingVerification, setSubmittingVerification] = useState(false);
+  const [verificationPhone, setVerificationPhone] = useState("");
+
+  const handleVerificationRequest = async () => {
+    if (!verificationPhone) return toast.error("Please enter your contact number for verification");
+
+    try {
+      setSubmittingVerification(true);
+      const res = await api.patch("/marketplace/shops/me/", {
+        verification_status: "PENDING",
+        contact_number: verificationPhone // Ensure contact number is updated
+      });
+      if (res.success) {
+        toast.success("Verification request submitted! We'll review your shop shortly.");
+        refresh();
+      }
+    } catch (error) {
+       toast.error("Failed to submit verification request.");
+    } finally {
+      setSubmittingVerification(false);
+    }
+  };
+
+  const handleUpgradeRequest = async () => {
+    if (!trxId) return toast.error("Please enter your Transaction ID");
+    if (!upgradingTo) return;
+
+    try {
+      setSubmittingUpgrade(true);
+      const res = await api.post("/marketplace/membership/signup/", {
+        plan: upgradingTo.id,
+        payment_method: paymentMethod,
+        txid: trxId
+      });
+      toast.success("Upgrade request submitted! Admin will verify your payment soon.");
+      setUpgradingTo(null);
+      setTrxId("");
+    } catch (error) {
+       toast.error("Failed to submit upgrade request. You might already have a pending request.");
+    } finally {
+      setSubmittingUpgrade(false);
+    }
+  };
   const [isSaving, setIsSaving] = useState(false);
 
   const { register, handleSubmit, reset, formState: { errors, isDirty } } = useForm<ShopFormData>({
@@ -184,11 +246,25 @@ export default function ShopSettingsPage() {
               </div>
               <div className="text-center mt-4 space-y-1">
                 <h3 className="font-bold text-xl">{shop?.name || "Your Shop Name"}</h3>
-                <div className="flex items-center justify-center gap-2">
-                  <Badge variant={shop?.is_verified ? "default" : "secondary"} className="rounded-full px-3">
-                    {shop?.is_verified ? <div className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Verified Shop</div> : "Awaiting Verification"}
-                  </Badge>
-                </div>
+                  <div className="flex items-center justify-center gap-2">
+                    {shop?.verification_status === "PENDING" ? (
+                      <Badge variant="outline" className="rounded-full px-3 border-amber-500 text-amber-500 bg-amber-50 dark:bg-amber-950/20">
+                         <div className="flex items-center gap-1"><Clock className="h-3 w-3 animate-pulse" /> Verification Pending</div>
+                      </Badge>
+                    ) : shop?.verification_status === "VERIFIED" || shop?.is_verified ? (
+                      <Badge variant="default" className="rounded-full px-3 bg-emerald-500 hover:bg-emerald-600">
+                        <div className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Verified Shop</div>
+                      </Badge>
+                    ) : shop?.verification_status === "REJECTED" ? (
+                      <Badge variant="destructive" className="rounded-full px-3">
+                         <div className="flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Verification Rejected</div>
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="rounded-full px-3">
+                        Unverified Shop
+                      </Badge>
+                    )}
+                  </div>
               </div>
             </div>
           </Card>
@@ -215,9 +291,10 @@ export default function ShopSettingsPage() {
         <div className="lg:col-span-2">
           <Tabs defaultValue="general" className="w-full" onValueChange={setActiveTab}>
             <TabsList className="bg-zinc-100 dark:bg-zinc-800 p-1 rounded-2xl w-full flex justify-start mb-6">
-              <TabsTrigger value="general" className="rounded-xl px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">General</TabsTrigger>
-              <TabsTrigger value="location" className="rounded-xl px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Location</TabsTrigger>
-              <TabsTrigger value="contact" className="rounded-xl px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Contact</TabsTrigger>
+              <TabsTrigger value="general" className="rounded-xl px-6 data-[state=active]:bg-background">General</TabsTrigger>
+              <TabsTrigger value="location" className="rounded-xl px-6 data-[state=active]:bg-background">Location</TabsTrigger>
+              <TabsTrigger value="contact" className="rounded-xl px-6 data-[state=active]:bg-background">Contact</TabsTrigger>
+              <TabsTrigger value="membership" className="rounded-xl px-6 data-[state=active]:bg-background">Membership</TabsTrigger>
             </TabsList>
 
             <AnimatePresence mode="wait">
@@ -234,7 +311,7 @@ export default function ShopSettingsPage() {
                       <CardTitle className="text-lg">Shop Identity</CardTitle>
                       <CardDescription>Tell the world who you are and what you offer.</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-8 space-y-6">
+                    <CardContent className="p-8 space-y-8">
                       <div className="grid gap-6">
                         <div className="space-y-2">
                           <Label htmlFor="name" className="text-sm font-bold flex items-center gap-2"><Store className="h-4 w-4 text-orange-500" /> Shop Name</Label>
@@ -250,9 +327,50 @@ export default function ShopSettingsPage() {
                             placeholder="Introduce your shop to potential buyers. What services do you provide? Do you offer exchange or EMI?" 
                           />
                           {errors.description && <p className="text-xs text-rose-500">{errors.description.message}</p>}
-                          <p className="text-xs text-zinc-400">Mention if you provide warranty or spare parts to increase trust.</p>
                         </div>
                       </div>
+
+                      {/* Verification Submission Section */}
+                      {shop?.verification_status === "NONE" && (
+                        <div className="p-6 rounded-3xl bg-blue-50/50 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/30 space-y-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                              <ShieldCheck className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-sm">Verify Your Shop</h4>
+                              <p className="text-xs text-muted-foreground">Verification builds trust and unlocks premium badges.</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-3">
+                            <Input 
+                              placeholder="Enter Contact Number" 
+                              value={verificationPhone}
+                              onChange={(e) => setVerificationPhone(e.target.value)}
+                              className="rounded-xl h-11"
+                            />
+                            <Button 
+                              onClick={handleVerificationRequest} 
+                              disabled={submittingVerification}
+                              className="rounded-xl h-11 bg-blue-600 hover:bg-blue-700"
+                            >
+                              {submittingVerification ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify Now"}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {shop?.verification_status === "PENDING" && (
+                        <div className="p-6 rounded-3xl bg-amber-50/50 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-900/30 flex items-center gap-4">
+                          <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                            <Clock className="h-5 w-5 text-amber-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-sm">Verification in Progress</h4>
+                            <p className="text-xs text-muted-foreground">Our team is reviewing your shop. This may take up to 24 hours.</p>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -312,6 +430,159 @@ export default function ShopSettingsPage() {
                       </div>
                     </CardContent>
                   </Card>
+                </TabsContent>
+
+                <TabsContent value="membership" className="mt-0 space-y-6">
+                  <div className="grid gap-6">
+                    <Card className="rounded-3xl border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden bg-gradient-to-br from-orange-50/50 to-white dark:from-orange-950/10 dark:to-zinc-950">
+                      <CardHeader className="border-b p-6">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <Crown className="h-5 w-5 text-orange-500" />
+                                Your Subscription
+                            </CardTitle>
+                            <CardDescription>Manage your shop listing limits and premium status.</CardDescription>
+                          </div>
+                          <Badge className="bg-orange-500 text-white px-4 py-1">
+                            {shop?.membership?.plan_name || 'Free Plan'}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-8">
+                         <div className="grid md:grid-cols-3 gap-6">
+                            <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-orange-100 dark:border-orange-900/50">
+                                <p className="text-sm text-zinc-500 font-medium">Listing Limit</p>
+                                <p className="text-2xl font-bold">{shop?.membership?.max_bikes || 3} <span className="text-xs font-normal text-zinc-400">active bikes</span></p>
+                            </div>
+                            <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-orange-100 dark:border-orange-900/50">
+                                <p className="text-sm text-zinc-500 font-medium">Boost Price</p>
+                                <p className="text-2xl font-bold">{shop?.membership?.boost_price || 80} <span className="text-xs font-normal text-zinc-400">BDT / 15 days</span></p>
+                            </div>
+                            <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-orange-100 dark:border-orange-900/50">
+                                <p className="text-sm text-zinc-500 font-medium">Status</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Badge variant={shop?.membership?.status === 'active' ? 'default' : 'secondary'} className="bg-green-500 hover:bg-green-600">
+                                        {shop?.membership?.status === 'active' ? 'Verified' : 'Unsubscribed'}
+                                    </Badge>
+                                </div>
+                            </div>
+                         </div>
+                      </CardContent>
+                    </Card>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <Card className="rounded-3xl border-zinc-200 dark:border-zinc-800 shadow-sm grow bg-zinc-50/50">
+                           <CardHeader>
+                                <CardTitle className="text-base font-bold">Upgrade to Normal Member</CardTitle>
+                                <CardDescription>Post up to 15 bikes and get cheaper boosts.</CardDescription>
+                           </CardHeader>
+                           <CardContent className="space-y-4">
+                                <div className="text-3xl font-black">350 BDT <span className="text-sm font-normal text-muted-foreground">/ Month</span></div>
+                                <ul className="space-y-2 text-sm">
+                                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> 15 Listing Limit</li>
+                                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> 40 BDT Boost Price</li>
+                                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Verified Member Badge</li>
+                                </ul>
+                                <Button className="w-full rounded-xl bg-orange-500 hover:bg-orange-600" onClick={() => setUpgradingTo({id: 2, name: 'Normal Member', price: 350})}>
+                                    Upgrade Now
+                                </Button>
+                           </CardContent>
+                        </Card>
+
+                        <Card className="rounded-3xl border-zinc-200 dark:border-zinc-800 shadow-sm grow ring-2 ring-primary bg-primary/5">
+                           <CardHeader>
+                                <div className="flex justify-between">
+                                    <CardTitle className="text-base font-bold">VIP Member</CardTitle>
+                                    <Badge className="bg-primary text-white">Recommended</Badge>
+                                </div>
+                                <CardDescription>Post up to 25 bikes with maximum visibility.</CardDescription>
+                           </CardHeader>
+                           <CardContent className="space-y-4">
+                                <div className="text-3xl font-black">650 BDT <span className="text-sm font-normal text-muted-foreground">/ Month</span></div>
+                                <ul className="space-y-2 text-sm">
+                                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> 25 Listing Limit</li>
+                                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> 20 BDT Boost Price</li>
+                                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> Priority Home Sorting</li>
+                                    <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> VIP Verified Badge</li>
+                                </ul>
+                                <Button className="w-full rounded-xl bg-primary hover:bg-primary/90" onClick={() => setUpgradingTo({id: 3, name: 'VIP Member', price: 650})}>
+                                    Get VIP Status
+                                </Button>
+                           </CardContent>
+                        </Card>
+                    </div>
+
+                    <Dialog open={!!upgradingTo} onOpenChange={(open) => !open && setUpgradingTo(null)}>
+                      <DialogContent className="sm:max-w-[425px] rounded-3xl">
+                        <DialogHeader>
+                          <DialogTitle>Upgrade to {upgradingTo?.name}</DialogTitle>
+                          <DialogDescription>
+                            Complete your payment of <b>{upgradingTo?.price} BDT</b> to activate your {upgradingTo?.name} status.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-6 py-4">
+                          <div className="space-y-3">
+                            <Label>Select Payment Method</Label>
+                            <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-2 gap-4">
+                                <Label className={`flex items-center justify-center p-4 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'bkash' ? 'border-primary bg-primary/5' : 'border-zinc-100 hover:border-zinc-200'}`}>
+                                    <RadioGroupItem value="bkash" className="sr-only" />
+                                    <span className="font-bold">bKash</span>
+                                </Label>
+                                <Label className={`flex items-center justify-center p-4 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'nagad' ? 'border-primary bg-primary/5' : 'border-zinc-100 hover:border-zinc-200'}`}>
+                                    <RadioGroupItem value="nagad" className="sr-only" />
+                                    <span className="font-bold">Nagad</span>
+                                </Label>
+                            </RadioGroup>
+                          </div>
+
+                          <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100 text-sm space-y-2">
+                            <p className="font-medium">Payment Instructions:</p>
+                            <ol className="list-decimal list-inside space-y-1 text-zinc-600">
+                                <li>Send <b>{upgradingTo?.price} BDT</b> to 017XXXXXXXX</li>
+                                <li>Use "Shop Upgrade" as reference</li>
+                                <li>Enter the Transaction ID below</li>
+                            </ol>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="trxid">Transaction ID (TRXID)</Label>
+                            <Input
+                              id="trxid"
+                              placeholder="8J24LKX..."
+                              value={trxId}
+                              onChange={(e) => setTrxId(e.target.value)}
+                              className="rounded-xl h-12"
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button 
+                            className="w-full rounded-xl h-12 gap-2" 
+                            onClick={handleUpgradeRequest}
+                            disabled={submittingUpgrade}
+                          >
+                            {submittingUpgrade ? <Loader2 className="animate-spin h-4 w-4" /> : <Send className="h-4 w-4" />}
+                            Submit for Verification
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Card className="rounded-3xl border-zinc-200 dark:border-zinc-800 bg-blue-50/50 dark:bg-blue-950/20">
+                        <CardContent className="p-6 flex gap-4">
+                            <Info className="h-6 w-6 text-blue-500 shrink-0" />
+                            <div className="space-y-1">
+                                <p className="font-bold text-sm">How to upgrade?</p>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                    To upgrade your plan, send the amount to our official bKash/Nagad merchant number: <b>017XXXXXXXX</b>. 
+                                    Then, click the upgrade button above and provide your Transaction ID (TRXID). 
+                                    Admin will verify and activate your membership within 1-2 hours.
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                  </div>
                 </TabsContent>
               </motion.div>
             </AnimatePresence>

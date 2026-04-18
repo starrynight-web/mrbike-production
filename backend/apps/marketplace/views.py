@@ -13,9 +13,17 @@ from .serializers import (
     UsedBikeListingSerializer, 
     UsedBikeListingCreateSerializer,
     ReportListingSerializer,
-    ShopSerializer
+    ShopSerializer,
+    MembershipPlanSerializer,
+    ListingBoostSerializer,
+    UserMembershipSerializer,
+    ListingBoostAdminSerializer,
+    UserMembershipAdminSerializer
 )
 from .filters import UsedBikeListingFilter
+from .models import ListingBoost, UserMembership, MembershipPlan
+from apps.core.permissions import IsStaffWithRole
+from django.db.models import Count
 
 class IsSellerOrReadOnly(permissions.BasePermission):
     """
@@ -108,6 +116,24 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         return UsedBikeListingSerializer
 
     def create(self, request, *args, **kwargs):
+        # Enforce limits (Section 4.10)
+        user = request.user
+        existing_count = UsedBikeListing.objects.filter(seller=user).exclude(status='rejected').count()
+        
+        limit = 3 # Default free limit
+        try:
+            # Check for active membership
+            if hasattr(user, 'membership') and user.membership.status == 'active':
+                limit = user.membership.plan.max_bikes
+        except Exception:
+            pass
+            
+        if existing_count >= limit:
+            return StandardResponse.error(
+                message=f"Listing limit reached. Your current limit is {limit} bikes. Upgrade your membership to post more.",
+                status_code=status.HTTP_403_FORBIDDEN
+            )
+
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             self.perform_create(serializer)
@@ -265,9 +291,138 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
             )
         return StandardResponse.error(message="Invalid report data.", errors=serializer.errors)
 
-    @action(detail=True, methods=['get'], permission_classes=[IsSuperAdminOnly])
+    @action(detail=True, methods=['get'], permission_classes=[IsStaffWithRole('staff_used_bikes')])
     def reports(self, request, pk=None):
         listing = self.get_object()
         reports = listing.reports.all()
         serializer = ReportListingSerializer(reports, many=True)
         return StandardResponse.success(data=serializer.data)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsStaffWithRole('staff_used_bikes')])
+    def reported_all(self, request):
+        """View all listings that have been reported."""
+        listings = UsedBikeListing.objects.annotate(pc_count=Count('reports')).filter(pc_count__gt=0).order_by('-created_at')
+        page = self.paginate_queryset(listings)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(listings, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def boost(self, request, pk=None):
+        """Submit a boost request for a listing."""
+        listing = self.get_object()
+        if listing.seller != request.user:
+            raise PermissionDenied("You can only boost your own listings.")
+
+        # Determine price based on membership tier
+        amount = 80.00
+        try:
+            if hasattr(request.user, 'membership') and request.user.membership.status == 'active':
+                amount = float(request.user.membership.plan.boost_price)
+        except Exception:
+            pass
+
+        serializer = ListingBoostSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(listing=listing, user=request.user, amount=amount)
+            return StandardResponse.success(
+                data=serializer.data, 
+                message=f"Boost request for {amount} BDT submitted. Waiting for admin approval."
+            )
+        return StandardResponse.error(message="Invalid boost data.", errors=serializer.errors)
+
+class MembershipPlanViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = MembershipPlan.objects.all()
+    serializer_class = MembershipPlanSerializer
+    permission_classes = [AllowAny]
+
+class UserMembershipViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserMembershipSerializer
+
+    def get_queryset(self):
+        return UserMembership.objects.filter(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        # Only one active/pending membership at a time
+        user = request.user
+        if UserMembership.objects.filter(user=user, status__in=['pending', 'active']).exists():
+            return StandardResponse.error(message="You already have a pending or active membership.")
+
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            plan = serializer.validated_data['plan']
+            serializer.save(user=user, amount_paid=plan.price, status='pending')
+            return StandardResponse.success(data=serializer.data, message="Membership request submitted successfully.")
+        return StandardResponse.error(message="Invalid membership data.", errors=serializer.errors)
+
+class PaymentManagementViewSet(viewsets.ViewSet):
+    """Admin viewset for managing pending boost and membership payments."""
+    permission_classes = [IsStaffWithRole('staff_settings')] # Or staff_finance if we had it
+
+    @action(detail=False, methods=['get'])
+    def pending(self, request):
+        pending_boosts = ListingBoost.objects.filter(status='pending').select_related('listing', 'user')
+        pending_memberships = UserMembership.objects.filter(status='pending').select_related('user', 'plan')
+        
+        return Response({
+            "boosts": ListingBoostAdminSerializer(pending_boosts, many=True).data,
+            "memberships": UserMembershipAdminSerializer(pending_memberships, many=True).data
+        })
+
+    @action(detail=True, methods=['post'], url_path='boost/(?P<id>[^/.]+)/approve')
+    def approve_boost(self, request, pk=None):
+        boost = ListingBoost.objects.get(id=pk)
+        boost.status = 'approved'
+        boost.reviewed_by = request.user.email
+        boost.reviewed_at = timezone.now()
+        boost.valid_until = timezone.now() + timezone.timedelta(days=15)
+        boost.save()
+        
+        # Link to listing
+        listing = boost.listing
+        listing.active_boost = boost
+        listing.is_featured = True
+        listing.save()
+        
+        return Response({"status": "approved"})
+
+    @action(detail=True, methods=['post'], url_path='boost/(?P<id>[^/.]+)/reject')
+    def reject_boost(self, request, pk=None):
+        boost = ListingBoost.objects.get(id=pk)
+        boost.status = 'rejected'
+        boost.reviewed_by = request.user.email
+        boost.reviewed_at = timezone.now()
+        boost.save()
+        return Response({"status": "rejected"})
+
+    @action(detail=True, methods=['post'], url_path='membership/(?P<id>[^/.]+)/approve')
+    def approve_membership(self, request, pk=None):
+        membership = UserMembership.objects.get(id=pk)
+        membership.status = 'active'
+        membership.reviewed_by = request.user.email
+        membership.reviewed_at = timezone.now()
+        membership.starts_at = timezone.now()
+        membership.expires_at = timezone.now() + timezone.timedelta(days=30)
+        membership.save()
+        
+        # Linked shop verification
+        try:
+            shop = membership.user.shop
+            shop.is_verified = True
+            shop.save()
+        except Exception:
+            pass
+            
+        return Response({"status": "active"})
+
+    @action(detail=True, methods=['post'], url_path='membership/(?P<id>[^/.]+)/reject')
+    def reject_membership(self, request, pk=None):
+        membership = UserMembership.objects.get(id=pk)
+        membership.status = 'rejected'
+        membership.reviewed_by = request.user.email
+        membership.reviewed_at = timezone.now()
+        membership.save()
+        return Response({"status": "rejected"})

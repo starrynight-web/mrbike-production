@@ -2,7 +2,7 @@ from rest_framework import viewsets, filters, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
-from apps.core.permissions import IsSuperAdminOnly
+from apps.core.permissions import IsSuperAdminOnly, IsStaffWithRole
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from .models import Brand, BikeModel
@@ -67,8 +67,10 @@ class BrandViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsSuperAdminOnly()]
-        return [permissions.AllowAny()]
+            return [IsStaffWithRole(['staff_settings', 'staff_bikes'])()]
+        if self.action in ['list', 'retrieve', 'bikes']:
+            return [permissions.AllowAny()]
+        return [IsStaffWithRole(['staff_settings', 'staff_bikes'])()]
 
 class BikeModelViewSet(viewsets.ModelViewSet):
     serializer_class = BikeModelSerializer
@@ -139,12 +141,12 @@ class BikeModelViewSet(viewsets.ModelViewSet):
 
     permission_classes_by_action = {
         'default': [permissions.AllowAny],
-        'create': [IsSuperAdminOnly],
-        'update': [IsSuperAdminOnly],
-        'partial_update': [IsSuperAdminOnly],
-        'destroy': [IsSuperAdminOnly],
-        'upload_image': [IsSuperAdminOnly],
-        'duplicate': [IsSuperAdminOnly],
+        'create': [IsStaffWithRole('staff_bikes')],
+        'update': [IsStaffWithRole('staff_bikes')],
+        'partial_update': [IsStaffWithRole('staff_bikes')],
+        'destroy': [IsStaffWithRole('staff_bikes')],
+        'upload_image': [IsStaffWithRole('staff_bikes')],
+        'duplicate': [IsStaffWithRole('staff_bikes')],
     }
     
     def get_permissions(self):
@@ -208,3 +210,144 @@ class BikeModelViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.exception("Error while uploading image to Cloudinary: %s", e)
             return Response({"error": "Internal server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['post'], permission_classes=[IsStaffWithRole('staff_bikes')])
+    def import_json(self, request):
+        """Import bike(s) from a JSON object or array."""
+        data = request.data
+        if not data:
+            return Response({"error": "No data provided"}, status=400)
+            
+        if isinstance(data, dict):
+            items = [data]
+        else:
+            items = data
+            
+        results = {"created": 0, "errors": []}
+        
+        for item in items:
+            try:
+                bike_name = item.get("Bike Name")
+                if not bike_name:
+                    results["errors"].append("Missing 'Bike Name'")
+                    continue
+                
+                # Auto-detect Brand
+                brand_name = bike_name.split(' ')[0]
+                brand, _ = Brand.objects.get_or_create(
+                    name__iexact=brand_name,
+                    defaults={'name': brand_name}
+                )
+                
+                # Category mapping
+                category_map = {
+                    "Sports": "sports",
+                    "Naked": "naked",
+                    "Cruiser": "cruiser",
+                    "Commuter": "commuter",
+                    "Scooter": "scooter",
+                    "Adventure": "adventure",
+                    "Cafe Racer": "cafe_racer",
+                    "Off-Road": "offroad"
+                }
+                category = category_map.get(item.get("Category"), "commuter")
+                
+                # Clean Price
+                price_str = item.get("Base Price", "0")
+                import re
+                price_val = re.sub(r'[^\d.]', '', price_str)
+                price = float(price_val) if price_val else 0
+                
+                # Create BikeModel
+                bike_model, created = BikeModel.objects.update_or_create(
+                    name=bike_name,
+                    brand=brand,
+                    defaults={
+                        'category': category,
+                        'price': price,
+                        'description': item.get("Description", ""),
+                        'engine_capacity': int(re.sub(r'[^\d]', '', str(item.get("Displacement(CC)", "0"))) or 0),
+                        'engine_type': item.get("Engine Type"),
+                        'max_power': item.get("Max Power"),
+                        'max_torque': item.get("Max Torque"),
+                        'fuel_system': item.get("Fuel System"),
+                        'cooling_system': item.get("Cooling System"),
+                        'gears': int(re.sub(r'[^\d]', '', str(item.get("Gears", "5"))) or 5),
+                        'clutch_type': item.get("Clutch"),
+                        'curb_weight': float(re.sub(r'[^\d.]', '', str(item.get("Kerb Weight", "0"))) or 0),
+                        'fuel_capacity': float(re.sub(r'[^\d.]', '', str(item.get("Fuel Capacity", "0"))) or 0),
+                        'seat_height': float(re.sub(r'[^\d.]', '', str(item.get("Seat Height", "0"))) or 0),
+                        'tyre_type': item.get("Front Tyre", "Tubeless"),
+                    }
+                )
+                
+                # Create Specifications
+                from .models import BikeSpecification
+                BikeSpecification.objects.update_or_create(
+                    bike_model=bike_model,
+                    defaults={
+                        'engine_type': item.get("Engine Type"),
+                        'displacement': str(item.get("Displacement(CC)")),
+                        'max_power': item.get("Max Power"),
+                        'max_torque': item.get("Max Torque"),
+                        'fuel_system': item.get("Fuel System"),
+                        'cooling_system': item.get("Cooling System"),
+                        'gearbox': str(item.get("Gears")),
+                        'clutch': item.get("Clutch"),
+                        'gear_shift_pattern': item.get("Gear Shift Pattern"),
+                        'spark_plugs': int(re.sub(r'[^\d]', '', str(item.get("Spark Plugs", "1"))) or 1),
+                        'brakes_front': item.get("Front Brake"),
+                        'brakes_rear': item.get("Rear Brake"),
+                        'braking_system': item.get("Braking System"),
+                        'tyres_front': item.get("Front Tyre"),
+                        'tyres_rear': item.get("Rear Tyre"),
+                        'kerb_weight': str(item.get("Kerb Weight")),
+                        'fuel_tank_capacity': str(item.get("Fuel Capacity")),
+                        'seat_height': str(item.get("Seat Height")),
+                        'ground_clearance': str(item.get("Ground Clearance")),
+                        'wheelbase': str(item.get("Wheelbase")),
+                        'top_speed': item.get("Top Speed"),
+                        'mileage_city': item.get("Mileage(City)"),
+                        'mileage_highway': item.get("Mileage(Highway)"),
+                        'usb_charging': item.get("USB Charging") == "Yes",
+                        'side_stand_cut_off': item.get("Side Stand Cut-off") == "Yes",
+                        'projector_headlight': item.get("Projector Headlight") == "Yes",
+                        'drls': item.get("DRLs") == "Yes",
+                        'gear_indicator': item.get("Gear Indicator") == "Yes",
+                        'distance_to_empty': item.get("Distance to Empty") == "Yes",
+                        'avg_fuel_consumption': item.get("Avg Fuel Consumption") == "Yes",
+                    }
+                )
+                
+                # Create Variants
+                variants_list = item.get("Varriants", [])
+                from .models import BikeVariant
+                for v_item in variants_list:
+                    BikeVariant.objects.update_or_create(
+                        bike_model=bike_model,
+                        variant_key=v_item.get("Variant Key", "std"),
+                        defaults={
+                            'variant_name': v_item.get("Varriant Name"),
+                            'price': float(re.sub(r'[^\d.]', '', str(v_item.get("Price BDT", "0"))) or 0),
+                            'braking_system': v_item.get("Braking System"),
+                            'rear_brake_type': v_item.get("Rear Braking System"),
+                            'tire_type': v_item.get("Tyre Type"),
+                            'headlight_type': v_item.get("Headlight Type"),
+                            'kerb_weight': v_item.get("Kerb Weight"),
+                            'instrument_console': v_item.get("Instrument Console"),
+                            'mobile_connectivity': v_item.get("Mobile Phone Connectivity") == "Yes",
+                            'riding_modes': v_item.get("Riding Modes") == "Yes",
+                            'traction_control': v_item.get("TRaction Control") == "Yes",
+                            'slipper_clutch': v_item.get("Slipper/Assist Clutch") == "Yes",
+                            'quick_shifter': v_item.get("Quick Shifter") == "Yes",
+                            'seat_type': v_item.get("Seat Type"),
+                        }
+                    )
+                
+                results["created"] += 1
+                
+            except Exception as e:
+                results["errors"].append(f"Error importing {item.get('Bike Name', 'Unknown')}: {str(e)}")
+                
+        return Response(results)
+

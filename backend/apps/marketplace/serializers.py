@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UsedBikeListing, ListingImage, ReportListing, Shop
+from .models import UsedBikeListing, ListingImage, ReportListing, Shop, MembershipPlan, UserMembership, ListingBoost
 from apps.bikes.serializers import BikeModelCompactSerializer
 from apps.bikes.models import BikeModel
 from apps.core.validators import DataValidator
@@ -87,7 +87,8 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
             'registration_type', 'expires_at', 'category', 'is_verified',
             'status', 'is_featured', 'is_urgent', 'views_count',
             'created_at', 'updated_at', 'images', 'bike_model_name',
-            'brand_name', 'year', 'image_url', 'reports_count', 'shop', 'shop_info'
+            'brand_name', 'year', 'image_url', 'reports_count', 'shop', 'shop_info',
+            'active_boost'
         ]
         read_only_fields = [
             'views_count', 'is_verified', 'created_at', 'updated_at',
@@ -219,3 +220,50 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
                 logger.error(f"Failed to manually upload/save ListingImage {i} for listing {listing.id}: {str(e)}")
         
         return listing
+class MembershipPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MembershipPlan
+        fields = '__all__'
+
+class ListingBoostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ListingBoost
+        fields = [
+            'id', 'listing', 'user', 'payment_method', 'txid', 
+            'screenshot', 'amount', 'status', 'valid_until', 'created_at'
+        ]
+        read_only_fields = ['user', 'amount', 'status', 'valid_until', 'created_at']
+
+class UserMembershipSerializer(serializers.ModelSerializer):
+    plan_details = MembershipPlanSerializer(source='plan', read_only=True)
+    
+    class Meta:
+        model = UserMembership
+        fields = [
+            'id', 'user', 'plan', 'plan_details', 'payment_method', 'txid', 
+            'screenshot', 'amount_paid', 'status', 'starts_at', 'expires_at', 'created_at'
+        ]
+        read_only_fields = ['user', 'status', 'starts_at', 'expires_at', 'created_at']
+class ListingBoostAdminSerializer(serializers.ModelSerializer):
+    user_email = serializers.ReadOnlyField(source='user.email')
+    user_full_name = serializers.SerializerMethodField()
+    listing_title = serializers.ReadOnlyField(source='listing.title')
+    
+    class Meta:
+        model = ListingBoost
+        fields = '__all__'
+
+    def get_user_full_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.user.username
+
+class UserMembershipAdminSerializer(serializers.ModelSerializer):
+    user_email = serializers.ReadOnlyField(source='user.email')
+    user_full_name = serializers.SerializerMethodField()
+    plan_name = serializers.ReadOnlyField(source='plan.name')
+    
+    class Meta:
+        model = UserMembership
+        fields = '__all__'
+
+    def get_user_full_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.user.username

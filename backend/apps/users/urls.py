@@ -7,6 +7,9 @@ from .views import (
     GlobalAdminStatsView, LogoutView, UserSessionView,
     VerifyOTPView, ProfileDetailView
 )
+from .admin_views import (
+    StaffAdminListView, StaffAdminCreateView, StaffAdminDeleteView
+)
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
@@ -26,4 +29,9 @@ urlpatterns = [
     path('notifications/', NotificationListView.as_view(), name='notifications'),
     path('auth/logout/', LogoutView.as_view(), name='logout'),
     path('auth/me/', UserSessionView.as_view(), name='auth-me'),
+    
+    # Staff Management
+    path('admin/staff/', StaffAdminListView.as_view(), name='staff-list'),
+    path('admin/staff/create/', StaffAdminCreateView.as_view(), name='staff-create'),
+    path('admin/staff/<int:pk>/delete/', StaffAdminDeleteView.as_view(), name='staff-delete'),
 ]

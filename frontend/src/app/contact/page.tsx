@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mail, Phone, MapPin, Clock, Send, MessageSquare, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,20 @@ import { api } from "@/lib/api-service";
 import { toast } from "sonner";
 
 export default function ContactPage() {
+  const [config, setConfig] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadConfig() {
+      try {
+        const res = await api.getPublicConfig();
+        if (res.success) setConfig(res.data);
+      } catch (e) {
+        console.error("Failed to load contact config:", e);
+      }
+    }
+    loadConfig();
+  }, []);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -55,22 +69,25 @@ export default function ContactPage() {
     }, 1000);
   };
 
+  // Helper to split comma strings
+  const splitItems = (str: string) => str ? str.split(",").map(s => s.trim()) : [];
+
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Hero Section (Reference: About Page) */}
+      {/* Hero Section */}
       <div className="bg-muted/30 border-b overflow-hidden relative">
         <div className="absolute top-0 right-0 -mt-20 -mr-20 opacity-5 pointer-events-none">
           <MessageSquare size={400} />
         </div>
         <div className="w-full px-4 md:px-8 py-20 relative z-10">
           <div className="max-w-2xl mx-auto text-center space-y-4">
-            <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-primary/20">
+            <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-primary/20 px-4 py-1">
               Get in Touch
             </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+            <h1 className="text-4xl md:text-7xl font-black tracking-tight uppercase">
               Contact <span className="text-primary">Us</span>
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium">
               We&apos;re here to help. Send us a message or reach out using the
               contact information below.
             </p>
@@ -78,87 +95,94 @@ export default function ContactPage() {
         </div>
       </div>
 
-      <div className="w-full px-4 md:px-8 py-20">
-        <div className="grid lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
-          {/* Contact Information (Reference: Bike Registration Steps) */}
+      <div className="w-full px-4 md:px-8 mt-12 max-w-6xl mx-auto">
+        {(config?.cms_contact_content && config.cms_contact_content !== "<p></p>") && (
+          <Card className="border-2 mb-12 shadow-sm rounded-3xl overflow-hidden">
+            <CardContent className="p-8 prose prose-lg dark:prose-invert max-w-none">
+              <div dangerouslySetInnerHTML={{ __html: config.cms_contact_content }} />
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="grid lg:grid-cols-3 gap-12">
+          {/* Contact Information */}
           <div className="space-y-8">
-            <div>
-              <h3 className="text-2xl font-bold mb-6 tracking-tight">
-                Contact Information
-              </h3>
-              <div className="space-y-6">
-                <Card className="border-none shadow-none bg-transparent">
+            <div className="space-y-6">
+                <Card className="border-2 shadow-sm rounded-3xl p-6 hover:bg-muted/20 transition-colors">
                   <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <MapPin className="h-6 w-6 text-primary" />
+                    <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                      <MapPin className="h-7 w-7 text-primary" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-lg mb-1">
+                      <h4 className="font-bold text-xl mb-2">
                         Office Address
                       </h4>
-                      <p className="text-muted-foreground leading-relaxed">
-                        House 12, Road 5, Dhanmondi
-                        <br />
-                        Dhaka 1209, Bangladesh
+                      <p className="text-muted-foreground leading-relaxed font-medium">
+                        {config?.cms_contact_address || "House 12, Road 5, Dhanmondi, Dhaka 1209, Bangladesh"}
                       </p>
                     </div>
                   </div>
                 </Card>
 
-                <Card className="border-none shadow-none bg-transparent">
+                <Card className="border-2 shadow-sm rounded-3xl p-6 hover:bg-muted/20 transition-colors">
                   <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <Phone className="h-6 w-6 text-primary" />
+                    <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                      <Phone className="h-7 w-7 text-primary" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-lg mb-1">Phone</h4>
-                      <p className="text-muted-foreground">
-                        +880 1712 345 678
-                        <br />
-                        +880 1812 345 678
-                      </p>
+                      <h4 className="font-bold text-xl mb-2">Phone</h4>
+                      <div className="text-muted-foreground space-y-1 font-medium">
+                        {splitItems(config?.cms_contact_phone || "+880 1712 345 678, +880 1812 345 678").map((p, i) => (
+                           <div key={i}>{p}</div>
+                        ))}
+                        {config?.cms_contact_whatsapp && (
+                          <div className="text-primary font-bold pt-1 flex items-center gap-1 leading-none">
+                            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                            WhatsApp: {config.cms_contact_whatsapp}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Card>
 
-                <Card className="border-none shadow-none bg-transparent">
+                <Card className="border-2 shadow-sm rounded-3xl p-6 hover:bg-muted/20 transition-colors">
                   <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <Mail className="h-6 w-6 text-primary" />
+                    <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                      <Mail className="h-7 w-7 text-primary" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-lg mb-1">Email</h4>
-                      <p className="text-muted-foreground">
-                        support@mrbikebd.com
-                        <br />
-                        sales@mrbikebd.com
-                      </p>
+                      <h4 className="font-bold text-xl mb-2">Email</h4>
+                      <div className="text-muted-foreground space-y-1 font-medium underline underline-offset-4 decoration-primary/30">
+                        {splitItems(config?.cms_contact_email || "support@mrbikebd.com, sales@mrbikebd.com").map((e, i) => (
+                           <div key={i}>{e}</div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </Card>
 
-                <Card className="border-none shadow-none bg-transparent">
+                <Card className="border-2 shadow-sm rounded-3xl p-6 hover:bg-muted/20 transition-colors">
                   <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <Clock className="h-6 w-6 text-primary" />
+                    <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                      <Clock className="h-7 w-7 text-primary" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-lg mb-1">
+                      <h4 className="font-bold text-xl mb-2">
                         Business Hours
                       </h4>
-                      <p className="text-muted-foreground">
-                        Sunday - Thursday: 10:00 AM - 6:00 PM
-                        <br />
-                        Friday - Saturday: Closed
-                      </p>
+                      <div className="text-muted-foreground space-y-1 font-medium opacity-80">
+                        {splitItems(config?.cms_contact_hours || "Sunday - Thursday: 10:00 AM - 6:00 PM, Friday - Saturday: Closed").map((h, i) => (
+                           <div key={i}>{h}</div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </Card>
-              </div>
             </div>
 
-            {/* Map Placeholder */}
-            <div className="h-64 rounded-xl overflow-hidden relative border bg-muted/30">
+            {/* Map Embed */}
+            <div className="h-72 rounded-[2.5rem] overflow-hidden relative border-2 shadow-lg bg-muted/30">
               <iframe
                 title="Office Location"
                 width="100%"
@@ -166,47 +190,49 @@ export default function ContactPage() {
                 style={{ border: 0 }}
                 loading="lazy"
                 allowFullScreen
-                src="https://www.google.com/maps/embed/v1/place?q=Dhanmondi,+Dhaka,+Bangladesh&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
+                src={config?.cms_contact_map_url || "https://www.google.com/maps/embed/v1/place?q=Dhanmondi,+Dhaka,+Bangladesh"}
               ></iframe>
             </div>
           </div>
 
-          {/* Contact Form (Reference: Expense Calculator Form) */}
+          {/* Contact Form */}
           <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
+            <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
+              <CardHeader className="p-8 md:p-10 bg-muted/30 border-b">
                 <div className="flex items-center justify-between gap-4 mb-2">
-                  <CardTitle>Send a Message</CardTitle>
-                  <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
+                  <CardTitle className="text-3xl font-black italic">Send a Message</CardTitle>
+                  <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50 rounded-full px-3">
                     <AlertCircle className="h-3 w-3 mr-1" />
                     Demo Mode
                   </Badge>
                 </div>
-                <CardDescription>
+                <CardDescription className="text-base">
                   This form is currently for demonstration purposes. Messages will not be sent to our team during the preview.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
+              <CardContent className="p-8 md:p-10">
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <Label htmlFor="name" className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Full Name</Label>
                       <Input
                         id="name"
                         name="name"
-                        placeholder="John Doe"
+                        placeholder="e.g. Abdullah Al Mamun"
+                        className="h-14 rounded-2xl bg-muted/20 border-2 focus-visible:ring-primary focus-visible:border-primary"
                         required
                         value={formData.name}
                         onChange={handleChange}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
+                    <div className="space-y-3">
+                      <Label htmlFor="email" className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Email Address</Label>
                       <Input
                         id="email"
                         name="email"
                         type="email"
-                        placeholder="john@example.com"
+                        placeholder="your@email.com"
+                        className="h-14 rounded-2xl bg-muted/20 border-2 focus-visible:ring-primary focus-visible:border-primary"
                         required
                         value={formData.email}
                         onChange={handleChange}
@@ -214,36 +240,32 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
+                  <div className="space-y-3">
+                    <Label htmlFor="subject" className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Subject</Label>
                     <Select
                       onValueChange={handleSubjectChange}
                       value={formData.subject}
                     >
-                      <SelectTrigger id="subject">
-                        <SelectValue placeholder="Select a subject" />
+                      <SelectTrigger id="subject" className="h-14 rounded-2xl bg-muted/20 border-2 focus:ring-primary">
+                        <SelectValue placeholder="What is this regarding?" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="rounded-2xl border-2">
                         <SelectItem value="general">General Inquiry</SelectItem>
-                        <SelectItem value="support">
-                          Technical Support
-                        </SelectItem>
-                        <SelectItem value="sales">
-                          Sales & Advertising
-                        </SelectItem>
+                        <SelectItem value="support">Technical Support</SelectItem>
+                        <SelectItem value="sales">Sales & Advertising</SelectItem>
                         <SelectItem value="feedback">Feedback</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
+                  <div className="space-y-3">
+                    <Label htmlFor="message" className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Your Message</Label>
                     <Textarea
                       id="message"
                       name="message"
-                      placeholder="How can we help you?"
-                      rows={6}
+                      placeholder="Tell us more about how we can help..."
+                      className="rounded-2xl bg-muted/20 border-2 min-h-[200px] focus-visible:ring-primary focus-visible:border-primary"
                       required
                       value={formData.message}
                       onChange={handleChange}
@@ -253,11 +275,10 @@ export default function ContactPage() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full md:w-auto"
+                    className="w-full h-14 rounded-2xl text-lg font-black italic uppercase tracking-widest shadow-xl shadow-primary/20 transition-all active:scale-95"
                     disabled={isSubmitting}
                   >
-                    <Send className="mr-2 h-4 w-4" />{" "}
-                    {isSubmitting ? "Sending..." : "Send Message"}
+                    {isSubmitting ? "Processing..." : <>Send Message <Send className="ml-2 h-5 w-5" /></>}
                   </Button>
                 </form>
               </CardContent>

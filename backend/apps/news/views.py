@@ -4,7 +4,7 @@ from .serializers import ArticleSerializer
 from apps.core.responses import StandardResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from apps.core.permissions import IsSuperAdminOnly
+from apps.core.permissions import IsSuperAdminOnly, IsStaffWithRole
 
 class ArticleListCreateView(generics.ListCreateAPIView):
     serializer_class = ArticleSerializer
@@ -40,8 +40,7 @@ class ArticleListCreateView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            from apps.core.permissions import IsSuperAdminOnly
-            return [IsSuperAdminOnly()]
+            return [IsStaffWithRole('staff_news')()]
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
@@ -75,7 +74,7 @@ class ArticleDetailView(generics.RetrieveAPIView):
 class ArticleAdminUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = [permissions.IsAuthenticated, IsSuperAdminOnly]
+    permission_classes = [permissions.IsAuthenticated, IsStaffWithRole('staff_news')]
     
     parser_classes = (parsers.MultiPartParser, parsers.FormParser)
     lookup_field = 'pk'

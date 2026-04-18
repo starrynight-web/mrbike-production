@@ -10,8 +10,8 @@
     "venvPath": "e:/mr",
     "venv": ".venv",
     "extraPaths": [
-        "./backend",
-        "./backend/apps"
+        "e:/mr/backend",
+        "e:/mr/backend/apps"
     ],
     "typeCheckingMode": "basic",
     "useLibraryCodeForTypes": true

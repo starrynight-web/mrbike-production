@@ -13,6 +13,7 @@ from django.contrib.postgres.search import SearchVectorField
 
 class Shop(models.Model):
     owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shop')
+    membership = models.ForeignKey('UserMembership', on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=250, unique=True, blank=True)
     description = models.TextField(blank=True, null=True)
@@ -32,7 +33,15 @@ class Shop(models.Model):
     contact_number = models.CharField(max_length=20)
     whatsapp_number = models.CharField(max_length=20, blank=True, null=True)
     
+    VERIFICATION_STATUS = [
+        ('none', 'None'),
+        ('pending', 'Pending'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    ]
+    
     is_verified = models.BooleanField(default=False)
+    verification_status = models.CharField(max_length=20, choices=VERIFICATION_STATUS, default='none')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -67,6 +76,7 @@ class UsedBikeListing(models.Model):
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='listings')
     shop = models.ForeignKey(Shop, on_delete=models.SET_NULL, null=True, blank=True, related_name='listings')
     bike_model = models.ForeignKey(BikeModel, on_delete=models.SET_NULL, null=True, blank=True, related_name='marketplace_listings')
+    active_boost = models.ForeignKey('ListingBoost', on_delete=models.SET_NULL, null=True, blank=True, related_name='active_listing')
     
     # SEO & URL
     slug = models.SlugField(max_length=350, unique=True, blank=True)
@@ -197,7 +207,7 @@ class UsedBikeListing(models.Model):
         return f"{self.title} - {self.price} BDT"
 
     class Meta:
-        ordering = ['-is_featured', '-created_at']
+        ordering = ['-active_boost__valid_until', '-created_at']
         indexes = [
             models.Index(fields=['status', 'is_verified']),
             models.Index(fields=['location_city', 'category']),
@@ -397,3 +407,71 @@ class ReportListing(models.Model):
     class Meta:
         ordering = ['-created_at']
         verbose_name_plural = "Reported Listings"
+class ListingBoost(models.Model):
+    """80 BDT top listing boost, valid for 15 days after admin approval."""
+    PAYMENT_METHODS = [('bkash', 'bKash'), ('nagad', 'Nagad')]
+    STATUS = [
+        ('pending',  'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    listing = models.ForeignKey(
+        UsedBikeListing, on_delete=models.CASCADE, related_name='boosts'
+    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_METHODS)
+    txid = models.CharField(max_length=100)
+    screenshot = CloudinaryField(
+        'image', folder='mrbikebd/payments/boosts/', null=True, blank=True
+    )
+    amount = models.DecimalField(max_digits=8, decimal_places=2, default=80.00)
+    status = models.CharField(max_length=20, choices=STATUS, default='pending')
+    # Set to timezone.now() + 15 days on approval
+    valid_until = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.EmailField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Boost for {self.listing.title} ({self.status})"
+
+class MembershipPlan(models.Model):
+    """Configuration for shop membership tiers."""
+    PLAN_CHOICES = [('normal', 'Normal Member'), ('vip', 'VIP Member')]
+    name = models.CharField(max_length=20, choices=PLAN_CHOICES, unique=True)
+    price = models.DecimalField(max_digits=8, decimal_places=2)       # 350 / 650
+    boost_price = models.DecimalField(max_digits=8, decimal_places=2) # 40  / 20
+    max_bikes = models.IntegerField()                                  # 15  / 25
+    badge_label = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.get_name_display()
+
+class UserMembership(models.Model):
+    """A user's membership carrier."""
+    STATUS = [
+        ('pending',  'Pending'),
+        ('active',   'Active'),
+        ('expired',  'Expired'),
+        ('rejected', 'Rejected'),
+    ]
+    PAYMENT_METHODS = [('bkash', 'bKash'), ('nagad', 'Nagad')]
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='membership'
+    )
+    plan = models.ForeignKey(MembershipPlan, on_delete=models.PROTECT)
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_METHODS)
+    txid = models.CharField(max_length=100)
+    screenshot = CloudinaryField(
+        'image', folder='mrbikebd/payments/memberships/', null=True, blank=True
+    )
+    amount_paid = models.DecimalField(max_digits=8, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS, default='pending')
+    starts_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.EmailField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.plan.name} ({self.status})"

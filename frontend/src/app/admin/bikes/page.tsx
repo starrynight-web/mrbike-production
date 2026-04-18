@@ -15,6 +15,8 @@ import {
   Upload,
   PlusCircle,
   X,
+  Database,
+  FileJson,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -100,6 +102,12 @@ export default function AdminBikesPage() {
   const [bikes, setBikes] = useState<BikeType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isBrandDialogOpen, setIsBrandDialogOpen] = useState(false);
+  const [jsonInput, setJsonInput] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [newBrandData, setNewBrandData] = useState({ name: "", description: "" });
+  const [creatingBrand, setCreatingBrand] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -439,6 +447,132 @@ export default function AdminBikesPage() {
               <Plus className="mr-2 h-4 w-4" /> Add New Bike
             </Button>
           </DialogTrigger>
+          {/* Add Brand Dialog */}
+          <Dialog open={isBrandDialogOpen} onOpenChange={setIsBrandDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="shrink-0">
+                <Database className="mr-2 h-4 w-4" /> Add Brand
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Brand</DialogTitle>
+                <DialogDescription>Create a new manufacturer brand for the database.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Brand Name</Label>
+                  <Input 
+                    placeholder="e.g. Yamaha" 
+                    value={newBrandData.name}
+                    onChange={e => setNewBrandData({...newBrandData, name: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Description (Optional)</Label>
+                  <Textarea 
+                    placeholder="Brief history or details..." 
+                    value={newBrandData.description}
+                    onChange={e => setNewBrandData({...newBrandData, description: e.target.value})}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsBrandDialogOpen(false)}>Cancel</Button>
+                <Button 
+                  onClick={async () => {
+                    try {
+                      setCreatingBrand(true);
+                      await adminAPI.createBrand(newBrandData as any);
+                      toast.success("Brand created successfully");
+                      await loadBrands();
+                      setIsBrandDialogOpen(false);
+                      setNewBrandData({ name: "", description: "" });
+                    } catch (e: any) {
+                      toast.error(e.message || "Failed to create brand");
+                    } finally {
+                      setCreatingBrand(false);
+                    }
+                  }}
+                  disabled={creatingBrand || !newBrandData.name}
+                >
+                  {creatingBrand && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                  Create Brand
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Import JSON Dialog */}
+          <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="secondary" className="shrink-0">
+                <FileJson className="mr-2 h-4 w-4" /> Import JSON
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Import Bike Data</DialogTitle>
+                <DialogDescription>Paste bike JSON data or upload a .json file to bulk import.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>JSON Content</Label>
+                  <Textarea 
+                    className="font-mono text-xs min-h-[300px]"
+                    placeholder='{ "Bike Name": "Yamaha R15 V4", ... }'
+                    value={jsonInput}
+                    onChange={e => setJsonInput(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input 
+                    type="file" 
+                    accept=".json" 
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (re) => setJsonInput(re.target?.result as string);
+                        reader.readAsText(file);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>Cancel</Button>
+                <Button 
+                  onClick={async () => {
+                    try {
+                      setImporting(true);
+                      const parsed = JSON.parse(jsonInput);
+                      const res = await adminAPI.importBikes(parsed);
+                      if (res.errors && res.errors.length > 0) {
+                        res.errors.forEach((err: string) => toast.error(err));
+                      }
+                      if (res.created > 0) {
+                        toast.success(`Successfully imported ${res.created} bikes`);
+                        await loadBikes();
+                        await loadBrands();
+                        setIsImportDialogOpen(false);
+                        setJsonInput("");
+                      }
+                    } catch (e: any) {
+                      toast.error("Invalid JSON format");
+                    } finally {
+                      setImporting(false);
+                    }
+                  }}
+                  disabled={importing || !jsonInput}
+                >
+                  {importing && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                  Start Import
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleAddBike}>
               <DialogHeader>

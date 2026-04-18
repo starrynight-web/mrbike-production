@@ -69,6 +69,7 @@ export const API_ENDPOINTS = {
   BIKE_EMOTIONAL_RECOMMENDATIONS: (slug: string) => `/bikes/${slug}/emotional_recommendations/`,
   BIKE_USED: (slug: string) => `/recommendations/budget/`, // Adjusted to match backend views.py
   BRANDS: "/bikes/brands/",
+  BRAND_DETAIL: (id: string | number) => `/bikes/brands/${id}/`,
   BRAND_BIKES: (slug: string) => `/bikes/brands/${slug}/bikes/`,
 
   // Used Bikes (Marketplace)
@@ -112,6 +113,7 @@ export const API_ENDPOINTS = {
   ADMIN_STATS: "/users/admin/stats/",
   ADMIN_FILTERS: "/admin/filter-options/",
   ADMIN_ANALYTICS: "/admin/analytics/",
+  SITE_CONFIG: "/admin/site-config/",
 
   // Upload
   UPLOAD_IMAGE: "/bikes/upload-image/",

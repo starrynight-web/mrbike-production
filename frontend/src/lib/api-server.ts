@@ -32,8 +32,12 @@ export const apiServer = {
       }
 
       return responseData as T;
-    } catch (error) {
-      console.error(`[API Server] Error fetching ${url}:`, error);
+    } catch (error: any) {
+      if (error?.message === "fetch failed" || error?.code === "ECONNREFUSED") {
+        console.warn(`[API Server] Backend unavailable (${url}). Skipping fetch.`);
+      } else {
+        console.error(`[API Server] Error fetching ${url}:`, error.message || error);
+      }
       return null;
     }
   },

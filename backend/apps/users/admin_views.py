@@ -12,7 +12,7 @@ from datetime import timedelta
 
 from apps.bikes.models import BikeModel, Brand
 from apps.marketplace.models import UsedBikeListing
-from apps.users.models import User
+from apps.users.models import User, StaffAdmin
 from apps.interactions.models import Review
 from apps.core.permissions import IsSuperAdminOnly
 
@@ -137,3 +137,75 @@ def reject_listing(request, listing_id):
         return Response({
             'error': 'Listing not found'
         }, status=status.HTTP_404_NOT_FOUND)
+
+class StaffAdminListView(APIView):
+    """List all staff managed by the super admin."""
+    permission_classes = [IsSuperAdminOnly]
+
+    def get(self, request):
+        staff = StaffAdmin.objects.select_related('user').all()
+        data = [{
+            'id': s.id,
+            'email': s.user.email,
+            'role_key': s.role_key,
+            'role_display': s.get_role_key_display(),
+            'is_active': s.is_active,
+            'created_at': s.created_at
+        } for s in staff]
+        return Response(data)
+
+class StaffAdminCreateView(APIView):
+    """Create or update a staff admin assignment."""
+    permission_classes = [IsSuperAdminOnly]
+
+    def post(self, request):
+        email = request.data.get('email')
+        role_key = request.data.get('role_key')
+        
+        if not email or not role_key:
+            return Response({'error': 'Email and role_key required'}, status=400)
+            
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={'username': email.split('@')[0], 'is_email_verified': True}
+        )
+        if created:
+            user.set_unusable_password() # They should login via social or reset
+            user.save()
+
+        # Sync user.role for consistency
+        user.role = role_key
+        user.save()
+
+        staff, s_created = StaffAdmin.objects.update_or_create(
+            user=user,
+            defaults={
+                'role_key': role_key,
+                'assigned_by_email': request.user.email,
+                'is_active': True
+            }
+        )
+        
+        return Response({
+            'message': 'Staff assigned successfully',
+            'created': s_created,
+            'email': email,
+            'role': role_key
+        })
+
+class StaffAdminDeleteView(APIView):
+    """Remove staff admin privileges."""
+    permission_classes = [IsSuperAdminOnly]
+
+    def delete(self, request, pk):
+        try:
+            staff = StaffAdmin.objects.get(pk=pk)
+            # Reset user role to 'user' if they were just staff
+            user = staff.user
+            user.role = 'user'
+            user.save()
+            
+            staff.delete()
+            return Response({'message': 'Staff removed successfully'})
+        except StaffAdmin.DoesNotExist:
+            return Response({'error': 'Not found'}, status=404)

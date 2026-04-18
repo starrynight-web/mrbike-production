@@ -211,6 +211,22 @@ class ApiService {
     return this.request<ApiBrand[]>(this.client.get(API_ENDPOINTS.BRANDS));
   }
 
+  async createBrand(data: FormData) {
+    return this.request<ApiBrand>(this.client.post(API_ENDPOINTS.BRANDS, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }));
+  }
+
+  async updateBrand(id: number | string, data: FormData) {
+    return this.request<ApiBrand>(this.client.patch(API_ENDPOINTS.BRAND_DETAIL(id), data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }));
+  }
+
+  async deleteBrand(id: number | string) {
+    return this.request(this.client.delete(API_ENDPOINTS.BRAND_DETAIL(id)));
+  }
+
   async resendVerificationEmail() {
     return this.request<{ message: string }>(this.client.post(API_ENDPOINTS.AUTH_RESEND_VERIFICATION));
   }
@@ -276,6 +292,10 @@ class ApiService {
 
   async getArticleBySlug(slug: string) {
     return this.request<ApiArticle>(this.client.get(API_ENDPOINTS.NEWS_DETAIL(slug)));
+  }
+
+  async getPublicConfig() {
+    return this.request<Record<string, string>>(this.client.get(API_ENDPOINTS.SITE_CONFIG));
   }
 
   // User Profile APIs

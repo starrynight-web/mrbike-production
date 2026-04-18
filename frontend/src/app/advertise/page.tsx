@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -11,6 +11,7 @@ import {
   Target,
   TrendingUp,
   Users,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,119 +26,64 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-
 import { api } from "@/lib/api-service";
 import { toast } from "sonner";
 
 export default function AdvertisePage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    company: "",
-    message: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [config, setConfig] = useState<any>(null);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      await api.sendInquiry({
-        ...formData,
-        subject: "advertise",
-      });
-      toast.success(
-        "Thank you for your interest! We will contact you shortly.",
-      );
-      setFormData({ name: "", email: "", company: "", message: "" });
-    } catch {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+  useEffect(() => {
+    async function loadConfig() {
+      try {
+        const res = await api.getPublicConfig();
+        if (res.success) setConfig(res.data);
+      } catch (e) {
+        console.error("Failed to load advertise config:", e);
+      }
     }
-  };
+    loadConfig();
+  }, []);
 
-  const stats = [
-    { label: "Monthly Visitors", value: "500K+", icon: Users },
-    { label: "Active Listings", value: "10K+", icon: Megaphone },
-    { label: "Bike Enthusiasts", value: "1M+", icon: Target },
-    { label: "Engagement Rate", value: "15%", icon: BarChart },
-  ];
-
-  const pricingPlans = [
-    {
-      name: "Standard Banner",
-      price: "৳5,000",
-      period: "/month",
-      description: "Great for quick visibility boost",
-      features: [
-        "Homepage Sidebar Banner",
-        "Bike Listing Page Banner",
-        "Mobile Responsive",
-        "Weekly Performance Report",
-      ],
-      popular: false,
-    },
-    {
-      name: "Premium Feature",
-      price: "৳12,000",
-      period: "/month",
-      description: "Maximum exposure for your brand",
-      features: [
-        "Top Homepage Banner",
-        "Featured Bike Listing (Top 3)",
-        "Social Media Mention",
-        "Dedicated Support",
-      ],
-      popular: true,
-    },
-    {
-      name: "Dealer Partnership",
-      price: "Custom",
-      period: "",
-      description: "Tailored solution for large dealerships",
-      features: [
-        "Verified Dealer Badge",
-        "Unlimited Featured Listings",
-        "Priority Search Ranking",
-      ],
-      popular: false,
-    },
-  ];
+  // Parse dynamic data
+  const stats = JSON.parse(config?.cms_advertise_stats || "[]");
+  const pricingPlans = JSON.parse(config?.cms_advertise_plans || "[]");
+  
+  const heroTitle = config?.cms_advertise_hero_title || "Advertise With Us";
+  const heroDesc = config?.cms_advertise_hero_desc || "Reach millions of motorcycle enthusiasts in Bangladesh. The perfect platform to showcase your brand, products, and services.";
+  
+  const pricingTitle = config?.cms_advertise_pricing_title || "Simple, Transparent Pricing";
+  const pricingDesc = config?.cms_advertise_pricing_desc || "Choose the plan that best fits your marketing goals. No hidden fees.";
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Hero Section (Reference: About Page) */}
+      {/* Hero Section */}
       <div className="bg-muted/30 border-b overflow-hidden relative">
         <div className="absolute top-0 right-0 -mt-20 -mr-20 opacity-5 pointer-events-none">
           <TrendingUp size={400} />
         </div>
-        <div className="w-full px-4 md:px-8 py-20 relative z-10">
-          <div className="max-w-2xl mx-auto text-center space-y-4">
-            <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-primary/20">
-              Grow Your Business
+        <div className="w-full px-4 md:px-8 py-24 md:py-32 relative z-10">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <Badge className="bg-primary/10 text-primary hover:bg-primary/10 border-primary/20 px-6 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase">
+              Grow Your Brand
             </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              Advertise <span className="text-primary">With Us</span>
+            <h1 className="text-5xl md:text-8xl font-black tracking-tight leading-[1] uppercase italic">
+              {heroTitle.split(" ").map((word: string, i: number) => (
+                <span key={i} className={i === heroTitle.split(" ").length - 1 ? "text-primary block md:inline" : ""}>
+                   {word}{" "}
+                </span>
+              ))}
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-              Reach millions of motorcycle enthusiasts in Bangladesh. The
-              perfect platform to showcase your brand, products, and services.
+            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto font-medium">
+              {heroDesc}
             </p>
-            <div className="pt-4">
+            <div className="pt-6">
               <Button
                 size="lg"
-                className="h-12 px-8"
+                className="h-16 px-12 rounded-2xl text-xl font-black italic uppercase tracking-widest shadow-2xl shadow-primary/30 transition-all hover:scale-105 active:scale-95"
                 asChild
               >
                 <Link href="#pricing">
-                  Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                  Explore Plans <ArrowRight className="ml-2 h-6 w-6" />
                 </Link>
               </Button>
             </div>
@@ -145,88 +91,99 @@ export default function AdvertisePage() {
         </div>
       </div>
 
-      {/* Stats Section (Reference: About Page Values) */}
-      <div className="w-full px-4 md:px-8 py-20">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
-            <div key={index} className="space-y-4 text-center">
-              <div className="mx-auto h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <stat.icon className="h-6 w-6 text-primary" />
+      {/* Stats Section */}
+      {stats.length > 0 && (
+        <div className="w-full px-4 md:px-8 py-24 bg-muted/20 border-b">
+          <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16">
+            {stats.map((stat: any, index: number) => (
+              <div key={index} className="space-y-4 text-center group">
+                <div className="mx-auto h-16 w-16 rounded-[1.25rem] bg-background border-2 shadow-sm flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+                  {index % 4 === 0 ? <Users className="h-8 w-8" /> : index % 4 === 1 ? <Megaphone className="h-8 w-8" /> : index % 4 === 2 ? <Target className="h-8 w-8" /> : <BarChart className="h-8 w-8" />}
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-4xl md:text-5xl font-black text-primary font-mono">{stat.value}</h3>
+                  <p className="text-muted-foreground text-sm md:text-base font-bold uppercase tracking-widest opacity-80">
+                    {stat.label}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-3xl font-bold">{stat.value}</h3>
-                <p className="text-muted-foreground text-sm font-medium">
-                  {stat.label}
-                </p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Pricing Section (Reference: Expense Calculator Cards) */}
-      <div id="pricing" className="bg-muted/30 py-20">
-        <div className="w-full px-4 md:px-8">
-          <div className="text-center mb-12 space-y-4">
-            <h2 className="text-3xl font-bold tracking-tight">
-              Simple, Transparent Pricing
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Choose the plan that best fits your marketing goals. No hidden
-              fees.
+      {/* Story Content Section */}
+      {(config?.cms_advertise_content && config.cms_advertise_content !== "<p></p>") && (
+        <div className="w-full px-4 md:px-8 py-24 max-w-4xl mx-auto">
+          <Card className="border-4 rounded-[40px] overflow-hidden shadow-2xl border-primary/10">
+            <CardContent className="p-10 md:p-16 prose prose-lg md:prose-xl dark:prose-invert max-w-none prose-headings:font-black prose-p:text-muted-foreground/80">
+              <div dangerouslySetInnerHTML={{ __html: config.cms_advertise_content }} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Pricing Section */}
+      <div id="pricing" className="py-24 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1/2 bg-muted/40 -skew-y-2 origin-left -translate-y-12" />
+        <div className="w-full px-4 md:px-8 relative z-10">
+          <div className="text-center mb-20 space-y-6">
+            <h2 className="text-4xl md:text-7xl font-black tracking-tight uppercase italic">{pricingTitle}</h2>
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto font-medium">
+              {pricingDesc}
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {pricingPlans.map((plan, index) => (
+          <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto">
+            {pricingPlans.map((plan: any, index: number) => (
               <Card
                 key={index}
-                className={`relative flex flex-col transition-all duration-300 ${
+                className={`flex flex-col rounded-[3rem] border-4 overflow-hidden transition-all duration-500 ${
                   plan.popular
-                    ? "border-primary shadow-xl scale-105 z-10"
-                    : "hover:shadow-lg hover:-translate-y-1"
+                    ? "border-primary shadow-[0_40px_100px_-20px_rgba(239,68,68,0.2)] md:scale-110 z-10 bg-background"
+                    : "border-muted-foreground/10 hover:border-primary/20 hover:shadow-2xl hover:-translate-y-2 bg-background/50 backdrop-blur-sm"
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <Badge className="bg-primary text-primary-foreground px-3 py-1 text-sm font-medium">
-                      Most Popular
-                    </Badge>
+                  <div className="bg-primary text-primary-foreground text-center py-3 font-black uppercase tracking-[0.2em] text-xs">
+                    Most Popular Tier
                   </div>
                 )}
-                <CardHeader>
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
+                <CardHeader className="p-8 pb-4">
+                  <CardTitle className="text-2xl md:text-3xl font-black uppercase tracking-tight">{plan.name}</CardTitle>
+                  <CardDescription className="text-base font-medium min-h-[48px]">{plan.description}</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-1 space-y-6">
-                  <div>
-                    <span className="text-3xl font-bold text-primary">
+                <CardContent className="flex-1 space-y-8 p-8 pt-4">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-black text-primary tracking-tighter">
                       {plan.price}
                     </span>
-                    <span className="text-muted-foreground font-medium">
+                    <span className="text-muted-foreground font-bold text-lg">
                       {plan.period}
                     </span>
                   </div>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-3 text-sm">
-                        <div className="mt-1">
-                          <Check className="h-4 w-4 text-primary" />
+                  <div className="h-1 w-12 bg-primary/20 rounded-full" />
+                  <ul className="space-y-4">
+                    {plan.features.map((feature: string, i: number) => (
+                      <li key={i} className="flex items-start gap-4 text-base font-medium">
+                        <div className="mt-1 bg-primary/10 rounded-full p-1 shrink-0">
+                          <Check className="h-4 w-4 text-primary stroke-[3px]" />
                         </div>
-                        <span className="text-muted-foreground">{feature}</span>
+                        <span className="text-muted-foreground leading-tight">{feature}</span>
                       </li>
                     ))}
                   </ul>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="p-8 pt-0">
                   <Button
-                    className="w-full"
-                    variant={plan.popular ? "default" : "outline"}
-                    size="lg"
+                    className={`w-full h-16 rounded-2xl text-lg font-black uppercase tracking-[0.1em] shadow-xl ${
+                      plan.popular ? "shadow-primary/30" : "bg-muted-foreground/10 text-foreground hover:bg-primary hover:text-white"
+                    }`}
+                    variant={plan.popular ? "default" : "secondary"}
                     asChild
                   >
                     <Link href={`/advertise/inquire?plan=${encodeURIComponent(plan.name)}`}>
-                      Choose Plan
+                      Launch Campaign
                     </Link>
                   </Button>
                 </CardFooter>
@@ -235,8 +192,6 @@ export default function AdvertisePage() {
           </div>
         </div>
       </div>
-
-      {/* Contact Form Section Removed - Migrated to /advertise/inquire */}
     </div>
   );
 }

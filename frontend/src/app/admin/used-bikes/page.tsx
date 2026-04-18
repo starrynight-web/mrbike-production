@@ -272,6 +272,20 @@ export default function UsedBikesModeration() {
               >
                 Active
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                   // Filter locally for reported items if not supported by backend status
+                   const reported = listings.filter(l => (l.reports_count || 0) > 0);
+                   setListings(reported);
+                   setFilterStatus("all"); // Reset status badge but show filtered list
+                   toast.info(`Found ${reported.length} reported listings`);
+                }}
+                className="border-red-200 text-red-600 hover:bg-red-50"
+              >
+                <AlertTriangle className="mr-2 h-4 w-4" /> Reported
+              </Button>
             </div>
           </div>
         </CardHeader>

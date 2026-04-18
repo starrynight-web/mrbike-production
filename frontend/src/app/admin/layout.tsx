@@ -17,6 +17,8 @@ import {
   User,
   ArrowLeft,
   Bug,
+  CreditCard,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -26,9 +28,12 @@ import { signOut } from "next-auth/react";
 
 const adminNav = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Official Bikes", href: "/admin/bikes", icon: Bike },
-  { name: "Used Bike Ads", href: "/admin/used-bikes", icon: Store },
-  { name: "News & Articles", href: "/admin/news", icon: Newspaper },
+  { name: "Official Bikes", href: "/admin/bikes", icon: Bike, role: 'staff_bikes' },
+  { name: "Used Bike Ads", href: "/admin/used-bikes", icon: Store, role: 'staff_used_bikes' },
+  { name: "News & Articles", href: "/admin/news", icon: Newspaper, role: 'staff_news' },
+  { name: "Payments", href: "/admin/payments", icon: CreditCard, role: 'staff_payments' },
+  { name: "Settings", href: "/admin/settings", icon: Settings, role: 'staff_settings' },
+  { name: "Staff Management", href: "/admin/staff", icon: Users, role: 'superadmin' },
 ];
 
 export default function AdminLayout({
@@ -62,20 +67,42 @@ export default function AdminLayout({
   // Protection logic
   useEffect(() => {
     if (isLoading) return;
+    
     // Redirect to login if not authenticated
     if (!isAuthenticated) {
       router.push("/login");
       return;
     }
-    // Redirect to home if authenticated but not an admin
-    if (user && user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'staff') {
-      router.push("/");
-    }
-  }, [user, isAuthenticated, router, isLoading]);
 
-  if (isLoading || !isAuthenticated || !user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'staff')) {
+    const userRole = user?.staffAdminProfile?.role_key || user?.role;
+    const isSuperAdmin = user?.role === 'superadmin' || user?.email === 'mrbikecloude@gmail.com';
+    const isAnyAdmin = isSuperAdmin || (user?.role && (user.role === 'admin' || user.role === 'staff' || user.role.startsWith('staff_')));
+
+    // Redirect to home if authenticated but not an admin at all
+    if (!isAnyAdmin) {
+      router.push("/");
+      return;
+    }
+
+    // Role-based route guarding
+    if (!isSuperAdmin) {
+      const currentRoute = adminNav.find(item => item.href !== '/admin' && pathname.startsWith(item.href));
+      if (currentRoute && currentRoute.role && userRole !== currentRoute.role) {
+        // Restricted access - redirect to admin dashboard
+        if (pathname !== '/admin') {
+          router.push("/admin");
+        }
+      }
+    }
+  }, [user, isAuthenticated, router, isLoading, pathname]);
+
+  const isSuperAdmin = user?.role === 'superadmin' || user?.email === 'mrbikecloude@gmail.com';
+  const userRole = user?.staffAdminProfile?.role_key || user?.role;
+  const isAnyAdmin = isSuperAdmin || (user?.role && (user.role === 'admin' || user.role === 'staff' || user.role.startsWith('staff_')));
+
+  if (isLoading || !isAuthenticated || !user || !isAnyAdmin) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-4 bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         <p className="text-muted-foreground font-medium">
           Checking admin access...
@@ -83,6 +110,11 @@ export default function AdminLayout({
       </div>
     );
   }
+
+  // Filter navigation for non-superadmins
+  const visibleNav = isSuperAdmin 
+    ? adminNav 
+    : adminNav.filter(item => !item.role || item.role === userRole || item.href === '/admin');
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-muted/30 relative">
@@ -129,7 +161,7 @@ export default function AdminLayout({
 
         <div className="flex-1 overflow-y-auto px-3 py-4">
           <nav className="space-y-1">
-            {adminNav.map((item) => {
+            {visibleNav.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
@@ -229,7 +261,7 @@ export default function AdminLayout({
             <Menu className="h-5 w-5" />
           </Button>
           <h2 className="font-semibold truncate">
-            {adminNav.find((item) => item.href === pathname)?.name ||
+            {visibleNav.find((item) => item.href === pathname)?.name ||
               "Dashboard"}
           </h2>
         </div>

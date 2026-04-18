@@ -10,7 +10,8 @@ import {
   MoreVertical,
   Edit2,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -52,6 +53,20 @@ export default function MyListingsPage() {
         refetch();
       } else {
         toast.error(res.error?.message || "Failed to delete listing");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred");
+    }
+  };
+
+  const handleBoost = async (id: number) => {
+    try {
+      const res = await api.post(`/marketplace/listings/${id}/boost/`);
+      if (res.success) {
+        toast.success("Boost request sent! Admin will approve shortly.");
+        refetch();
+      } else {
+        toast.error(res.error?.message || "Failed to request boost");
       }
     } catch (err: any) {
       toast.error(err.message || "An error occurred");
@@ -127,6 +142,15 @@ export default function MyListingsPage() {
                 >
                   {listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}
                 </Badge>
+                {listing.active_boost ? (
+                  <Badge className="absolute top-3 right-3 bg-amber-500 text-white border-none shadow-sm animate-pulse">
+                    <Zap className="h-3 w-3 mr-1 fill-white" /> Boosted
+                  </Badge>
+                ) : (listing as any).has_pending_boost && (
+                  <Badge className="absolute top-3 right-3 bg-amber-500/20 text-amber-700 border-amber-200 shadow-sm">
+                    <Zap className="h-3 w-3 mr-1" /> Pending Boost
+                  </Badge>
+                )}
               </div>
 
               <div className="flex-1 flex flex-col justify-between py-1">
@@ -194,10 +218,13 @@ export default function MyListingsPage() {
                         <Link href={`/used-bike/${listing.slug}`}>View Public Ad</Link>
                     </Button>
                     <Button 
-                      className="flex-1 sm:flex-none active:scale-95 transition-all"
-                      onClick={() => router.push(`/sell-bike?edit=${listing.id}`)}
+                      className="flex-1 sm:flex-none active:scale-95 transition-all gap-2"
+                      variant={listing.active_boost || (listing as any).has_pending_boost ? "outline" : "default"}
+                      disabled={listing.active_boost || (listing as any).has_pending_boost}
+                      onClick={() => handleBoost(listing.id)}
                     >
-                      Quick Edit
+                      <Zap className={listing.active_boost ? "h-4 w-4 fill-amber-500 text-amber-500" : "h-4 w-4"} />
+                      {listing.active_boost ? "Boosted" : (listing as any).has_pending_boost ? "Pending" : "Boost Ad"}
                     </Button>
                   </div>
                 </div>

@@ -37,9 +37,15 @@ export interface User {
   role: UserRole;
   createdAt: Date;
   updatedAt: Date;
+  staffAdminProfile?: {
+    role_key: string;
+    is_active: boolean;
+  };
 }
 
-export type UserRole = "user" | "seller" | "dealer" | "moderator" | "admin" | "superadmin" | "staff";
+export type UserRole = 
+  | "user" | "seller" | "dealer" | "moderator" | "admin" | "superadmin" | "staff"
+  | "staff_news" | "staff_used_bikes" | "staff_bikes" | "staff_payments" | "staff_settings";
 
 // -------------------- BIKE TYPES --------------------
 export interface Bike {

@@ -40,6 +40,11 @@ class User(AbstractUser):
         ('dealer', 'Dealer'),
         ('moderator', 'Moderator'),
         ('admin', 'Admin'),
+        ('staff_news', 'News Manager'),
+        ('staff_used_bikes', 'Used Bikes Moderator'),
+        ('staff_bikes', 'Official Bikes Manager'),
+        ('staff_payments', 'Payments Reviewer'),
+        ('staff_settings', 'Site Settings Manager'),
     ]
     
     email = models.EmailField(_('email address'), unique=True, null=True, blank=True)
@@ -117,3 +122,20 @@ class Notification(models.Model):
         
     def __str__(self):
         return f"{self.user.email} - {self.title}"
+class StaffAdmin(models.Model):
+    """Granular RBAC for platform staff."""
+    ROLE_CHOICES = [
+        ('staff_news', 'News Manager'),
+        ('staff_used_bikes', 'Used Bikes Moderator'),
+        ('staff_bikes', 'Official Bikes Manager'),
+        ('staff_payments', 'Payments Reviewer'),
+        ('staff_settings', 'Site Settings Manager'),
+    ]
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff_profile')
+    role_key = models.CharField(max_length=30, choices=ROLE_CHOICES)
+    assigned_by_email = models.EmailField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.get_role_key_display()}"

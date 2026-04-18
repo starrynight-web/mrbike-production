@@ -231,8 +231,9 @@ export interface ApiUsedBikeListing {
   shop?: { id: number; name: string; slug: string; logo?: string; is_verified: boolean; location_city?: string };
   created_at: string;
   updated_at: string;
-  expires_at?: string;
   reports_count?: number;
+  active_boost?: boolean;
+  has_pending_boost?: boolean;
 }
 
 // ─────────────────────────────────────────────

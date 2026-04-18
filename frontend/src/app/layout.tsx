@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/providers";
 import { Header, Footer } from "@/components/layout";
@@ -102,7 +103,8 @@ export default function RootLayout({
         <meta name="ICBM" content="23.6850, 90.3563" />
         <link rel="alternate" hrefLang="en-BD" href="https://mrbikebd.com" />
         
-        <script
+        <Script
+          id="org-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
@@ -131,7 +133,8 @@ export default function RootLayout({
             })
           }}
         />
-        <script
+        <Script
+          id="website-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
