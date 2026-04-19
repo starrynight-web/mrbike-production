@@ -8,7 +8,8 @@ from .views import (
     VerifyOTPView, ProfileDetailView
 )
 from .admin_views import (
-    StaffAdminListView, StaffAdminCreateView, StaffAdminDeleteView
+    StaffAdminListView, StaffAdminCreateView, StaffAdminDeleteView,
+    StaffAdminUpdateView, TotalUsersView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -33,5 +34,9 @@ urlpatterns = [
     # Staff Management
     path('admin/staff/', StaffAdminListView.as_view(), name='staff-list'),
     path('admin/staff/create/', StaffAdminCreateView.as_view(), name='staff-create'),
+    path('admin/staff/<int:pk>/', StaffAdminUpdateView.as_view(), name='staff-update'),
     path('admin/staff/<int:pk>/delete/', StaffAdminDeleteView.as_view(), name='staff-delete'),
+    
+    # Admin Stats
+    path('admin/users/total/', TotalUsersView.as_view(), name='total-users'),
 ]

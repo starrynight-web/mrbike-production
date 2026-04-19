@@ -197,6 +197,17 @@ interface BackendAdminStats {
 
 class AdminAPI {
   // ===== BIKES MANAGEMENT =====
+  
+  /**
+   * Get total users (Super Admin only)
+   */
+  async getTotalUsers() {
+    const response = await api.get<any>("/users/admin/users/total/");
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to get total users");
+    }
+    return response.data;
+  }
 
   /**
    * Get all official bikes with optional filtering and pagination
@@ -603,7 +614,7 @@ class AdminAPI {
     formData.append("image", file);
 
     // Using the same endpoint but ensuring it's handled properly
-    const response = await api.post<any>("/bikes/upload_image/", formData, {
+    const response = await api.post<any>("/bikes/upload-image/", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
@@ -757,6 +768,12 @@ class AdminAPI {
   async createStaff(data: any) {
     const response = await api.post("/users/admin/staff/create/", data);
     if (!response.success) throw new Error(response.error?.message || "Staff creation failed");
+    return response.data;
+  }
+
+  async updateStaff(id: number | string, data: any) {
+    const response = await api.patch(`/users/admin/staff/${id}/`, data);
+    if (!response.success) throw new Error(response.error?.message || "Staff update failed");
     return response.data;
   }
 

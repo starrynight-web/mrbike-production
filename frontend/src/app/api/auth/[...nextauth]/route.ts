@@ -5,7 +5,7 @@ import { AuthOptions } from "next-auth";
 
 async function refreshAccessToken(token: any) {
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/refresh/`;
+    const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/refresh/`;
 
     const response = await fetch(url, {
       method: "POST",
@@ -56,7 +56,7 @@ export const authOptions: AuthOptions = {
 
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/login/`,
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/login/`,
             {
               method: "POST",
               body: JSON.stringify({
@@ -79,6 +79,7 @@ export const authOptions: AuthOptions = {
               accessToken: data.access,
               refreshToken: data.refresh,
               isEmailVerified: data.user.is_email_verified,
+              staffAdminSections: data.user.staff_profile_sections || [],
             };
           } else if (res.status === 403 && data.needs_verification) {
             throw new Error("EMAIL_NOT_VERIFIED");
@@ -104,7 +105,7 @@ export const authOptions: AuthOptions = {
 
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/verify-email/`,
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/verify-email/`,
             {
               method: "POST",
               body: JSON.stringify({
@@ -126,6 +127,7 @@ export const authOptions: AuthOptions = {
               accessToken: data.access,
               refreshToken: data.refresh,
               isEmailVerified: data.user.is_email_verified,
+              staffAdminSections: data.user.staff_profile_sections || [],
             };
           }
           throw new Error(data.error || "Verification failed");
@@ -149,7 +151,7 @@ export const authOptions: AuthOptions = {
 
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/verify-2fa/`,
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/verify-2fa/`,
             {
               method: "POST",
               body: JSON.stringify({
@@ -172,6 +174,7 @@ export const authOptions: AuthOptions = {
               accessToken: data.access,
               refreshToken: data.refresh,
               isEmailVerified: data.user.is_email_verified,
+              staffAdminSections: data.user.staff_profile_sections || [],
             };
           }
           throw new Error(data.error || "2FA verification failed");
@@ -198,6 +201,7 @@ export const authOptions: AuthOptions = {
         session.refreshToken = token.refreshToken as string | undefined;
         session.user.role = token.role || "user";
         (session.user as any).isEmailVerified = token.isEmailVerified;
+        (session.user as any).staffAdminSections = token.staffAdminSections || [];
         // @ts-expect-error - Custom property
         session.error = token.error;
       }
@@ -208,7 +212,7 @@ export const authOptions: AuthOptions = {
       if (account?.provider === "google" && account.id_token) {
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/google/`,
+            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/google/`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -223,6 +227,7 @@ export const authOptions: AuthOptions = {
             token.refreshToken = data.refresh;
             token.role = data.user.role;
             token.isEmailVerified = data.user.is_email_verified;
+            token.staffAdminSections = data.user.staff_profile_sections || [];
             token.accessTokenExpires = Date.now() + 60 * 60 * 1000; // 60 minutes
             return token;
           }
@@ -237,6 +242,7 @@ export const authOptions: AuthOptions = {
         token.accessToken = (user as any).accessToken;
         token.refreshToken = (user as any).refreshToken;
         token.isEmailVerified = (user as any).isEmailVerified;
+        token.staffAdminSections = (user as any).staffAdminSections || [];
         token.accessTokenExpires = Date.now() + 60 * 60 * 1000; // 60 minutes
         return token;
       }

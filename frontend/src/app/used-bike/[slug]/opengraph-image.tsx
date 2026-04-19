@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { apiServer } from '@/lib/api-server';
 
-export const runtime = 'edge';
+// Removed edge runtime to allow for static optimization during build
 
 // Image generation
 export default async function Image({ params }: { params: { slug: string } }) {

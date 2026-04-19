@@ -175,14 +175,14 @@ export default function StaffManagement() {
                           <div>
                             <p className="font-medium">{staff.email}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              ID: #{staff.id} • Assigned: {new Date(staff.created_at).toLocaleDateString()}
+                              ID: #{staff.id} • Assigned: {staff.created_at ? new Date(staff.created_at).toLocaleDateString() : "Pending"}
                             </p>
                           </div>
                         </div>
                       </td>
                       <td className="py-4 px-2">
                         <Badge variant="outline" className="capitalize bg-accent/50">
-                          {staff.role_key.replace("staff_", "").replace("_", " ")}
+                          {staff.role_key ? staff.role_key.replace("staff_", "").replace("_", " ") : "Assistant"}
                         </Badge>
                       </td>
                       <td className="py-4 px-2">

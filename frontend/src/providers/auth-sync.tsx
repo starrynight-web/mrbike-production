@@ -39,53 +39,72 @@ export function AuthSync() {
     const lastSyncedRef = useRef<string | null>(null);
 
     useEffect(() => {
-        console.log(`[DEBUG-LOOP] AuthSync Status: ${status}`);
-        
-        if (status === "loading") {
-            setLoading(true);
-            return;
-        }
+        const syncProfile = async () => {
+            if (status !== "authenticated" || !session?.user) {
+                if (status === "unauthenticated") {
+                    setLoading(false);
+                }
+                return;
+            }
 
-        if (status === "authenticated" && session?.user) {
             const user = session.user as NextAuthUser;
             const sessionEmail = user.email || "";
-            
-            // Shallow comparison to avoid loops
             const syncKey = `${sessionEmail}-${user.role}`;
             const { isAuthenticated, currentUser } = storeState.current;
 
-            if (isAuthenticated && currentUser?.email === sessionEmail && lastSyncedRef.current === syncKey) {
-                console.log("[DEBUG-LOOP] AuthSync: Already synced, skipping.");
+            // Still show loading while we fetch the source-of-truth profile
+            setLoading(true);
+
+            try {
+                // IMPORTANT: Fetch the full profile from backend to get latest role/sections
+                // This bypasses stale NextAuth tokens.
+                const { api } = await import("@/lib/api-service");
+                const response = await api.get<any>("/users/profile/");
+                
+                if (response.success && response.data) {
+                    const dbUser = response.data;
+                    const userData: User = {
+                        id: dbUser.id?.toString() || user.id || "unknown",
+                        email: dbUser.email || sessionEmail,
+                        name: `${dbUser.first_name || ""} ${dbUser.last_name || ""}`.trim() || dbUser.username || user.name || "",
+                        image: dbUser.profile_image || user.image || undefined,
+                        role: (dbUser.role as UserRole) || "user",
+                        phoneVerified: !!dbUser.phone_verified,
+                        isEmailVerified: !!dbUser.is_email_verified,
+                        createdAt: dbUser.date_joined || new Date(),
+                        updatedAt: new Date(),
+                        // Attach sections for useAuth fallback
+                        staffAdminSections: dbUser.staff_profile_sections || []
+                    } as any;
+
+                    console.log(`[AUTH-SYNC] Successfully synced profile for ${sessionEmail}. Role: ${userData.role}`);
+                    login(userData);
+                    lastSyncedRef.current = syncKey;
+                } else {
+                    // Fallback to session data if profile fetch fails
+                    console.warn("[AUTH-SYNC] Profile fetch failed, falling back to session data.");
+                    const userData: User = {
+                        id: user.id || "unknown",
+                        email: sessionEmail,
+                        name: user.name || "",
+                        image: user.image || undefined,
+                        role: (user.role as UserRole) || "user",
+                        phoneVerified: false,
+                        isEmailVerified: true,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    };
+                    login(userData);
+                }
+            } catch (err) {
+                console.error("[AUTH-SYNC] Error syncing profile:", err);
+            } finally {
                 setLoading(false);
-                return;
             }
-            
-            console.log(`[DEBUG-LOOP] AuthSync: Syncing user ${sessionEmail} to store...`);
-            
-            // Sync tokens
-            if (session.accessToken) localStorage.setItem("accessToken", session.accessToken);
-            if (session.refreshToken) localStorage.setItem("refreshToken", session.refreshToken);
+        };
 
-            const userData: User = {
-                id: user.id || "unknown",
-                email: sessionEmail,
-                name: user.name || "",
-                image: user.image || undefined,
-                role: (user.role as UserRole) || "user",
-                phoneVerified: false,
-                isEmailVerified: true,
-                createdAt: currentUser?.createdAt || new Date(),
-                updatedAt: new Date(),
-            };
-
-            login(userData);
-            lastSyncedRef.current = syncKey;
-        } else if (status === "unauthenticated") {
-            console.log("[DEBUG-LOOP] AuthSync: Status is unauthenticated.");
-        }
-
-        setLoading(false);
-    }, [session, status, login, setLoading]); // Removed dependent store values
+        syncProfile();
+    }, [session, status, login, setLoading]);
 
     return null;
 }

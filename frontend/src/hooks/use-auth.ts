@@ -15,7 +15,24 @@ const SUPER_ADMIN = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL;
  * Provides a single clean `useAuth()` API for all components.
  */
 export function useAuth() {
-  const { data: session, status } = useSession();
+  let session, status;
+  
+  try {
+    const result = useSession?.();
+    // Handle case where useSession returns undefined or doesn't have data property
+    if (!result) {
+      session = undefined;
+      status = "unauthenticated";
+    } else {
+      session = result.data ?? undefined;
+      status = result.status ?? "unauthenticated";
+    }
+  } catch (e) {
+    // During static generation, useSession may throw or return undefined
+    session = undefined;
+    status = "unauthenticated";
+  }
+  
   const { user: storedUser, isAuthenticated, isLoading: storeLoading } = useAuthStore();
 
   const isLoadingSession = status === "loading";
@@ -43,9 +60,33 @@ export function useAuth() {
    * Whether the current user is the super admin.
    * Checked via NEXT_PUBLIC_SUPER_ADMIN_EMAIL env var on client.
    */
-  const isSuperAdmin = resolvedAuthenticated && SUPER_ADMIN
-    ? user?.email === SUPER_ADMIN
-    : false;
+  // 1. Check Super Admin by email (most trusted)
+  const isSuperAdmin = !!(resolvedAuthenticated && SUPER_ADMIN && user?.email && 
+    user.email.toLowerCase().trim() === SUPER_ADMIN.toLowerCase().trim());
+
+  // 2. Identify all staff sections/roles
+  let staffAdminSections: string[] = (sessionUser as any)?.staffAdminSections || [];
+
+  // Fallback for stale tokens or specific roles: 
+  if (staffAdminSections.length === 0 && user?.role) {
+    const roleStr = user.role.toString().toLowerCase();
+    if (roleStr.startsWith('staff_')) {
+      staffAdminSections = [roleStr];
+    } else if (roleStr === 'admin' || roleStr === 'staff') {
+      // If generic staff, give them entry but they see dashboard only
+      staffAdminSections = ['staff_dashboard'];
+    }
+  }
+
+  // 3. Comprehensive check for any administrative access
+  const isStaff = resolvedAuthenticated && (
+    isSuperAdmin || 
+    user?.role === 'staff' ||
+    user?.role === 'admin' ||
+    user?.role === 'superadmin' ||
+    (user?.role && user.role.toString().toLowerCase().startsWith('staff_')) ||
+    staffAdminSections.length > 0
+  );
 
   const accessToken: string | undefined = (session as any)?.accessToken;
   const refreshToken: string | undefined = (session as any)?.refreshToken;
@@ -57,6 +98,8 @@ export function useAuth() {
     isAuthenticated: resolvedAuthenticated,
     isLoading: isLoadingStore,
     isSuperAdmin,
+    isStaff,
+    staffAdminSections,
 
     // Token helpers
     accessToken,

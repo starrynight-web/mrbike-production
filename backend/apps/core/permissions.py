@@ -34,8 +34,9 @@ def IsStaffWithRole(role_keys):
                 
             # Check staff profile
             try:
-                return request.user.staff_profile.role_key in role_keys and \
-                       request.user.staff_profile.is_active
+                # Check if any of the user's sections overlap with the required role_keys
+                user_sections = request.user.staff_profile.sections or []
+                return request.user.staff_profile.is_active and any(s in role_keys for s in user_sections)
             except Exception:
                 return False
                 

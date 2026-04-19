@@ -2,9 +2,10 @@ from rest_framework import generics, permissions, parsers, status
 from .models import Article
 from .serializers import ArticleSerializer
 from apps.core.responses import StandardResponse
+from django.core.cache import cache
+from apps.core.permissions import IsSuperAdminOnly, IsStaffWithRole
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from apps.core.permissions import IsSuperAdminOnly, IsStaffWithRole
 
 class ArticleListCreateView(generics.ListCreateAPIView):
     serializer_class = ArticleSerializer
@@ -28,15 +29,33 @@ class ArticleListCreateView(generics.ListCreateAPIView):
         return queryset
 
     def get(self, request, *args, **kwargs):
-        # Only cache the default non-search list
+        """
+        Get news articles with caching for list (but not for search queries).
+        Cache is skipped when search parameters are present.
+        """
+        # Skip cache for search queries
         if request.query_params.get('search'):
             return super().get(request, *args, **kwargs)
         
-        @method_decorator(cache_page(60 * 15))
-        def cached_get(request, *args, **kwargs):
-            return super(ArticleListCreateView, self).get(request, *args, **kwargs)
-            
-        return cached_get(request, *args, **kwargs)
+        # Generate cache key based on query parameters (excluding search)
+        # This ensures different pagination/filters get separate cache entries
+        cache_params = dict(request.query_params)
+        cache_params.pop('search', None)  # Remove search from cache key
+        cache_key = f"article_list_{hash(frozenset(cache_params.items()))}"
+        
+        # Try to get from cache
+        cached_data = cache.get(cache_key)
+        if cached_data is not None:
+            from rest_framework.response import Response
+            return Response(cached_data)
+        
+        # Get the response from parent
+        response = super().get(request, *args, **kwargs)
+        
+        # Cache the response data for 15 minutes (900 seconds)
+        cache.set(cache_key, response.data, 900)
+        
+        return response
 
     def get_permissions(self):
         if self.request.method == 'POST':

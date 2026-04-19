@@ -139,6 +139,13 @@ function LoginContent() {
 
 
   const handleGoogleLogin = () => {
+    const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL;
+    if (superAdminEmail && email.toLowerCase() === superAdminEmail.toLowerCase()) {
+      toast.error("Super Admin must log in with email & password.", {
+        description: "Google Sign-In is disabled for the Super Admin account."
+      });
+      return;
+    }
     setIsLoading(true);
     signIn("google", { callbackUrl });
   };
@@ -159,7 +166,7 @@ function LoginContent() {
     try {
       // First call to backend to check password and get 2FA status
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/login/`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/login/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -253,7 +260,7 @@ function LoginContent() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/auth/resend-verification/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/resend-verification/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

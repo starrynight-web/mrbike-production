@@ -1,6 +1,6 @@
 import { API_ENDPOINTS } from "@/config/constants";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 /**
  * Server-side API utility for Next.js Server Components.

@@ -149,7 +149,7 @@ function RegisterContent() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/auth/register/`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/register/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -192,7 +192,7 @@ function RegisterContent() {
     setIsResendingEmail(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/auth/resend-verification/`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/resend-verification/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

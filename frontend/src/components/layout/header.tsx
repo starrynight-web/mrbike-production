@@ -28,6 +28,7 @@ import {
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { useAuthStore, useWishlistStore, useUIStore } from "@/store";
+import { useAuth } from "@/hooks/use-auth";
 import { SearchDialog } from "@/components/layout/search-dialog";
 
 const navLinks = [
@@ -42,11 +43,33 @@ const navLinks = [
 
 export function Header() {
   const pathname = usePathname();
-  const { user, isAuthenticated, logout } = useAuthStore();
-  const { bikeIds } = useWishlistStore();
-  const { isMobileMenuOpen, setMobileMenuOpen, isSearchOpen, setSearchOpen } =
+  
+  let user, isAuthenticated, isStaff, isSuperAdmin;
+  try {
+    const auth = useAuth();
+    user = auth.user;
+    isAuthenticated = auth.isAuthenticated;
+    isStaff = auth.isStaff;
+    isSuperAdmin = auth.isSuperAdmin;
+  } catch (e) {
+    // During static generation, auth may not be available
+    user = null;
+    isAuthenticated = false;
+    isStaff = false;
+    isSuperAdmin = false;
+  }
+  
+  const { logout } = useAuthStore();
+  let { bikeIds } = useWishlistStore();
+  let { isMobileMenuOpen, setMobileMenuOpen, isSearchOpen, setSearchOpen } =
     useUIStore();
-  const wishlistCount = bikeIds.size;
+  
+  // Safe fallbacks for store access during static generation
+  if (!bikeIds) bikeIds = new Set();
+  if (!setMobileMenuOpen) setMobileMenuOpen = () => {};
+  if (!setSearchOpen) setSearchOpen = () => {};
+  
+  const wishlistCount = bikeIds?.size ?? 0;
 
   return (
     <>
@@ -214,14 +237,14 @@ export function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  {user.role === "admin" && (
+                  {isStaff && (
                     <>
                       <DropdownMenuItem asChild>
                         <Link
-                          href="/admin"
+                          href={isSuperAdmin ? "/admin" : "/staff_admin"}
                           className="font-bold text-primary flex items-center gap-2"
                         >
-                          <Shield className="h-4 w-4" /> Admin Panel
+                          <Shield className="h-4 w-4" /> {isSuperAdmin ? "Admin Panel" : "Staff Panel"}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />

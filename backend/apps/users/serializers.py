@@ -6,18 +6,44 @@ from apps.core.validators import DataValidator
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
-    membership = serializers.CharField(source='membership.plan.name', read_only=True, allow_null=True)
-    membership_expires = serializers.DateTimeField(source='membership.expires_at', read_only=True, allow_null=True)
+    membership = serializers.SerializerMethodField(read_only=True)
+    membership_expires = serializers.SerializerMethodField(read_only=True)
+    staff_profile_sections = serializers.SerializerMethodField(read_only=True)
+
+
+    def get_membership(self, obj):
+        """Get user's membership plan name if exists"""
+        from apps.marketplace.models import UserMembership
+        try:
+            user_membership = obj.memberships.latest('created_at')
+            return user_membership.plan.name if user_membership.status == 'active' else None
+        except (UserMembership.DoesNotExist, AttributeError):
+            return None
+    
+    def get_membership_expires(self, obj):
+        """Get user's membership expiration date if exists"""
+        from apps.marketplace.models import UserMembership
+        try:
+            user_membership = obj.memberships.latest('created_at')
+            return user_membership.expires_at if user_membership.status == 'active' else None
+        except (UserMembership.DoesNotExist, AttributeError):
+            return None
+            
+    def get_staff_profile_sections(self, obj):
+        try:
+            return obj.staff_profile.sections if obj.staff_profile.is_active else []
+        except Exception:
+            return []
 
     class Meta:
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
             'is_email_verified', 'location', 'profile_image', 'bio', 'role',
-            'date_joined', 'last_login', 'membership', 'membership_expires'
+            'date_joined', 'last_login', 'membership', 'membership_expires',
+            'staff_profile_sections'
         ]
-        read_only_fields = ['username', 'date_joined', 'last_login', 'role', 'is_email_verified']
-
+        read_only_fields = ['id', 'username', 'date_joined', 'last_login', 'role', 'is_email_verified']
 
     def validate(self, data):
         return DataValidator.sanitize_dict(data)

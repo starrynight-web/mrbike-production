@@ -12,14 +12,14 @@ from datetime import timedelta
 
 from apps.bikes.models import BikeModel, Brand
 from apps.marketplace.models import UsedBikeListing
-from apps.users.models import User, StaffAdmin
+from .models import User, StaffAdmin
 from apps.interactions.models import Review
-from apps.core.permissions import IsSuperAdminOnly
+from apps.core.permissions import IsSuperAdminOnly, IsAnyStaffOrSuperAdmin
 
 
 class AdminStatsView(APIView):
     """Get admin dashboard statistics"""
-    permission_classes = [IsSuperAdminOnly]
+    permission_classes = [IsAnyStaffOrSuperAdmin]
     
     def get(self, request):
         # Date ranges
@@ -78,7 +78,7 @@ class AdminStatsView(APIView):
 
 class AdminFilterOptionsView(APIView):
     """Get filter options for admin panel"""
-    permission_classes = [IsSuperAdminOnly]
+    permission_classes = [IsAnyStaffOrSuperAdmin]
     
     def get(self, request):
         # Get unique brands
@@ -147,8 +147,7 @@ class StaffAdminListView(APIView):
         data = [{
             'id': s.id,
             'email': s.user.email,
-            'role_key': s.role_key,
-            'role_display': s.get_role_key_display(),
+            'sections': s.sections,
             'is_active': s.is_active,
             'created_at': s.created_at
         } for s in staff]
@@ -160,10 +159,14 @@ class StaffAdminCreateView(APIView):
 
     def post(self, request):
         email = request.data.get('email')
-        role_key = request.data.get('role_key')
+        sections = request.data.get('sections')
         
-        if not email or not role_key:
-            return Response({'error': 'Email and role_key required'}, status=400)
+        # Backward compatibility
+        if not sections and request.data.get('role_key'):
+            sections = [request.data.get('role_key')]
+        
+        if not email or not sections or not isinstance(sections, list):
+            return Response({'error': 'Email and sections array required'}, status=400)
             
         user, created = User.objects.get_or_create(
             email=email,
@@ -173,14 +176,15 @@ class StaffAdminCreateView(APIView):
             user.set_unusable_password() # They should login via social or reset
             user.save()
 
-        # Sync user.role for consistency
-        user.role = role_key
+        # Sync user.role and is_staff for consistency
+        user.role = sections[0] if sections else 'user'
+        user.is_staff = True
         user.save()
 
         staff, s_created = StaffAdmin.objects.update_or_create(
             user=user,
             defaults={
-                'role_key': role_key,
+                'sections': sections,
                 'assigned_by_email': request.user.email,
                 'is_active': True
             }
@@ -190,7 +194,7 @@ class StaffAdminCreateView(APIView):
             'message': 'Staff assigned successfully',
             'created': s_created,
             'email': email,
-            'role': role_key
+            'sections': sections
         })
 
 class StaffAdminDeleteView(APIView):
@@ -203,9 +207,56 @@ class StaffAdminDeleteView(APIView):
             # Reset user role to 'user' if they were just staff
             user = staff.user
             user.role = 'user'
+            user.is_staff = False
             user.save()
             
             staff.delete()
             return Response({'message': 'Staff removed successfully'})
         except StaffAdmin.DoesNotExist:
             return Response({'error': 'Not found'}, status=404)
+
+class StaffAdminUpdateView(APIView):
+    """Update a staff admin assignment (sections or active status)."""
+    permission_classes = [IsSuperAdminOnly]
+
+    def patch(self, request, pk):
+        try:
+            staff = StaffAdmin.objects.get(pk=pk)
+            sections = request.data.get('sections')
+            is_active = request.data.get('is_active')
+            
+            if sections is not None:
+                if not isinstance(sections, list):
+                    return Response({'error': 'Sections must be a list'}, status=400)
+                staff.sections = sections
+                staff.user.role = sections[0] if sections else 'user'
+                staff.user.save()
+                
+            if is_active is not None:
+                staff.is_active = bool(is_active)
+                staff.user.is_staff = bool(is_active)
+                staff.user.save()
+                
+            staff.save()
+            return Response({
+                'message': 'Staff updated successfully',
+                'id': staff.id,
+                'sections': staff.sections,
+                'is_active': staff.is_active
+            })
+        except StaffAdmin.DoesNotExist:
+            return Response({'error': 'Not found'}, status=404)
+
+class TotalUsersView(APIView):
+    """Get total users stats for Super Admin only."""
+    permission_classes = [IsSuperAdminOnly]
+    
+    def get(self, request):
+        total_users = User.objects.count()
+        new_today = User.objects.filter(date_joined__date=timezone.now().date()).count()
+        new_week = User.objects.filter(date_joined__gte=timezone.now() - timedelta(days=7)).count()
+        return Response({
+            "total": total_users,
+            "new_today": new_today,
+            "new_week": new_week
+        })

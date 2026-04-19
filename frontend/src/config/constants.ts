@@ -52,9 +52,10 @@ export const ALLOWED_BRANDS = [
 export const API_ENDPOINTS = {
   // Auth
   AUTH_GOOGLE: "/users/auth/google/",
+  AUTH_LOGIN: "/users/auth/login/",
   AUTH_OTP_SEND: "/users/auth/otp/send/",
-  AUTH_OTP_VERIFY: "/users/auth/verify-phone/",
-  AUTH_SESSION: "/users/auth/session/",
+  AUTH_OTP_VERIFY: "/users/auth/verify-2fa/",
+  AUTH_SESSION: "/users/auth/me/",
   AUTH_LOGOUT: "/users/auth/logout/",
   AUTH_REGISTER: "/users/auth/register/",
   AUTH_PASSWORD_RESET: "/users/auth/password-reset/",

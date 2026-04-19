@@ -10,7 +10,7 @@ from django.core.cache import cache
 
 from .models import SiteConfig
 from .serializers import SiteConfigSerializer
-from .permissions import IsStaffWithRole, IsSuperAdminOnly
+from .permissions import IsStaffWithRole, IsSuperAdminOnly, IsAnyStaffOrSuperAdmin
 from ..bikes.models import BikeModel, Brand
 from ..marketplace.models import UsedBikeListing
 import cloudinary.uploader
@@ -19,7 +19,7 @@ import json
 User = get_user_model()
 
 class AdminStatsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAnyStaffOrSuperAdmin]
 
     def get(self, request):
         stats = {
@@ -37,7 +37,7 @@ class AdminStatsView(APIView):
         return Response(stats)
 
 class AdminFilterOptionsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAnyStaffOrSuperAdmin]
 
     def get(self, request):
         brands = Brand.objects.values('id', 'name')
@@ -51,7 +51,7 @@ class AdminFilterOptionsView(APIView):
         })
 
 class AdminAnalyticsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAnyStaffOrSuperAdmin]
 
     def get(self, request):
         # Basic mock data for analytics that the frontend might expect
@@ -71,7 +71,8 @@ class PublicSiteConfigView(APIView):
     permission_classes = [AllowAny]
     
     def get(self, request):
-        configs = SiteConfig.objects.all()
+        # Only expose keys that are marked as public (start with cms_)
+        configs = SiteConfig.objects.filter(key__startswith='cms_')
         data = {c.key: c.value for c in configs}
         return Response(data)
 

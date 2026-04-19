@@ -22,18 +22,18 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/store";
+import { useAuth } from "@/hooks/use-auth";
 import { Separator } from "@/components/ui/separator";
 import { signOut } from "next-auth/react";
 
-const adminNav = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Official Bikes", href: "/admin/bikes", icon: Bike, role: 'staff_bikes' },
-  { name: "Used Bike Ads", href: "/admin/used-bikes", icon: Store, role: 'staff_used_bikes' },
-  { name: "News & Articles", href: "/admin/news", icon: Newspaper, role: 'staff_news' },
-  { name: "Payments", href: "/admin/payments", icon: CreditCard, role: 'staff_payments' },
-  { name: "Settings", href: "/admin/settings", icon: Settings, role: 'staff_settings' },
-  { name: "Staff Management", href: "/admin/staff", icon: Users, role: 'superadmin' },
+const getAdminNav = (baseUrl: string) => [
+  { name: "Dashboard", href: baseUrl, icon: LayoutDashboard },
+  { name: "Official Bikes", href: `${baseUrl}/bikes`, icon: Bike, role: 'staff_bikes' },
+  { name: "Used Bike Ads", href: `${baseUrl}/used-bikes`, icon: Store, role: 'staff_used_bikes' },
+  { name: "News & Articles", href: `${baseUrl}/news`, icon: Newspaper, role: 'staff_news' },
+  { name: "Payments", href: `${baseUrl}/payments`, icon: CreditCard, role: 'staff_payments' },
+  { name: "Settings", href: `${baseUrl}/settings`, icon: Settings, role: 'staff_settings' },
+  { name: "Staff Management", href: `${baseUrl}/staff`, icon: Users, role: 'superadmin' },
 ];
 
 export default function AdminLayout({
@@ -43,9 +43,14 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuthStore();
+  const { user, isAuthenticated, isLoading, isSuperAdmin, isStaff, staffAdminSections } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Determine portal type from path (e.g., /staff_admin/bikes -> baseUrl = /staff_admin)
+  const isStaffUrl = pathname.startsWith('/staff_admin');
+  const baseUrl = isStaffUrl ? '/staff_admin' : '/admin';
+  const adminNav = getAdminNav(baseUrl);
 
   // Close sidebar by default on mobile
   useEffect(() => {
@@ -64,48 +69,44 @@ export default function AdminLayout({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Use localized loading states to avoid blocking the whole layout if possible
+  const [hasStartedVerification, setHasStartedVerification] = useState(false);
+
   // Protection logic
   useEffect(() => {
     if (isLoading) return;
+    setHasStartedVerification(true);
     
-    // Redirect to login if not authenticated
+    // 1. Redirect to login if not authenticated
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push("/login?callbackUrl=" + encodeURIComponent(window.location.pathname));
       return;
     }
 
-    const userRole = user?.staffAdminProfile?.role_key || user?.role;
-    const isSuperAdmin = user?.role === 'superadmin' || user?.email === 'mrbikecloude@gmail.com';
-    const isAnyAdmin = isSuperAdmin || (user?.role && (user.role === 'admin' || user.role === 'staff' || user.role.startsWith('staff_')));
+    // 2. Strict portal validation (performed in background to avoid blocking render)
+    // If they are trying to access /admin, they MUST be SuperAdmin
+    if (!isStaffUrl && !isSuperAdmin) {
+      console.warn("[ADMIN LAYOUT] Non-SuperAdmin tried to access /admin. Redirecting to /staff_admin.");
+      router.push("/staff_admin");
+      return;
+    }
 
-    // Redirect to home if authenticated but not an admin at all
-    if (!isAnyAdmin) {
+    // If they are on any admin portal but are not even Staff, kick to home
+    if (!isStaff) {
+      console.warn("[ADMIN LAYOUT] Unauthorized access attempt, redirecting to home.");
       router.push("/");
       return;
     }
+  }, [user, isAuthenticated, router, isLoading, isStaff, isSuperAdmin, isStaffUrl]);
 
-    // Role-based route guarding
-    if (!isSuperAdmin) {
-      const currentRoute = adminNav.find(item => item.href !== '/admin' && pathname.startsWith(item.href));
-      if (currentRoute && currentRoute.role && userRole !== currentRoute.role) {
-        // Restricted access - redirect to admin dashboard
-        if (pathname !== '/admin') {
-          router.push("/admin");
-        }
-      }
-    }
-  }, [user, isAuthenticated, router, isLoading, pathname]);
-
-  const isSuperAdmin = user?.role === 'superadmin' || user?.email === 'mrbikecloude@gmail.com';
-  const userRole = user?.staffAdminProfile?.role_key || user?.role;
-  const isAnyAdmin = isSuperAdmin || (user?.role && (user.role === 'admin' || user.role === 'staff' || user.role.startsWith('staff_')));
-
-  if (isLoading || !isAuthenticated || !user || !isAnyAdmin) {
+  // Only show the blocking loader if we are truly in the initial cold-load phase
+  // and we don't have enough info to render the portal yet.
+  if (isLoading && !hasStartedVerification && !user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4 bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         <p className="text-muted-foreground font-medium">
-          Checking admin access...
+          Initializing portal...
         </p>
       </div>
     );
@@ -114,7 +115,7 @@ export default function AdminLayout({
   // Filter navigation for non-superadmins
   const visibleNav = isSuperAdmin 
     ? adminNav 
-    : adminNav.filter(item => !item.role || item.role === userRole || item.href === '/admin');
+    : adminNav.filter(item => !item.role || (staffAdminSections || []).includes(item.role) || item.href === baseUrl);
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-muted/30 relative">
@@ -139,7 +140,9 @@ export default function AdminLayout({
         <div className="p-4 flex items-center justify-between h-14 shrink-0">
           <div className="flex items-center gap-2">
             {isSidebarOpen && (
-              <span className="font-bold text-xl">Admin Panel</span>
+              <span className="font-bold text-xl tracking-tighter uppercase">
+                {isStaffUrl ? "Staff Console" : "Admin Central"}
+              </span>
             )}
           </div>
           <Button
@@ -199,38 +202,42 @@ export default function AdminLayout({
 
         <div className="p-4 border-t space-y-2">
           {/* Debug Tools */}
-          <Link
-            href="/admin/debug"
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-              !isSidebarOpen && !isMobile && "md:justify-center md:px-2",
-            )}
-            onClick={() => {
-              if (isMobile) setIsSidebarOpen(false);
-            }}
-          >
-            <Bug className="h-5 w-5 shrink-0" />
-            {(isSidebarOpen || isMobile) && (
-              <span className="font-medium whitespace-nowrap">Debug Tools</span>
-            )}
-          </Link>
+          {isSuperAdmin && (
+            <Link
+              href={`${baseUrl}/debug`}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                !isSidebarOpen && !isMobile && "md:justify-center md:px-2",
+              )}
+              onClick={() => {
+                if (isMobile) setIsSidebarOpen(false);
+              }}
+            >
+              <Bug className="h-5 w-5 shrink-0" />
+              {(isSidebarOpen || isMobile) && (
+                <span className="font-medium whitespace-nowrap">Debug Tools</span>
+              )}
+            </Link>
+          )}
 
           {/* Settings Link (Moved from Top Nav) */}
-          <Link
-            href="/admin/settings"
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-              !isSidebarOpen && !isMobile && "md:justify-center md:px-2",
-            )}
-            onClick={() => {
-              if (isMobile) setIsSidebarOpen(false);
-            }}
-          >
-            <Settings className="h-5 w-5 shrink-0" />
-            {(isSidebarOpen || isMobile) && (
-              <span className="font-medium whitespace-nowrap">Settings</span>
-            )}
-          </Link>
+          {visibleNav.some(nav => nav.href === `${baseUrl}/settings`) && (
+            <Link
+              href={`${baseUrl}/settings`}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                !isSidebarOpen && !isMobile && "md:justify-center md:px-2",
+              )}
+              onClick={() => {
+                if (isMobile) setIsSidebarOpen(false);
+              }}
+            >
+              <Settings className="h-5 w-5 shrink-0" />
+              {(isSidebarOpen || isMobile) && (
+                <span className="font-medium whitespace-nowrap">Settings</span>
+              )}
+            </Link>
+          )}
 
           <Button
             variant="ghost"

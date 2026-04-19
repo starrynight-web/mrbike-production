@@ -8,6 +8,8 @@ from apps.core.permissions import IsSuperAdminOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 import os
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from .models import UsedBikeListing, ReportListing, Shop
 from .serializers import (
     UsedBikeListingSerializer, 
@@ -79,6 +81,10 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'description', 'location', 'location_city']
     ordering_fields = ['price', 'created_at', 'mileage']
     
+    @method_decorator(cache_page(60))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
     def get_object(self):
         """Allow getting listing by ID or slug"""
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
@@ -94,20 +100,25 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         queryset = UsedBikeListing.objects.all().select_related('seller', 'bike_model')
         user = self.request.user
         
-        # Priority 1: Admin moderation entries (Super Admin ONLY)
+        # Priority 1: Admin moderation entries (Super Admin OR Staff with Role)
         if user and user.is_authenticated and self.action in ['list', 'retrieve', 'approve', 'reject']:
-            from apps.core.permissions import IsSuperAdminOnly
-            if IsSuperAdminOnly().has_permission(self.request, self):
+            from apps.core.permissions import IsStaffWithRole
+            # Check if super admin or has staff_used_bikes role
+            if IsStaffWithRole('staff_used_bikes')().has_permission(self.request, self):
                 status_param = self.request.query_params.get('status')
                 if status_param in ['pending', 'rejected', 'active', 'sold', 'expired']:
                     return queryset.filter(status=status_param).order_by('-created_at')
-                elif status_param == 'all':
+                elif status_param == 'all' or self.action in ['approve', 'reject']:
                     return queryset.order_by('-created_at')
-                # Default for super admin
+                
+                # Default for moderation view if no status provided
+                if self.action in ['list'] and 'admin' in self.request.path:
+                     return queryset.filter(status='pending').order_by('-created_at')
+                
                 return queryset.order_by('-created_at')
 
         # Priority 2: Public feed (For everyone else, including normal authenticated users)
-        queryset = queryset.filter(status='active').select_related('shop')
+        queryset = queryset.filter(status='active').select_related('shop', 'bike_model', 'seller')
         return queryset.order_by('-is_featured', '-created_at')
 
     def get_serializer_class(self):
@@ -162,7 +173,7 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsSellerOrReadOnly()]
         elif self.action in ['approve', 'reject']:
-            return [IsSuperAdminOnly()]
+            return [IsStaffWithRole('staff_used_bikes')()]
         return [AllowAny()]
 
     @action(detail=False, methods=['get'])

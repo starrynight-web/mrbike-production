@@ -124,7 +124,7 @@ class Notification(models.Model):
         return f"{self.user.email} - {self.title}"
 class StaffAdmin(models.Model):
     """Granular RBAC for platform staff."""
-    ROLE_CHOICES = [
+    SECTION_CHOICES = [
         ('staff_news', 'News Manager'),
         ('staff_used_bikes', 'Used Bikes Moderator'),
         ('staff_bikes', 'Official Bikes Manager'),
@@ -132,10 +132,14 @@ class StaffAdmin(models.Model):
         ('staff_settings', 'Site Settings Manager'),
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff_profile')
-    role_key = models.CharField(max_length=30, choices=ROLE_CHOICES)
+    sections = models.JSONField(default=list)
     assigned_by_email = models.EmailField()
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def role_key(self):
+        return self.sections[0] if self.sections else ""
+
     def __str__(self):
-        return f"{self.user.email} - {self.get_role_key_display()}"
+        return f"{self.user.email} - {len(self.sections)} sections"

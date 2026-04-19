@@ -93,14 +93,15 @@ class BikeModelViewSet(viewsets.ModelViewSet):
             
         return queryset
 
-    # Removed cache_page to fix Issue #1 (newly added bikes not appearing immediately)
+    @method_decorator(cache_page(60))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    @method_decorator(cache_page(60))
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         
-        # Track view history for personalized recommendations
+        # Track view history for personalized recommendations (only if logged in)
         if request.user.is_authenticated:
             # We use atomic update if it exists or create new
             UserViewHistory.objects.update_or_create(
@@ -265,7 +266,6 @@ class BikeModelViewSet(viewsets.ModelViewSet):
                     defaults={
                         'category': category,
                         'price': price,
-                        'description': item.get("Description", ""),
                         'engine_capacity': int(re.sub(r'[^\d]', '', str(item.get("Displacement(CC)", "0"))) or 0),
                         'engine_type': item.get("Engine Type"),
                         'max_power': item.get("Max Power"),

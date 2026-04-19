@@ -140,7 +140,7 @@ function ResetPasswordContent() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/auth/password-reset-confirm/`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/password-reset-confirm/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

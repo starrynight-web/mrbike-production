@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from apps.core.responses import StandardResponse
 from rest_framework.permissions import AllowAny
-from apps.core.permissions import IsSuperAdminOnly
+from apps.core.permissions import IsSuperAdminOnly, IsAnyStaffOrSuperAdmin
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.cache import cache
 from django.conf import settings
@@ -15,6 +15,7 @@ import hashlib
 import logging
 import google.auth.transport.requests
 import google.oauth2.id_token
+import os
 
 from .serializers import (
     GoogleAuthSerializer, UserSerializer, NotificationSerializer,
@@ -97,6 +98,14 @@ class GoogleAuthView(generics.GenericAPIView):
                 is_email_verified=True,  # Google-verified emails are trusted
             )
             created = True
+        
+        # Sync staff role if user is in StaffAdmin table
+        from .models import StaffAdmin
+        staff_profile = StaffAdmin.objects.filter(user=user, is_active=True).first()
+        if staff_profile:
+            user.role = staff_profile.role_key
+            user.save()
+            
         # Note: Google OAuth bypasses 2FA because Google itself serves as a secure authentication method.
 
         refresh = RefreshToken.for_user(user)
@@ -204,6 +213,17 @@ class EmailLoginView(generics.GenericAPIView):
         
         # SUPER ADMIN OTP Verification (Strictly only for designated email)
         super_admin_email = os.getenv('SUPER_ADMIN_EMAIL', '')
+        
+        # Check if user is staff (Staff must use Google OAuth)
+        from .models import StaffAdmin
+        is_staff = StaffAdmin.objects.filter(user=user, is_active=True).exists()
+        
+        if is_staff and user.email != super_admin_email:
+            return Response(
+                {'error': 'Staff members must login using Google OAuth 2.0'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         if user.email == super_admin_email:
             # Generate 6-digit random OTP
             otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
@@ -472,7 +492,7 @@ class GlobalAdminStatsView(APIView):
     Returns global statistics for the platform admin dashboard.
     Only accessible by super admin email.
     """
-    permission_classes = [IsSuperAdminOnly]
+    permission_classes = [IsAnyStaffOrSuperAdmin]
 
     def get(self, request):
         data = get_global_admin_stats()
