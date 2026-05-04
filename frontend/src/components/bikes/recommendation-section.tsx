@@ -135,7 +135,7 @@ export function RecommendationSection({ slug, className }: RecommendationSection
                   <div className="flex flex-col">
                     <span className="text-xs text-muted-foreground uppercase font-semibold">From</span>
                     <span className="text-lg font-black text-primary leading-none">
-                      {formatPrice(bike.price)}
+                      {formatPrice(bike.price || 0)}
                     </span>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all">

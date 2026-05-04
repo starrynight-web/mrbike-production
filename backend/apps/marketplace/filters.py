@@ -15,7 +15,18 @@ class UsedBikeListingFilter(django_filters.FilterSet):
         fields = ['brand', 'condition', 'minPrice', 'maxPrice', 'location', 'category', 'status', 'is_featured', 'is_urgent']
 
     def filter_brand(self, queryset, name, value):
-        brands = self.request.query_params.getlist('brand')
+        brand_params = self.request.query_params.getlist('brand')
+        if not brand_params:
+            return queryset
+            
+        # Handle both multi-params (?brand=a&brand=b) and comma-separated (?brand=a,b)
+        brands = []
+        for bp in brand_params:
+            if ',' in bp:
+                brands.extend([b.strip() for b in bp.split(',') if b.strip()])
+            else:
+                brands.append(bp)
+
         if not brands:
             return queryset
             

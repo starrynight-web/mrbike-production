@@ -4,6 +4,7 @@ from rest_framework import status, viewsets, filters, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.exceptions import PermissionDenied
 from apps.core.responses import StandardResponse
+from apps.core.authentication import LenientJWTAuthentication
 from apps.core.permissions import IsSuperAdminOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
@@ -46,6 +47,7 @@ class IsShopOwnerOrReadOnly(permissions.BasePermission):
         return obj.owner == request.user
 
 class ShopViewSet(viewsets.ModelViewSet):
+    authentication_classes = [LenientJWTAuthentication]
     queryset = Shop.objects.all().select_related('owner')
     serializer_class = ShopSerializer
     lookup_field = 'slug'
@@ -76,6 +78,7 @@ class ShopViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UsedBikeListingViewSet(viewsets.ModelViewSet):
+    authentication_classes = [LenientJWTAuthentication]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = UsedBikeListingFilter
     search_fields = ['title', 'description', 'location', 'location_city']
@@ -87,8 +90,22 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        # Atomic increment of view count (Audit Fix)
+        
+        # 1. Atomic increment of view count
         UsedBikeListing.objects.filter(pk=instance.pk).update(views_count=F('views_count') + 1)
+        
+        # 2. Log behavior for recommendation engine
+        from apps.recommendations.models import UserBehaviorLog
+        session_id = request.session.session_key or request.META.get('HTTP_X_SESSION_ID', 'anonymous')
+        
+        UserBehaviorLog.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            session_id=session_id,
+            behavior_type='listing_view',
+            used_listing=instance,
+            bike_model=instance.bike_model
+        )
+        
         return super().retrieve(request, *args, **kwargs)
     
     def get_object(self):
@@ -351,6 +368,7 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         return StandardResponse.error(message="Invalid boost data.", errors=serializer.errors)
 
 class MembershipPlanViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [LenientJWTAuthentication]
     queryset = MembershipPlan.objects.all()
     serializer_class = MembershipPlanSerializer
     permission_classes = [AllowAny]

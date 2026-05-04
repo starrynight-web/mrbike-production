@@ -8,18 +8,17 @@ def test_api():
         "http://localhost:8000/api/v1/news/"
     ]
     
+    headers = {
+        "Authorization": "Bearer invalid_token_here"
+    }
+    
     for url in urls:
-        print(f"Testing {url}...")
+        print(f"Testing {url} with invalid token...")
         try:
-            response = requests.get(url, timeout=5)
+            response = requests.get(url, headers=headers, timeout=5)
             print(f"Status: {response.status_code}")
             if response.status_code == 200:
-                data = response.json()
-                # Check results if paginated
-                results = data.get('results', []) if isinstance(data, dict) else data
-                print(f"Found {len(results)} items")
-                if len(results) > 0:
-                    print(f"Sample item: {results[0].get('name') or results[0].get('title')}")
+                print("Lenient Auth Working: Returned 200 for public view despite invalid token.")
             else:
                 print(f"Error: {response.text[:200]}")
         except Exception as e:

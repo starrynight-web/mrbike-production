@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 from apps.core.permissions import IsSuperAdminOnly, IsStaffWithRole
+from apps.core.authentication import LenientJWTAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from .models import Brand, BikeModel
@@ -14,9 +15,10 @@ import logging
 from django.utils.text import get_valid_filename
 import uuid
 from PIL import Image, UnidentifiedImageError
-from .services.recommendation_engine import get_emotional_recommendations
-from apps.interactions.models import UserViewHistory
 from apps.marketplace.serializers import UsedBikeListingSerializer
+
+from apps.recommendations.engine import BikeRecommender
+from apps.interactions.models import UserViewHistory
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
 class BrandViewSet(viewsets.ModelViewSet):
+    authentication_classes = [LenientJWTAuthentication]
     queryset = Brand.objects.all().order_by('name')
     serializer_class = BrandSerializer
     pagination_class = None
@@ -73,6 +76,7 @@ class BrandViewSet(viewsets.ModelViewSet):
         return [IsStaffWithRole(['staff_settings', 'staff_bikes'])()]
 
 class BikeModelViewSet(viewsets.ModelViewSet):
+    authentication_classes = [LenientJWTAuthentication]
     serializer_class = BikeModelSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = BikeModelFilter
@@ -101,12 +105,23 @@ class BikeModelViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         
-        # Atomic increment of popularity score (Audit Fix)
+        # 1. Atomic increment of popularity score
         BikeModel.objects.filter(pk=instance.pk).update(popularity_score=F('popularity_score') + 1)
         
-        # Track view history for personalized recommendations (only if logged in)
+        # 2. Log behavior for recommendation engine (supports both logged-in and guest via session)
+        from apps.recommendations.models import UserBehaviorLog
+        session_id = request.session.session_key or request.META.get('HTTP_X_SESSION_ID', 'anonymous')
+        
+        UserBehaviorLog.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            session_id=session_id,
+            behavior_type='view',
+            bike_model=instance
+        )
+
+        # 3. Legacy view history tracking (for backward compatibility)
         if request.user.is_authenticated:
-            # We use atomic update if it exists or create new
+            from apps.interactions.models import UserViewHistory
             UserViewHistory.objects.update_or_create(
                 user=request.user,
                 bike_model=instance,
@@ -122,11 +137,24 @@ class BikeModelViewSet(viewsets.ModelViewSet):
         Custom endpoint for the emotional trigger recommendation engine.
         """
         bike = self.get_object()
-        recommendations = get_emotional_recommendations(bike, user=request.user)
+        recommender = BikeRecommender(user=request.user)
+        recommendations = recommender.get_recommendations(context_bike=bike)
         
-        # Reuse UsedBikeListingSerializer for the recommendations
-        serializer = UsedBikeListingSerializer(recommendations, many=True)
-        return Response(serializer.data)
+        # Format slots for response
+        from apps.marketplace.serializers import UsedBikeListingSerializer
+        from .serializers import SimilarBikeSerializer # Using a lightweight serializer
+        
+        data = {}
+        for slot, item in recommendations.items():
+            if item:
+                # If it's a UsedBikeListing, we might want to return its bike_model for consistency
+                # but let's see what the frontend expects.
+                # Usually it expects a bike-like object.
+                data[slot] = SimilarBikeSerializer(item).data
+            else:
+                data[slot] = None
+                
+        return Response(data)
 
     def get_object(self):
         """

@@ -33,7 +33,19 @@ INSTALLED_APPS = [
     'apps.news',
     'apps.interactions',
     'apps.recommendations',
+    'django_q',
 ]
+
+# Django-Q Cluster Configuration
+Q_CLUSTER = {
+    'name': 'mrbikebd_q',
+    'workers': 4,
+    'recycle': 500,
+    'timeout': 60,
+    'retry': 120,
+    'redis': os.getenv('REDIS_URL', 'redis://localhost:6379/1'),
+    'sync': False, # Set to True for synchronous dev testing
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -109,8 +121,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',
-        'user': '1000/day'
+        'anon': '2000/day',
+        'user': '10000/day'
     },
 }
 

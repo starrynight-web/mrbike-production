@@ -2,12 +2,14 @@ from rest_framework import generics, permissions, parsers, status
 from .models import Article
 from .serializers import ArticleSerializer
 from apps.core.responses import StandardResponse
+from apps.core.authentication import LenientJWTAuthentication
 from django.core.cache import cache
 from apps.core.permissions import IsSuperAdminOnly, IsStaffWithRole
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
 class ArticleListCreateView(generics.ListCreateAPIView):
+    authentication_classes = [LenientJWTAuthentication]
     serializer_class = ArticleSerializer
     parser_classes = (parsers.MultiPartParser, parsers.FormParser)
 
@@ -77,6 +79,7 @@ class ArticleListCreateView(generics.ListCreateAPIView):
         )
 
 class ArticleDetailView(generics.RetrieveAPIView):
+    authentication_classes = [LenientJWTAuthentication]
     serializer_class = ArticleSerializer
     lookup_field = 'slug'
     permission_classes = [permissions.AllowAny]
