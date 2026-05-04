@@ -25,7 +25,7 @@ from .serializers import (
 from .filters import UsedBikeListingFilter
 from .models import ListingBoost, UserMembership, MembershipPlan
 from apps.core.permissions import IsStaffWithRole
-from django.db.models import Count
+from django.db.models import Count, F
 
 class IsSellerOrReadOnly(permissions.BasePermission):
     """
@@ -84,6 +84,12 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
     @method_decorator(cache_page(60))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Atomic increment of view count (Audit Fix)
+        UsedBikeListing.objects.filter(pk=instance.pk).update(views_count=F('views_count') + 1)
+        return super().retrieve(request, *args, **kwargs)
     
     def get_object(self):
         """Allow getting listing by ID or slug"""

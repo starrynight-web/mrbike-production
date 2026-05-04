@@ -3,3 +3,4 @@ export { CompareBar } from "./compare-bar";
 export { BikeFilters, BikeFiltersSidebar } from "./bike-filters";
 export { PopularBikesCarousel } from "./popular-bikes-carousel";
 export { CompareYourChoiceSection } from "./compare-your-choice-section";
+export { RecommendationSection } from "./recommendation-section";

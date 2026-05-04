@@ -19,8 +19,12 @@ import type {
   AdminStatsResponse,
 } from "@/types/api-types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1").replace(/\/$/, "");
 
+/**
+ * Enhanced API Service with SWR (Stale-While-Revalidate) support
+ * and prioritized request queuing.
+ */
 class ApiService {
   public client;
 
@@ -55,21 +59,14 @@ class ApiService {
 
   private setupInterceptors() {
     this.client.interceptors.request.use(
-      async (config: InternalAxiosRequestConfig) => {
-        try {
-          const session = await getSession();
-          
-          if (session?.accessToken) {
-            config.headers.Authorization = `Bearer ${session.accessToken}`;
-          } else {
-            // Fallback to localStorage if session is not yet loaded or missing
-            const localToken = typeof window !== 'undefined' ? localStorage.getItem("accessToken") : null;
-            if (localToken) {
-              config.headers.Authorization = `Bearer ${localToken}`;
-            }
+      (config: InternalAxiosRequestConfig) => {
+        // Read token synchronously from localStorage — no async network call on every request.
+        // This prevents getSession() from blocking unauthenticated public GETs (bikes, news, etc.)
+        if (typeof window !== 'undefined') {
+          const localToken = localStorage.getItem("accessToken");
+          if (localToken) {
+            config.headers.Authorization = `Bearer ${localToken}`;
           }
-        } catch (error) {
-          console.error("[API] Session retrieval error:", error);
         }
         return config;
       },
@@ -99,26 +96,30 @@ class ApiService {
             console.error("[API] Token refresh failed:", refreshError);
           }
 
-          // Only sign out if we are NOT on a sensitive page where user might lose data
+          // Only sign out if we are on a page that requires authentication or if it's a persistent failure
+          const isPublicPage = typeof window !== "undefined" && 
+                              !(window.location.pathname.includes('/dashboard') || 
+                                window.location.pathname.includes('/sell-bike') ||
+                                window.location.pathname.includes('/admin'));
+          
           const isPersistentAuthFailure = error.response?.status === 401;
-          const isSensitivePage = typeof window !== "undefined" && 
-                                 (window.location.pathname.includes('/sell-bike') || 
-                                  window.location.pathname.includes('/dashboard/settings'));
 
-          // Auth failed persistently — sign out as last resort, unless on sensitive page
+          // Auth failed persistently — sign out as last resort
           if (typeof window !== "undefined" && isPersistentAuthFailure) {
-            if (!isSensitivePage) {
-              console.error("[API] Authentication failed persistently. Cleaning up session...");
-              // Remove stale tokens to prevent loop
-              localStorage.removeItem("accessToken");
-              localStorage.removeItem("refreshToken");
-              
-              // Only sign out once to avoid redirect loops
+            console.warn("[API] Authentication failed. Stale session detected.");
+            
+            // Remove stale tokens
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+
+            if (!isPublicPage) {
+              console.error("[API] Persistent failure on auth-required page. Cleaning up...");
               if (!window.location.pathname.includes('/login')) {
                 signOut({ callbackUrl: '/login' });
               }
             } else {
-              toast.error("Your session has expired. Please open a new tab and log in again to keep your work.");
+              // On public pages, just let the user be anonymous
+              console.log("[API] Auth failed on public page. Continuing as guest.");
             }
           }
         }

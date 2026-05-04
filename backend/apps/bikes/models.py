@@ -11,6 +11,8 @@ class Brand(models.Model):
     logo = CloudinaryField('image', folder='mrbikebd/brands/', blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     origin_country = models.CharField(max_length=100, blank=True, null=True)
+    trust_score = models.IntegerField(default=50, help_text="0-100 score for recommendation weight")
+    is_electric_focused = models.BooleanField(default=False)
     is_popular = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -46,6 +48,8 @@ class BikeModel(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=250, unique=True, blank=True, db_index=True)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, db_index=True)
+    segment = models.CharField(max_length=30, blank=True, null=True, db_index=True) # Normalized segment for recommendation
+    is_current = models.BooleanField(default=True, db_index=True)
     
     # Engine & Performance (Basic)
     engine_capacity = models.IntegerField(help_text="Engine capacity in CC", db_index=True)
@@ -67,6 +71,10 @@ class BikeModel(models.Model):
     
     # Price
     price = models.DecimalField(max_digits=12, decimal_places=2, help_text="Current official price in BDT", db_index=True)
+    price_min = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    price_max = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    avg_used_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    depreciation_rate = models.FloatField(default=0.20)
     is_available = models.BooleanField(default=True)
     
     # Media & Social

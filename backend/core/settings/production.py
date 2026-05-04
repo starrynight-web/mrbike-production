@@ -28,6 +28,14 @@ DATABASES = {
     )
 }
 
+# Fix Supabase connection drops via TCP Keepalives
+DATABASES['default']['OPTIONS'] = {
+    'keepalives': 1,
+    'keepalives_idle': 60,
+    'keepalives_interval': 10,
+    'keepalives_count': 5,
+}
+
 # Redis / Cache Production settings (Enforce SSL)
 REDIS_URL = os.getenv("REDIS_URL")
 if not REDIS_URL:

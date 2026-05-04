@@ -20,7 +20,8 @@ const BikeDetailClient = dynamic(() => import("./detail-client").then((m) => m.B
   ),
 });
 
-export const revalidate = 3600; // ISR cache for 1 hour
+// ISR: We use 1 day as a fallback, but pages are normally purged via On-Demand Webhooks
+export const revalidate = 86400; 
 
 interface BikePageProps {
     params: Promise<{ slug: string }>;
@@ -80,13 +81,15 @@ export async function generateMetadata({ params }: BikePageProps): Promise<Metad
     };
 }
 
-// Generate static params for popular bikes (ISR)
+// Generate static params for all bikes (Elite Option B)
 export async function generateStaticParams() {
-    const slugs = await apiServer.getAllBikeSlugs();
-    return slugs.length > 0 ? slugs : [
-        { slug: "yamaha-r15-v4" },
-        { slug: "honda-cb150r" },
-    ];
+    try {
+        const slugs = await apiServer.getAllBikeSlugs();
+        return slugs.length > 0 ? slugs : [];
+    } catch (error) {
+        console.error("[ISR] Error generating static params for bikes:", error);
+        return [];
+    }
 }
 
 export default async function BikePage({ params }: BikePageProps) {

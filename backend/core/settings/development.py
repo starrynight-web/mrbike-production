@@ -23,6 +23,12 @@ if DATABASE_URL:
         conn_max_age=0,  # Disable connection persistence for development to avoid staleness
         conn_health_checks=True,
     )
+    DATABASES['default']['OPTIONS'] = {
+        'keepalives': 1,
+        'keepalives_idle': 60,
+        'keepalives_interval': 10,
+        'keepalives_count': 5,
+    }
     print("[OK] Development: Using PostgreSQL/Supabase")
 else:
     print("[INFO] Development: Using local SQLite")

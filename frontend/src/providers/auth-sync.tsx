@@ -43,6 +43,10 @@ export function AuthSync() {
             if (status !== "authenticated" || !session?.user) {
                 if (status === "unauthenticated") {
                     setLoading(false);
+                    // Clear stale token from localStorage on sign-out
+                    if (typeof window !== 'undefined') {
+                        localStorage.removeItem("accessToken");
+                    }
                 }
                 return;
             }
@@ -77,6 +81,12 @@ export function AuthSync() {
                         staffAdminSections: dbUser.staff_profile_sections || []
                     } as any;
 
+                    // Persist JWT token so axios interceptor can attach it synchronously
+                    const accessToken = (session as any)?.accessToken;
+                    if (typeof window !== 'undefined' && accessToken) {
+                        localStorage.setItem("accessToken", accessToken);
+                    }
+
                     console.log(`[AUTH-SYNC] Successfully synced profile for ${sessionEmail}. Role: ${userData.role}`);
                     login(userData);
                     lastSyncedRef.current = syncKey;
@@ -96,8 +106,12 @@ export function AuthSync() {
                     };
                     login(userData);
                 }
-            } catch (err) {
-                console.error("[AUTH-SYNC] Error syncing profile:", err);
+            } catch (err: any) {
+                console.warn("[AuthSync] Profile sync failed:", err.message);
+                if (err.code === 'HTTP_401' || err.status === 401) {
+                    //Interceptors already handled token cleanup
+                    setLoading(false);
+                }
             } finally {
                 setLoading(false);
             }

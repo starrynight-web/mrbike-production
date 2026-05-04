@@ -6,7 +6,8 @@ import { NewsDetailClient } from "./news-detail-client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiServer } from "@/lib/api-server";
 
-export const revalidate = 1800; // 30 mins cache
+// ISR: 1 day fallback, primary purging via On-Demand Webhooks
+export const revalidate = 86400; 
 
 interface Props {
     params: Promise<{ slug: string }>;

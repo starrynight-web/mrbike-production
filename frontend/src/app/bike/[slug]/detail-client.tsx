@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { api } from "@/lib/api-service";
+import { RecommendationSection } from "@/components/bikes";
 import { motion } from "framer-motion";
 import {
   Heart,
@@ -461,6 +463,17 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
   const [selectedVariantKey, setSelectedVariantKey] = useState<string>("std");
   const [emiMonths] = useState(EMI_CONFIG.defaultTenureMonths);
   const [specsTab, setSpecsTab] = useState("engine");
+
+  // Track view behavior
+  useEffect(() => {
+    if (slug) {
+      api.post("recommendations/v2/track/", {
+        behavior_type: "view",
+        slug: slug,
+        metadata: { source: "bike_detail_page" }
+      }).catch(err => console.error("Failed to track behavior:", err));
+    }
+  }, [slug]);
 
   // Fetch bike data from API
   const { data: bike, isLoading, error } = useBike(slug, initialData);
@@ -1405,6 +1418,13 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Recommendation Section */}
+      <section className="w-full px-4 md:px-8 py-12 bg-muted/20 border-y">
+        <div className="container mx-auto">
+          <RecommendationSection slug={slug} />
         </div>
       </section>
 

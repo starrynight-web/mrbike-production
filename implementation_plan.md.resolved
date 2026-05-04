@@ -1,0 +1,378 @@
+# Recommendation Engine — Implementation Plan
+## MrBikeBD (mrbikebd.com)
+
+A full implementation plan to build the **4-slot personalized recommendation engine** described in `recommandation_engine.md` on top of the existing Django + PostgreSQL backend and Next.js frontend.
+
+---
+
+## Background
+
+The existing codebase already has:
+- `apps/bikes/BikeModel` — new bikes with `category`, `price`, `popularity_score`, `engine_capacity` (≡ displacement)
+- `apps/bikes/Brand` — brands with `slug`, `is_popular` (no trust score yet)
+- `apps/marketplace/UsedBikeListing` — used bike listings with `status`, `views_count`, `category`, `price`, `mileage`, `condition`
+- `apps/bikes/MarketCompetitorMapping` — a basic competitor map (partially overlaps with spec)
+- `apps/bikes/recommendation_views.py` — a naive `SimilarBikesView` (same category ±25% price, no user context)
+- **Celery** is already installed (`celery==5.4.0`, `django-celery-results`)
+- **Redis** is already installed (`redis==5.0.8`) — used for caching
+
+The plan **augments** the existing models with the minimum fields required and builds the full engine as a new `apps/recommendations` Django app to keep concerns separated.
+
+---
+
+## Open Questions
+
+> [!IMPORTANT]
+> **Q1 — Celery broker**: Is Redis already configured as the Celery broker in production (Render)? Or is it only used as a Django cache backend? The tasks module imports `@shared_task` — we need to confirm `CELERY_BROKER_URL` is set in `.env`.
+
+> [!IMPORTANT]
+> **Q2 — Session ID for anonymous users**: The frontend spec uses `localStorage` for `mrbike_session_id`. Is there any existing session tracking mechanism in the frontend (cookie, Next-Auth, etc.) we should align with?
+
+> [!NOTE]
+> **Q3 — `MarketCompetitorMapping`**: The existing model has a manual `source_bike → competitor_bike` map. The new engine uses computed `CROSS_SEGMENT_MAP` instead. Should we keep both, deprecate the manual table, or integrate it as a signal for Slot 4 scoring?
+
+> [!NOTE]
+> **Q4 — Celery Beat scheduler**: `django-celery-beat` is NOT in `requirements.txt`. Should we add it to enable the periodic task schedule, or should background jobs be triggered via cron/Render scheduled jobs?
+
+---
+
+## Proposed Changes
+
+### Phase 1 — Model Augmentation
+
+Augment existing models with the minimum new fields required by the engine. **No new tables yet.**
+
+---
+
+#### [MODIFY] [Brand](file:///e:/mr/backend/apps/bikes/models.py) (`apps/bikes/models.py`)
+
+Add recommendation-specific fields to the existing `Brand` model:
+
+| New Field | Type | Default | Purpose |
+|---|---|---|---|
+| `trust_score` | `IntegerField` | `50` | 0–100 brand trust (Bangladesh market) |
+| `is_electric_focused` | `BooleanField` | `False` | Electric segment override logic |
+
+#### [MODIFY] [BikeModel](file:///e:/mr/backend/apps/bikes/models.py)
+
+Add computed/cached fields used by the engine:
+
+| New Field | Type | Default | Purpose |
+|---|---|---|---|
+| `avg_used_price` | `DecimalField(null=True)` | `NULL` | Cached avg price from active used listings |
+| `used_price_min` | `DecimalField(null=True)` | `NULL` | Cached min used price |
+| `used_price_max` | `DecimalField(null=True)` | `NULL` | Cached max used price |
+| `depreciation_rate` | `FloatField` | `0.20` | Calculated from used listing data |
+
+> [!NOTE]
+> `popularity_score` and `engine_capacity` (≡ `displacement_cc`) already exist. The spec's `price_min`/`price_max` map to the existing single `price` field (or `BikeVariant.price`). We will use `price` as `price_min` and the max variant price for `price_max`.
+
+#### [MODIFY] [UsedBikeListing](file:///e:/mr/backend/apps/marketplace/models.py)
+
+Add computed scoring fields:
+
+| New Field | Type | Default | Purpose |
+|---|---|---|---|
+| `fair_price_score` | `FloatField(null=True)` | `NULL` | 0–100 deal quality score |
+| `price_vs_new_percentage` | `FloatField(null=True)` | `NULL` | `(used_price / new_price) * 100` |
+| `inquiry_count` | `PositiveIntegerField` | `0` | Tracks contact/inquiry actions |
+
+> [!NOTE]
+> `views_count` already exists. `condition` choices differ slightly (`need_work` vs `below_average`) — we will normalize in the engine layer.
+
+---
+
+### Phase 2 — New `apps/recommendations` Django App
+
+A self-contained app with all recommendation logic, keeping `apps/bikes` clean.
+
+#### [NEW] `apps/recommendations/__init__.py`
+#### [NEW] `apps/recommendations/apps.py`
+
+#### [NEW] `apps/recommendations/models.py`
+
+Three new models:
+
+| Model | Purpose |
+|---|---|
+| `UserProfile` | Per-user preference profile (segments, brands, price range, sensitivity scores) |
+| `UserBehaviorLog` | Event log: `view`, `search`, `wishlist`, `compare`, `inquiry`, `filter_apply`, `listing_view` |
+| `RecommendationCache` | Short-lived cache of recommendation results per user/session + context |
+
+These map directly to the spec's data models. Key design decisions:
+- `UserBehaviorLog.user` is nullable (anonymous users tracked by `session_id`)
+- `RecommendationCache.expires_at` drives TTL (30 min default)
+- Indexes on `(user, behavior_type, created_at)`, `(session_id, created_at)`, `(bike_model, behavior_type)` as specified in the SQL index section of the spec
+
+#### [NEW] `apps/recommendations/engine.py`
+
+The `BikeRecommender` class exactly as designed in the spec:
+
+```
+BikeRecommender
+  ├── __init__(user, session_id)
+  ├── get_recommendations(context_bike, context_listing) → dict
+  ├── _get_slot1_candidates()   # Direct alternative
+  ├── _get_slot2_candidates()   # Value alternative
+  ├── _get_slot3_candidates()   # Segment peer
+  ├── _get_slot4_candidates()   # Cross-segment hook
+  ├── _calculate_slot[1-4]_score()
+  ├── _select_best()
+  ├── _deduplicate_slots()
+  └── _format_recommendations()
+```
+
+Key implementation notes:
+- **Category mapping**: The existing `BikeModel.category` choices (`sports`, `naked`, `cruiser`, `commuter`, `scooter`, `adventure`, `cafe_racer`, `offroad`) must be mapped to the spec's segment slugs (`naked_street` → `naked`, `adventure_touring` → `adventure`, `offroad_dirt` → `offroad`). A `CATEGORY_SEGMENT_MAP` dict handles this translation.
+- **Trust score**: Read from `Brand.trust_score` (new field from Phase 1).
+- **Price field**: Use `BikeModel.price` as `price_min`; find max variant price for `price_max`.
+- **Displacement**: Use `BikeModel.engine_capacity`.
+- **Used listing active filter**: `status='active'` (marketplace model) not `is_active=True` (spec).
+
+#### [NEW] `apps/recommendations/profile_builder.py`
+
+The `UserProfileBuilder` class:
+- `update_from_behavior()` — full recalculation from behavior history
+- `record_behavior()` — creates a `UserBehaviorLog` entry and triggers lightweight updates for high-value events (`wishlist`, `inquiry`)
+- `_calculate_sensitivity_scores()` — trust/price/aspirational sensitivity
+
+#### [NEW] `apps/recommendations/serializers.py`
+
+DRF serializers for API request validation and response formatting.
+
+---
+
+### Phase 3 — Background Tasks (Celery)
+
+#### [NEW] `apps/recommendations/tasks.py`
+
+Four periodic tasks:
+
+| Task | Schedule | Purpose |
+|---|---|---|
+| `update_popularity_scores` | Every 6 hours | Recalculate `BikeModel.popularity_score` from 30-day behavior logs using EMA |
+| `update_used_bike_prices` | Every 4 hours | Recalculate `avg_used_price`, `used_price_min/max`, `depreciation_rate` on `BikeModel` |
+| `calculate_fair_price_scores` | Every 3 hours | Set `UsedBikeListing.fair_price_score` using depreciation curve + condition/km adjustments |
+| `update_all_user_profiles` | Daily at 2 AM | Full `UserProfileBuilder.update_from_behavior()` for users active in last 60 days |
+| `cleanup_expired_recommendations` | Hourly | Delete expired `RecommendationCache` rows |
+
+> [!IMPORTANT]
+> Requires `django-celery-beat` to be added to `requirements.txt` for the `CELERY_BEAT_SCHEDULE` config in `settings.py`. If Render cron jobs are preferred instead, tasks can be called via management commands.
+
+#### [MODIFY] `backend/core/settings.py` (or equivalent)
+
+Add `CELERY_BEAT_SCHEDULE` dict and register `apps.recommendations` in `INSTALLED_APPS`.
+
+---
+
+### Phase 4 — REST API Endpoints
+
+#### [NEW] `apps/recommendations/views.py`
+
+Three API views:
+
+| Endpoint | Method | View | Description |
+|---|---|---|---|
+| `GET /api/recommendations/` | GET | `RecommendationAPIView` | Main recommendation endpoint. Params: `bike_id`, `listing_id`, `session_id` |
+| `POST /api/behavior/track/` | POST | `TrackBehaviorAPIView` | Log user behavior event |
+| `GET /api/preferences/` | GET | `UserPreferencesAPIView` | Return user preference profile |
+
+**Cache logic in `RecommendationAPIView`**:
+1. Build cache key from `user_id` or `session_id` + `bike_id`/`listing_id`
+2. Check `RecommendationCache` table — if valid, return cached result
+3. Otherwise: run `BikeRecommender.get_recommendations()`, cache result with 30-min TTL, return
+
+> [!NOTE]
+> Redis (already installed) can be used as a secondary fast cache layer via Django's cache framework. The spec uses the DB-level `RecommendationCache`. We can use both: Redis for fast hits, DB as persistent fallback.
+
+#### [NEW] `apps/recommendations/urls.py`
+
+```
+/api/recommendations/          → RecommendationAPIView
+/api/behavior/track/           → TrackBehaviorAPIView
+/api/preferences/              → UserPreferencesAPIView
+```
+
+#### [MODIFY] `backend/core/urls.py` (or main `urls.py`)
+
+Include `apps.recommendations.urls` under `api/`.
+
+---
+
+### Phase 5 — Frontend Integration (Next.js)
+
+#### [NEW] `frontend/src/lib/recommendations.ts`
+
+TypeScript module with:
+- `getSessionId()` — localStorage-based anonymous session tracking
+- `getRecommendations(bikeId?, listingId?)` — fetches from Django API via Next.js API route proxy
+- `trackBehavior(type, bikeId?, listingId?, metadata?)` — fire-and-forget POST
+- TypeScript interfaces: `Recommendation`, `RecommendationResponse`
+
+#### [NEW] `frontend/src/app/api/recommendations/route.ts`
+
+Next.js API route that proxies to Django backend (follows existing proxy pattern in `src/proxy.ts`). Needed to avoid CORS and attach auth headers.
+
+#### [NEW] `frontend/src/app/api/behavior/track/route.ts`
+
+Next.js API route proxy for behavior tracking.
+
+#### [NEW] `frontend/src/components/RecommendationSection.tsx`
+
+React component implementing the 4-slot grid UI:
+- Skeleton loader while fetching
+- `RecommendationCard` sub-component per slot
+- Slot badges: 🎯 Recommended · 💰 Best Value · 🏍️ Similar · ✨ Explore
+- New/Used badge (green for used, blue for new)
+- "Trusted Brand" (trust ≥ 80) and "Fair Price" (score ≥ 80) micro-badges
+- Price displayed in **লক্ষ** (Bangladeshi lakh format)
+
+#### [MODIFY] New Bike Detail Page — `frontend/src/app/bike/[slug]/page.tsx`
+
+Add `<RecommendationSection bikeId={bike.id} />` below the spec sheet section. Also wire `trackBehavior('view', bike.id)` on mount.
+
+#### [MODIFY] Used Bike Detail Page — `frontend/src/app/used-bikes/[slug]/page.tsx` or `used-bike/[slug]/page.tsx`
+
+Add `<RecommendationSection listingId={listing.id} />`. Wire `trackBehavior('listing_view', undefined, listing.id)` on mount.
+
+---
+
+### Phase 6 — Database Migrations & Indexes
+
+#### [NEW] Migration for `apps/bikes` (Phase 1 fields)
+
+Add `trust_score`, `is_electric_focused` to `Brand`; add `avg_used_price`, `used_price_min`, `used_price_max`, `depreciation_rate` to `BikeModel`; add `fair_price_score`, `price_vs_new_percentage`, `inquiry_count` to `UsedBikeListing`.
+
+#### [NEW] Migration for `apps/recommendations` (Phase 2 models)
+
+Create `UserProfile`, `UserBehaviorLog`, `RecommendationCache` tables.
+
+#### [NEW] Migration with `RunSQL` for performance indexes
+
+Add all critical indexes from the spec's SQL section:
+```sql
+CREATE INDEX idx_bike_segment_price ON bikes_bikemodel(category, price);
+CREATE INDEX idx_bike_popularity ON bikes_bikemodel(popularity_score DESC);
+CREATE INDEX idx_listing_active_segment_price ON marketplace_usedbikelisting(status, bike_model_id, price);
+CREATE INDEX idx_listing_fair_price ON marketplace_usedbikelisting(status, fair_price_score DESC);
+CREATE INDEX idx_behavior_user_type_time ON recommendations_userbehaviorlog(user_id, behavior_type, created_at DESC);
+CREATE INDEX idx_cache_session_expiry ON recommendations_recommendationcache(session_id, expires_at);
+-- etc.
+```
+
+---
+
+### Phase 7 — Data Seeding & Testing
+
+#### [NEW] `apps/recommendations/management/commands/setup_recommendation_data.py`
+
+Management command to:
+1. Backfill `Brand.trust_score` for all 20 brands from the `BRAND_TRUST_SCORES` dict
+2. Run `calculate_fair_price_scores` task for all active `UsedBikeListing` records
+3. Initialize `UserProfile` for all existing users
+4. Optionally run `update_popularity_scores` from existing `views_count` data
+
+#### [NEW] `apps/recommendations/tests/test_engine.py`
+
+Django `TestCase` with the 5 test scenarios from the spec:
+- `test_slot1_returns_trusted_brand_alternative`
+- `test_slot3_returns_segment_peer`
+- `test_slot4_returns_cross_segment`
+- `test_no_duplicates_across_slots`
+- `test_anonymous_user_gets_recommendations`
+
+---
+
+## Implementation Order (Phased Execution)
+
+```mermaid
+graph LR
+    A[Phase 1: Augment Models] --> B[Phase 6a: Migrations]
+    B --> C[Phase 2: Reco App + Engine]
+    C --> D[Phase 3: Celery Tasks]
+    C --> E[Phase 4: API Endpoints]
+    D --> F[Phase 7: Seed Data + Tests]
+    E --> G[Phase 5: Frontend]
+    F --> G
+```
+
+**Recommended execution order:**
+1. Phase 1 (model fields) + Phase 6 (migrations) — no logic, just schema
+2. Phase 7 setup command — populate trust scores so engine has data to work with
+3. Phase 2 (engine core) — the heart of the system
+4. Phase 3 (background tasks) — initially run manually to populate `fair_price_score`
+5. Phase 4 (API) — expose engine over HTTP
+6. Phase 5 (frontend) — UI layer
+7. Phase 7 tests — validate correctness
+
+---
+
+## Verification Plan
+
+### Automated Tests
+```bash
+# Run recommendation engine unit tests
+cd backend && python manage.py test apps.recommendations.tests
+
+# Run full test suite to ensure no regressions
+cd backend && pytest
+```
+
+### Manual API Verification
+```bash
+# Test recommendation endpoint for a new bike
+curl "http://localhost:8000/api/recommendations/?bike_id=1&session_id=test123"
+
+# Test behavior tracking
+curl -X POST "http://localhost:8000/api/behavior/track/" \
+  -H "Content-Type: application/json" \
+  -d '{"behavior_type": "view", "bike_id": 1, "session_id": "test123"}'
+
+# Run seeding command
+python manage.py setup_recommendation_data
+
+# Run fair price scoring task manually
+python manage.py shell -c "from apps.recommendations.tasks import calculate_fair_price_scores; calculate_fair_price_scores()"
+```
+
+### Frontend Verification
+- Open a new bike detail page → verify 4 recommendation cards appear
+- Open a used bike listing → verify recommendations adapt to used-bike context
+- Check browser Network tab → confirm `trackBehavior` fires on page load
+- Verify skeleton loader appears before recommendations load
+
+### Performance Target
+- Recommendation API response: **< 200ms** (from spec requirement)
+- Monitor via Django Debug Toolbar or Sentry in staging
+
+---
+
+## Files Summary
+
+| File | Action | Phase |
+|---|---|---|
+| `apps/bikes/models.py` | MODIFY — add `trust_score`, `is_electric_focused`, `avg_used_price`, `depreciation_rate` | 1 |
+| `apps/marketplace/models.py` | MODIFY — add `fair_price_score`, `price_vs_new_percentage`, `inquiry_count` | 1 |
+| `apps/recommendations/__init__.py` | NEW | 2 |
+| `apps/recommendations/apps.py` | NEW | 2 |
+| `apps/recommendations/models.py` | NEW — `UserProfile`, `UserBehaviorLog`, `RecommendationCache` | 2 |
+| `apps/recommendations/engine.py` | NEW — `BikeRecommender` class | 2 |
+| `apps/recommendations/profile_builder.py` | NEW — `UserProfileBuilder` class | 2 |
+| `apps/recommendations/serializers.py` | NEW | 2 |
+| `apps/recommendations/tasks.py` | NEW — 5 Celery tasks | 3 |
+| `core/settings.py` | MODIFY — `INSTALLED_APPS`, `CELERY_BEAT_SCHEDULE` | 3 |
+| `requirements.txt` | MODIFY — add `django-celery-beat` | 3 |
+| `apps/recommendations/views.py` | NEW — 3 API views | 4 |
+| `apps/recommendations/urls.py` | NEW | 4 |
+| `core/urls.py` | MODIFY — include recommendations URLs | 4 |
+| `apps/bikes/migrations/00XX_reco_fields.py` | NEW | 6 |
+| `apps/recommendations/migrations/0001_initial.py` | NEW | 6 |
+| `apps/recommendations/migrations/00XX_indexes.py` | NEW — `RunSQL` indexes | 6 |
+| `apps/recommendations/management/commands/setup_recommendation_data.py` | NEW | 7 |
+| `apps/recommendations/tests/test_engine.py` | NEW | 7 |
+| `frontend/src/lib/recommendations.ts` | NEW | 5 |
+| `frontend/src/app/api/recommendations/route.ts` | NEW — proxy | 5 |
+| `frontend/src/app/api/behavior/track/route.ts` | NEW — proxy | 5 |
+| `frontend/src/components/RecommendationSection.tsx` | NEW | 5 |
+| `frontend/src/app/bike/[slug]/page.tsx` | MODIFY — embed `<RecommendationSection>` | 5 |
+| `frontend/src/app/used-bikes/[slug]/page.tsx` | MODIFY — embed `<RecommendationSection>` | 5 |

@@ -177,3 +177,16 @@ class BikeModelCompactSerializer(serializers.ModelSerializer):
     class Meta:
         model = BikeModel
         fields = ['id', 'brand_name', 'name', 'category', 'price', 'popularity_score']
+
+class SimilarBikeSerializer(serializers.ModelSerializer):
+    brand_name = serializers.ReadOnlyField(source='brand.name')
+    primary_image = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = BikeModel
+        fields = ['id', 'brand_name', 'name', 'slug', 'category', 'price', 'primary_image', 'popularity_score']
+
+    def get_primary_image(self, obj):
+        # Reuse image resolution logic from BikeModelSerializer
+        serializer = BikeModelSerializer()
+        return serializer.get_image_url(obj.primary_image)

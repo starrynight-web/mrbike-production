@@ -1,8 +1,8 @@
 from django.apps import AppConfig
 
-class MarketplaceConfig(AppConfig):
+class NewsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.marketplace'
+    name = 'apps.news'
 
     def ready(self):
-        import apps.marketplace.signals
+        import apps.news.signals

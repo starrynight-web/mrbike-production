@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'apps.marketplace',
     'apps.news',
     'apps.interactions',
+    'apps.recommendations',
 ]
 
 MIDDLEWARE = [
@@ -103,8 +104,14 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
-    'DEFAULT_THROTTLE_CLASSES': [],
-    'DEFAULT_THROTTLE_RATES': {},
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day'
+    },
 }
 
 # Simple JWT Settings
@@ -149,6 +156,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp-relay.brevo.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = True
+EMAIL_TIMEOUT = 10  # Prevents hanging when SMTP connection silently drops
 EMAIL_HOST_USER = os.getenv('BREVO_SMTP_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('BREVO_API_KEY', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@mrbikebd.com')
@@ -159,7 +167,9 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 # CORS Settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "http://localhost:3001",
+    "http://127.0.0.1:3001",
     "https://mrbikebd.vercel.app",
     "https://mrbikebd.com",
     "https://www.mrbikebd.com",

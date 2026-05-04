@@ -30,22 +30,26 @@ class BikeVariantInline(admin.TabularInline):
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
     form = BrandForm
-    list_display = ('name', 'origin_country', 'is_popular')
+    list_display = ('name', 'origin_country', 'trust_score', 'is_popular')
+    list_filter = ('is_popular', 'is_electric_focused', 'origin_country')
     search_fields = ('name',)
     prepopulated_fields = {'slug': ('name',)}
 
 @admin.register(BikeModel)
 class BikeModelAdmin(admin.ModelAdmin):
     form = BikeModelForm
-    list_display = ('name', 'brand', 'category', 'price', 'is_available')
-    list_filter = ('brand', 'category', 'is_available')
+    list_display = ('name', 'brand', 'category', 'segment', 'price', 'is_available', 'is_current')
+    list_filter = ('brand', 'category', 'segment', 'is_available', 'is_current')
     search_fields = ('name', 'brand__name')
     prepopulated_fields = {'slug': ('name',)}
     inlines = [BikeSpecificationInline, BikeVariantInline]
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('brand', 'name', 'slug', 'category', 'price', 'is_available', 'primary_image')
+            'fields': ('brand', 'name', 'slug', 'category', 'segment', 'price', 'is_available', 'is_current', 'primary_image')
+        }),
+        ('Recommendation Meta', {
+            'fields': ('price_min', 'price_max', 'avg_used_price', 'depreciation_rate', 'popularity_score')
         }),
         ('Engine & Performance', {
             'fields': ('engine_capacity', 'engine_type', 'max_power', 'max_torque', 'fuel_system', 'cooling_system')

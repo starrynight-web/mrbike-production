@@ -101,6 +101,9 @@ class BikeModelViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         
+        # Atomic increment of popularity score (Audit Fix)
+        BikeModel.objects.filter(pk=instance.pk).update(popularity_score=F('popularity_score') + 1)
+        
         # Track view history for personalized recommendations (only if logged in)
         if request.user.is_authenticated:
             # We use atomic update if it exists or create new

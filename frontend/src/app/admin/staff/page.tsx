@@ -19,13 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { adminAPI } from "@/lib/admin-api";
 import { Badge } from "@/components/ui/badge";
@@ -43,9 +37,9 @@ export default function StaffManagement() {
   const [staffList, setStaffList] = useState<any[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [newStaff, setNewStaff] = useState({
+  const [newStaff, setNewStaff] = useState<{ email: string; sections: string[] }>({
     email: "",
-    role_key: "",
+    sections: [],
   });
 
   useEffect(() => {
@@ -66,8 +60,8 @@ export default function StaffManagement() {
   };
 
   const handleCreateStaff = async () => {
-    if (!newStaff.email || !newStaff.role_key) {
-      toast.error("Please provide both email and role");
+    if (!newStaff.email || newStaff.sections.length === 0) {
+      toast.error("Please provide both email and at least one role");
       return;
     }
 
@@ -75,7 +69,7 @@ export default function StaffManagement() {
       await adminAPI.createStaff(newStaff);
       toast.success("Staff member added successfully");
       setShowAddModal(false);
-      setNewStaff({ email: "", role_key: "" });
+      setNewStaff({ email: "", sections: [] });
       loadStaff();
     } catch (error: any) {
       toast.error(error.message || "Failed to create staff");
@@ -95,9 +89,12 @@ export default function StaffManagement() {
   };
 
   const filteredStaff = staffList.filter(
-    (s) =>
-      s.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.role_key?.toLowerCase().includes(searchQuery.toLowerCase())
+    (s) => {
+      const emailMatch = s.email?.toLowerCase().includes(searchQuery.toLowerCase());
+      const sectionsMatch = s.sections?.some((section: string) => section.toLowerCase().includes(searchQuery.toLowerCase()));
+      const roleKeyMatch = s.role_key?.toLowerCase().includes(searchQuery.toLowerCase());
+      return emailMatch || sectionsMatch || roleKeyMatch;
+    }
   );
 
   return (
@@ -181,9 +178,19 @@ export default function StaffManagement() {
                         </div>
                       </td>
                       <td className="py-4 px-2">
-                        <Badge variant="outline" className="capitalize bg-accent/50">
-                          {staff.role_key ? staff.role_key.replace("staff_", "").replace("_", " ") : "Assistant"}
-                        </Badge>
+                        <div className="flex flex-wrap gap-1">
+                          {staff.sections && staff.sections.length > 0 ? (
+                            staff.sections.map((section: string) => (
+                              <Badge key={section} variant="outline" className="capitalize bg-accent/50 text-[10px]">
+                                {section.replace("staff_", "").replace(/_/g, " ")}
+                              </Badge>
+                            ))
+                          ) : (
+                            <Badge variant="outline" className="capitalize bg-accent/50 text-[10px]">
+                              {staff.role_key ? staff.role_key.replace("staff_", "").replace(/_/g, " ") : "Assistant"}
+                            </Badge>
+                          )}
+                        </div>
                       </td>
                       <td className="py-4 px-2">
                         {staff.is_active ? (
@@ -266,28 +273,39 @@ export default function StaffManagement() {
                     </p>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <Label className="flex items-center gap-2">
-                      <Shield className="h-3.5 w-3.5" /> Security Role
+                      <Shield className="h-3.5 w-3.5" /> Security Roles
                     </Label>
-                    <Select
-                      onValueChange={(val) => setNewStaff({ ...newStaff, role_key: val })}
-                      value={newStaff.role_key}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STAFF_ROLES.map((role) => (
-                          <SelectItem key={role.value} value={role.value}>
-                            <div className="flex flex-col">
-                              <span className="font-medium">{role.label}</span>
-                              <span className="text-[10px] text-muted-foreground">{role.description}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="grid grid-cols-1 gap-3 pt-2">
+                      {STAFF_ROLES.map((role) => (
+                        <div key={role.value} className="flex items-start space-x-3 bg-muted/30 p-3 rounded-lg border border-border/50">
+                          <Checkbox 
+                            id={`role-${role.value}`}
+                            checked={newStaff.sections.includes(role.value)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setNewStaff({ ...newStaff, sections: [...newStaff.sections, role.value] });
+                              } else {
+                                setNewStaff({ ...newStaff, sections: newStaff.sections.filter(r => r !== role.value) });
+                              }
+                            }}
+                            className="mt-0.5"
+                          />
+                          <div className="grid gap-1.5 leading-none">
+                            <label
+                              htmlFor={`role-${role.value}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                              {role.label}
+                            </label>
+                            <p className="text-[11px] text-muted-foreground">
+                              {role.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 

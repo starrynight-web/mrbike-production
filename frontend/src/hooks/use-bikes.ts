@@ -86,7 +86,9 @@ export function useSimilarBikes(slug: string) {
     queryFn: async () => {
       const response = await api.getSimilarBikes(slug);
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch similar bikes");
-      return response.data as Bike[];
+      
+      const rawBikes = (response.data as any[]) || [];
+      return rawBikes.map(mapBike);
     },
     staleTime: 30 * 60 * 1000, // 30 minutes
     enabled: !!slug,

@@ -33,6 +33,8 @@ v1_patterns = [
     path('marketplace/', include('apps.marketplace.urls')),
     path('news/', include('apps.news.urls')),
     path('interactions/', include('apps.interactions.urls')),
+    path('recommendations/', include('apps.bikes.recommendation_urls')),
+    path('recommendations/v2/', include('apps.recommendations.urls')),
 ]
 
 urlpatterns = [
@@ -42,7 +44,6 @@ urlpatterns = [
     
     # Versioned API
     path('api/v1/', include(v1_patterns)),
-    path('api/recommendations/', include('apps.bikes.recommendation_urls')),
 
     # Swagger Documentation
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
