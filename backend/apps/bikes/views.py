@@ -190,7 +190,8 @@ class BikeModelViewSet(viewsets.ModelViewSet):
         bike = self.get_object()
         bike.pk = None
         bike.name = f"{bike.name} (Copy)"
-        bike.slug = f"{bike.slug}-copy-{timezone.now().timestamp()}"
+        # Use integer timestamp to avoid dots which break URL routing
+        bike.slug = f"{bike.slug}-copy-{int(timezone.now().timestamp())}"
         bike.save()
         serializer = self.get_serializer(bike)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
