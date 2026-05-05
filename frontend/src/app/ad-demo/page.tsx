@@ -43,7 +43,7 @@ export default function AdDemoPage() {
                 Standard Banner (Fixed 728x90)
               </p>
               <div className="flex justify-center overflow-x-auto py-2">
-                <AdBanner />
+                <AdBanner forceVisible />
               </div>
             </div>
 
@@ -52,13 +52,13 @@ export default function AdDemoPage() {
                 Full-Width Banner (Edge-to-Edge)
               </p>
               <div className="bg-muted/10 p-4 rounded-xl border border-dashed overflow-hidden">
-                <p className="text-xs text-muted-foreground mb-4 text-center italic">
-                  Below shows how it reaches the screen edges in a real layout.
-                  For demo purposes here, it's simulated to break out of its
-                  container:
-                </p>
+                  <p className="text-xs text-muted-foreground mb-4 text-center italic">
+                    Below shows how it reaches the screen edges in a real layout.
+                    For demo purposes here, it&apos;s simulated to break out of its
+                    container:
+                  </p>
                 <div className="-mx-4 md:-mx-8 lg:-mx-12">
-                  <AdBanner fullWidth />
+                  <AdBanner fullWidth forceVisible />
                 </div>
               </div>
             </div>
@@ -78,7 +78,7 @@ export default function AdDemoPage() {
                 </code>
               </div>
               <div className="flex flex-wrap gap-8 justify-center">
-                <AdMediumRectangle />
+                <AdMediumRectangle forceVisible />
                 <div className="flex-1 min-w-[300px] border border-dashed rounded-lg p-6 bg-muted/20 flex items-center justify-center text-muted-foreground italic text-sm text-center">
                   This represents a content block where a medium rectangle ad
                   can float next to text or within a grid.
@@ -100,7 +100,7 @@ export default function AdDemoPage() {
                   Click the button below to see how the Interstitial ad looks
                   when triggered between page loads.
                 </p>
-                <AdInterstitial />
+                <AdInterstitial forceVisible />
               </div>
             </section>
           </div>
@@ -115,7 +115,7 @@ export default function AdDemoPage() {
                 Sidebar of the page
               </code>
               <div className="sticky top-24">
-                <AdSkyscraper />
+                <AdSkyscraper forceVisible />
               </div>
             </div>
           </div>

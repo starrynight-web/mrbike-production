@@ -1,30 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   ChevronRight,
-  Zap,
-  Wind,
-  Building2,
-  CircleDot,
-  Compass,
-  Mountain,
-  Plug,
   Bike as BikeIcon,
 } from "lucide-react";
-import { BIKE_CATEGORIES } from "@/config/constants";
 import type { Bike, UsedBike } from "@/types";
 import { api } from "@/lib/api-service";
-import { sanitizeImageUrl, mapBike, mapUsedBike, mapBrand } from "@/lib/data-utils";
-import { HeroSearch } from "@/components/layout/hero-search";
+import { mapBike, mapUsedBike, mapBrand } from "@/lib/data-utils";
 import { PopularBikesCarousel } from "@/components/bikes/popular-bikes-carousel";
 import { HomepageNewsSection } from "@/components/bikes/homepage-news-section";
-import type { Brand, NewsArticle } from "@/types";
+import type { Brand } from "@/types";
 import { UsedBikesCarousel } from "@/components/used-bikes/used-bikes-carousel";
 import { CategoryShowcase } from "@/components/bikes/category-showcase";
-import { AdBanner } from "@/components/ads/ad-banner";
 import { HomeHeroCarousel } from "@/components/layout/home-hero-carousel";
 
 export const metadata = {
@@ -38,11 +27,12 @@ export default async function HomePage() {
   let usedBikes: UsedBike[] = [];
   let fetchError = false;
 
-  let config: any = {};
+  type PublicConfig = Record<string, string>;
+  let config: PublicConfig = {};
 
   try {
     const configResponse = await api.getPublicConfig();
-    config = configResponse.success ? configResponse.data : {};
+    config = configResponse.success ? ((configResponse.data as PublicConfig | undefined) ?? {}) : {};
 
     const popularIds = config?.popular_bike_ids ? JSON.parse(config.popular_bike_ids) : [];
     
@@ -56,7 +46,7 @@ export default async function HomePage() {
     // Process featured bikes with error handling
     if (bikesResponse.success) {
       try {
-        const rawData = (bikesResponse.data as any[]) || [];
+        const rawData = (bikesResponse.data as unknown as Bike[]) || [];
         // If we fetched by IDs, ensure they are in the order specified or at least limited correctly
         featuredBikes = rawData.map(mapBike).slice(0, 6);
       } catch (err) {
@@ -68,7 +58,7 @@ export default async function HomePage() {
     // Process used bikes with robust error handling
     if (usedBikesResponse.success) {
       try {
-        const rawUsed = (usedBikesResponse.data as any[]) || [];
+        const rawUsed = (usedBikesResponse.data as unknown as UsedBike[]) || [];
         usedBikes = rawUsed.map(mapUsedBike);
       } catch (err) {
         console.error("Error processing used bikes:", err);
@@ -83,7 +73,6 @@ export default async function HomePage() {
   }
 
   // Configuration processing
-  const heroImage = config?.hero_image || "/images/hero.webp";
   const heroTitle = config?.hero_title || "Bike Price In Bangladesh 2026";
   const heroSubtitle = config?.hero_subtitle || "Discover, compare, and buy motorcycles. Explore 300+ bikes, read reviews, and find the best deals in Bangladesh.";
 
@@ -100,16 +89,7 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col">
       {/* ==================== HERO SECTION ==================== */}
-      <HomeHeroCarousel 
-        slides={config?.hero_slides ? JSON.parse(config.hero_slides) : []}
-        fallbackTitle={heroTitle}
-        fallbackSubtitle={heroSubtitle}
-        fallbackImage={heroImage}
-      />
-
-      <div className="relative -mt-16 z-30">
-        <AdBanner fullWidth />
-      </div>
+      <HomeHeroCarousel title={heroTitle} subtitle={heroSubtitle} />
 
       {/* ==================== POPULAR BIKES ==================== */}
       <section className="py-12 md:py-16">
@@ -130,8 +110,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ==================== BANNER AD 2 ==================== */}
-      <AdBanner fullWidth />
+
 
       {/* ==================== CATEGORIES SECTION ==================== */}
       <section className="py-12 md:py-16">

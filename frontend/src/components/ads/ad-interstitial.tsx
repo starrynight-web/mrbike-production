@@ -1,12 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { AdBase } from "./ad-base";
+import { AdBase, shouldShowAds } from "./ad-base";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
-export function AdInterstitial() {
+interface AdInterstitialProps {
+  forceVisible?: boolean;
+}
+
+export function AdInterstitial({ forceVisible }: AdInterstitialProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  if (!shouldShowAds(forceVisible)) {
+    return null;
+  }
 
   return (
     <>
@@ -36,6 +44,7 @@ export function AdInterstitial() {
               height={480}
               label="Interstitial Ad"
               className="bg-background shadow-2xl border-solid border-primary/20"
+              forceVisible={forceVisible}
             >
               <div className="mt-8 flex flex-col gap-2">
                 <Button

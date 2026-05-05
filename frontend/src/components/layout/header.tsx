@@ -5,7 +5,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Search,
-  Heart,
   User,
   ChevronDown,
   Bike,
@@ -38,7 +37,6 @@ const navLinks = [
   { href: "/compare", label: "Compare", icon: LayoutGrid },
   { href: "/brands", label: "Brands", icon: LayoutGrid },
   { href: "/dealers", label: "Dealers", icon: Store },
-  { href: "/ad-demo", label: "Ad Demo", icon: Store },
 ];
 
 export function Header() {
@@ -51,7 +49,7 @@ export function Header() {
     isAuthenticated = auth.isAuthenticated;
     isStaff = auth.isStaff;
     isSuperAdmin = auth.isSuperAdmin;
-  } catch (e) {
+  } catch {
     // During static generation, auth may not be available
     user = null;
     isAuthenticated = false;
@@ -60,16 +58,14 @@ export function Header() {
   }
   
   const { logout } = useAuthStore();
-  let { bikeIds } = useWishlistStore();
-  let { isMobileMenuOpen, setMobileMenuOpen, isSearchOpen, setSearchOpen } =
-    useUIStore();
+  const { bikeIds } = useWishlistStore();
+  const { isMobileMenuOpen, setMobileMenuOpen, isSearchOpen, setSearchOpen } = useUIStore();
   
-  // Safe fallbacks for store access during static generation
-  if (!bikeIds) bikeIds = new Set();
-  if (!setMobileMenuOpen) setMobileMenuOpen = () => {};
-  if (!setSearchOpen) setSearchOpen = () => {};
-  
-  const wishlistCount = bikeIds?.size ?? 0;
+  const safeBikeIds = bikeIds ?? new Set();
+  const safeSetMobileMenuOpen = setMobileMenuOpen ?? (() => {});
+  const safeSetSearchOpen = setSearchOpen ?? (() => {});
+  const wishlistCount = safeBikeIds.size;
+  void wishlistCount;
 
   return (
     <>
@@ -111,7 +107,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setSearchOpen(true)}
+              onClick={() => safeSetSearchOpen(true)}
               className="hidden sm:flex"
             >
               <Search className="h-5 w-5" />
@@ -283,7 +279,7 @@ export function Header() {
             {/* Quick nav card menu (mobile/tablet) — toggleable card, not sidebar */}
             <DropdownMenu
               open={isMobileMenuOpen}
-              onOpenChange={setMobileMenuOpen}
+              onOpenChange={safeSetMobileMenuOpen}
             >
               <DropdownMenuTrigger asChild>
                 <Button
@@ -310,7 +306,7 @@ export function Header() {
                     <DropdownMenuItem key={link.href} asChild>
                       <Link
                         href={link.href}
-                        onClick={() => setMobileMenuOpen(false)}
+                        onClick={() => safeSetMobileMenuOpen(false)}
                         className={cn(
                           "flex flex-col items-center gap-2 rounded-lg p-4 transition-colors hover:bg-accent focus:bg-accent",
                           pathname === link.href ||
@@ -329,9 +325,9 @@ export function Header() {
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuItem asChild>
-                    <Link
-                      href="/sell-bike"
-                      onClick={() => setMobileMenuOpen(false)}
+                      <Link
+                        href="/sell-bike"
+                        onClick={() => safeSetMobileMenuOpen(false)}
                       className="flex flex-col items-center gap-2 rounded-lg p-4 transition-colors hover:bg-accent focus:bg-accent"
                     >
                       <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
@@ -349,7 +345,7 @@ export function Header() {
                     <Button asChild className="w-full" size="sm">
                       <Link
                         href="/login"
-                        onClick={() => setMobileMenuOpen(false)}
+                        onClick={() => safeSetMobileMenuOpen(false)}
                       >
                         Sign In
                       </Link>
@@ -363,7 +359,7 @@ export function Header() {
       </header>
 
       {/* Search Dialog */}
-      <SearchDialog open={isSearchOpen} onOpenChange={setSearchOpen} />
+      <SearchDialog open={isSearchOpen} onOpenChange={safeSetSearchOpen} />
     </>
   );
 }

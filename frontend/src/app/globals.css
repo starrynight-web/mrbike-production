@@ -209,3 +209,49 @@
     overflow: hidden;
   }
 }
+
+/* ============================================
+   HERO SECTION ANIMATIONS
+   ============================================ */
+
+/* 1. Container slides up from below (600ms) */
+@keyframes heroSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+  2. Rectangle wipe: starts as a thin line in the center,
+     spreads to full width, then collapses back to nothing.
+     Split into two halves via clip-path so it visually
+     expands from the center outward then contracts inward.
+*/
+@keyframes heroWipe {
+  0% {
+    clip-path: inset(0 50% 0 50%);
+  }
+  45% {
+    clip-path: inset(0 0% 0 0%);
+  }
+  100% {
+    clip-path: inset(0 50% 0 50%);
+  }
+}
+
+/* 3. Text fades in — delayed to start after wipe expands (~45% of duration) */
+@keyframes heroTextReveal {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  75%,
+  100% {
+    opacity: 1;
+  }
+}

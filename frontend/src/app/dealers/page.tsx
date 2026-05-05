@@ -24,7 +24,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api-service";
 
@@ -80,10 +79,12 @@ export default function DealersPage() {
       try {
         const response = await api.getBrands();
         if (response.success && response.data) {
-          // Extract brand names assuming API returns objects with 'name' property
-          const brandNames = (response.data as any[]).map(
-            (b: { name: string }) => b.name,
-          );
+          const source = Array.isArray(response.data)
+            ? response.data
+            : [];
+          const brandNames = source
+            .map((b) => (typeof b === "object" && b && "name" in b ? String((b as { name?: unknown }).name || "") : ""))
+            .filter(Boolean);
           setBrands(brandNames);
         }
       } catch (error) {

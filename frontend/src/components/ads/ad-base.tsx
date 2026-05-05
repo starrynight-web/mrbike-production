@@ -8,7 +8,11 @@ interface AdBaseProps {
   className?: string;
   fullWidth?: boolean;
   children?: React.ReactNode;
+  forceVisible?: boolean;
 }
+
+export const shouldShowAds = (forceVisible?: boolean) =>
+  forceVisible || process.env.NEXT_PUBLIC_SHOW_ADS === "true";
 
 export function AdBase({
   width,
@@ -17,7 +21,12 @@ export function AdBase({
   className,
   fullWidth,
   children,
+  forceVisible,
 }: AdBaseProps) {
+  if (!shouldShowAds(forceVisible)) {
+    return null;
+  }
+
   return (
     <div
       className={cn(

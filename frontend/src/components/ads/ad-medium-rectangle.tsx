@@ -1,5 +1,16 @@
 import { AdBase } from "./ad-base";
 
-export function AdMediumRectangle() {
-  return <AdBase width={300} height={250} label="Medium Rectangle" />;
+interface AdMediumRectangleProps {
+  forceVisible?: boolean;
+}
+
+export function AdMediumRectangle({ forceVisible }: AdMediumRectangleProps) {
+  return (
+    <AdBase
+      width={300}
+      height={250}
+      label="Medium Rectangle"
+      forceVisible={forceVisible}
+    />
+  );
 }

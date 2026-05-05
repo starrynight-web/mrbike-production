@@ -67,7 +67,8 @@ export const API_ENDPOINTS = {
   BIKES: "/bikes/",
   BIKE_DETAIL: (slug: string) => `/bikes/${slug}/`,
   BIKE_SIMILAR: (slug: string) => `/recommendations/similar/${slug}/`,
-  BIKE_EMOTIONAL_RECOMMENDATIONS: (slug: string) => `/bikes/${slug}/emotional_recommendations/`,
+  BIKE_EMOTIONAL_RECOMMENDATIONS: (slug: string) =>
+    `/bikes/${slug}/emotional_recommendations/`,
   BIKE_USED: (slug: string) => `/recommendations/budget/`, // Adjusted to match backend views.py
   BRANDS: "/bikes/brands/",
   BRAND_DETAIL: (id: string | number) => `/bikes/brands/${id}/`,
@@ -79,7 +80,7 @@ export const API_ENDPOINTS = {
   USED_BIKE_CREATE: "/marketplace/listings/",
   USED_BIKE_UPDATE: (id: string) => `/marketplace/listings/${id}/`,
   USED_BIKE_DELETE: (id: string) => `/marketplace/listings/${id}/`,
-  
+
   // Shops
   SHOPS: "/marketplace/shops/",
   SHOP_DETAIL: (slug: string) => `/marketplace/shops/${slug}/`,
@@ -167,7 +168,7 @@ export const BIKE_CATEGORIES = [
     value: "electric",
     label: "Electric",
     icon: "⚡",
-    image: "/images/onlybike_dark.png",
+    image: "/images/electric.png",
   },
 ] as const;
 

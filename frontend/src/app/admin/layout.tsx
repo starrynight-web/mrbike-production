@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
 import {
   LayoutDashboard,
   Bike,
@@ -13,17 +12,14 @@ import {
   ChevronLeft,
   Menu,
   LogOut,
-  Bell,
-  User,
-  ArrowLeft,
   Bug,
   CreditCard,
-  Users
+  Users,
+  Megaphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
-import { Separator } from "@/components/ui/separator";
 import { signOut } from "next-auth/react";
 
 const getAdminNav = (baseUrl: string) => [
@@ -33,6 +29,7 @@ const getAdminNav = (baseUrl: string) => [
   { name: "News & Articles", href: `${baseUrl}/news`, icon: Newspaper, role: 'staff_news' },
   { name: "Payments", href: `${baseUrl}/payments`, icon: CreditCard, role: 'staff_payments' },
   { name: "Settings", href: `${baseUrl}/settings`, icon: Settings, role: 'staff_settings' },
+  { name: "Ad Demo", href: "/ad-demo", icon: Megaphone, role: 'staff_settings' },
   { name: "Staff Management", href: `${baseUrl}/staff`, icon: Users, role: 'superadmin' },
 ];
 
@@ -70,12 +67,10 @@ export default function AdminLayout({
   }, []);
 
   // Use localized loading states to avoid blocking the whole layout if possible
-  const [hasStartedVerification, setHasStartedVerification] = useState(false);
 
   // Protection logic
   useEffect(() => {
     if (isLoading) return;
-    setHasStartedVerification(true);
     
     // 1. Redirect to login if not authenticated
     if (!isAuthenticated) {
@@ -101,7 +96,12 @@ export default function AdminLayout({
 
   // Only show the blocking loader if we are truly in the initial cold-load phase
   // and we don't have enough info to render the portal yet.
-  if (isLoading && !hasStartedVerification && !user) {
+  const canShowBlockingLoader = useMemo(
+    () => isLoading && !user,
+    [isLoading, user],
+  );
+
+  if (canShowBlockingLoader) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4 bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
