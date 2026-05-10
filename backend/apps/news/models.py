@@ -1,9 +1,12 @@
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
+from django.utils import timezone
 from cloudinary.models import CloudinaryField
 from django.contrib.postgres.search import SearchVectorField, SearchVector
 from django.contrib.postgres.indexes import GinIndex
+from datetime import datetime
+from typing import Optional, Any, cast
 
 class NewsCategory(models.Model):
     name = models.CharField(max_length=100)
@@ -12,10 +15,10 @@ class NewsCategory(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = cast(Any, slugify(self.name))
         super().save(*args, **kwargs)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     class Meta:
@@ -27,10 +30,10 @@ class Tag(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = cast(Any, slugify(self.name))
         super().save(*args, **kwargs)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 class Article(models.Model):
@@ -70,11 +73,10 @@ class Article(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = cast(Any, slugify(self.title))
         
         # Auto-set published_at when article is published
         if self.is_published and not self.published_at:
-            from django.utils import timezone
             self.published_at = timezone.now()
         elif not self.is_published:
             self.published_at = None
@@ -83,11 +85,11 @@ class Article(models.Model):
         
         # Update search_vector separately to avoid recursion and handle Postgres vectorization
         if self.pk:
-            Article.objects.filter(pk=self.pk).update(
+            self.__class__.objects.filter(pk=self.pk).update(
                 search_vector=SearchVector('title', weight='A') + SearchVector('content', weight='B')
             )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.title
 
     class Meta:

@@ -8,8 +8,8 @@
         "venv",
         ".venv"
     ],
-    "venvPath": "..",
-    "venv": ".venv",
+    "venvPath": ".",
+    "venv": "venv",
     "extraPaths": [
         "."
     ],
