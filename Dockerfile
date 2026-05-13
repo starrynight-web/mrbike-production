@@ -24,10 +24,8 @@ RUN pip install gunicorn
 COPY backend/ .
 
 # Ensure static files are collected
-# This requires environment variables to be set, 
-# but we can do it during the build if we provide dummy values or skip if not needed yet.
-# Better to do it at runtime or ensure WhiteNoise handles it.
-RUN python manage.py collectstatic --no-input --settings=core.settings.base
+# We provide a dummy SECRET_KEY for the build process as HF secrets are only available at runtime.
+RUN SECRET_KEY=dummy-secret-key-for-build python manage.py collectstatic --no-input --settings=core.settings.base
 
 # Expose port 7860 for Hugging Face
 EXPOSE 7860
