@@ -18,11 +18,29 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+          # Create a temporary deployment directory
+          mkdir deploy_tmp
           
-          # Add HF remote
+          # Copy only necessary files for the backend deployment
+          cp -r backend deploy_tmp/
+          cp Dockerfile deploy_tmp/
+          cp .dockerignore deploy_tmp/
+          
+          cd deploy_tmp
+          
+          # Remove local database and media files to stay within HF limits
+          # These should be handled by external services (PostgreSQL/Cloudinary)
+          rm -f backend/db.sqlite3*
+          rm -rf backend/media/*
+          
+          # Initialize a fresh git repository to flatten history
+          git init -b main
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          
+          git add .
+          git commit -m "deploy: sync backend to Hugging Face"
+          
+          # Add HF remote and force push
           git remote add huggingface https://oauth:${HF_TOKEN}@huggingface.co/spaces/MrbikeBD/mrbike-backend
-          
-          # Force push the CURRENT branch to HF's main branch
-          git push -f huggingface HEAD:main
+          git push -f huggingface main
