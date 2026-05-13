@@ -10,6 +10,9 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Render Backend
+      - name: Ping All Services
         run: |
+          echo "Pinging Render..."
           curl -I https://mrbike-backend.onrender.com/health/
+          echo "Pinging Hugging Face..."
+          curl -I https://mrbikebd-mrbike-backend.hf.space/health/

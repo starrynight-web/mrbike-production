@@ -2,7 +2,7 @@ name: Sync to Hugging Face Space
 
 on:
   push:
-    branches: [main]
+    branches: [main, render-test]
   workflow_dispatch:
 
 jobs:
@@ -24,5 +24,5 @@ jobs:
           # Add HF remote
           git remote add huggingface https://oauth:${HF_TOKEN}@huggingface.co/spaces/MrbikeBD/mrbike-backend
           
-          # Force push to HF
-          git push -f huggingface main
+          # Force push the CURRENT branch to HF's main branch
+          git push -f huggingface HEAD:main
