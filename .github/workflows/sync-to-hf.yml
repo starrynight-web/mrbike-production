@@ -25,6 +25,7 @@ jobs:
           cp -r backend deploy_tmp/
           cp Dockerfile deploy_tmp/
           cp .dockerignore deploy_tmp/
+          cp README.md deploy_tmp/
           
           cd deploy_tmp
           
