@@ -28,10 +28,14 @@ import { API_ENDPOINTS } from "@/config/constants";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { sanitizeImageUrl } from "@/lib/data-utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 export default function MyListingsPage() {
   const router = useRouter();
-  const { data: myListings, isLoading: listingsLoading, refetch } = useMyListings();
+  const queryClient = useQueryClient();
+  const { data: myListings, isLoading: listingsLoading } = useMyListings();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -43,35 +47,39 @@ export default function MyListingsPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.delete(API_ENDPOINTS.USED_BIKE_DELETE(String(id))),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["user", "listings"] });
+      const previous = queryClient.getQueryData(["user", "listings"]);
+      queryClient.setQueryData<any[]>(["user", "listings"], (old) =>
+        (old || []).filter((l: any) => l.id !== id)
+      );
+      return { previous };
+    },
+    onError: (err: any, _id, context) => {
+      queryClient.setQueryData(["user", "listings"], context?.previous);
+      toast.error(err.message || "Failed to delete listing");
+    },
+    onSuccess: () => toast.success("Listing deleted successfully"),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["user", "listings"] }),
+  });
+
+  const handleDelete = (id: number) => {
     if (!confirm("Are you sure you want to delete this listing?")) return;
-    
-    try {
-      const res = await api.delete(API_ENDPOINTS.USED_BIKE_DELETE(String(id)));
-      if (res.success) {
-        toast.success("Listing deleted successfully");
-        refetch();
-      } else {
-        toast.error(res.error?.message || "Failed to delete listing");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "An error occurred");
-    }
+    deleteMutation.mutate(id);
   };
 
-  const handleBoost = async (id: number) => {
-    try {
-      const res = await api.post(`/marketplace/listings/${id}/boost/`);
-      if (res.success) {
-        toast.success("Boost request sent! Admin will approve shortly.");
-        refetch();
-      } else {
-        toast.error(res.error?.message || "Failed to request boost");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "An error occurred");
-    }
-  };
+  const boostMutation = useMutation({
+    mutationFn: (id: number) => api.post(`/marketplace/listings/${id}/boost/`),
+    onSuccess: () => {
+      toast.success("Boost request sent! Admin will approve shortly.");
+      queryClient.invalidateQueries({ queryKey: ["user", "listings"] });
+    },
+    onError: (err: any) => toast.error(err.message || "An error occurred"),
+  });
+
+  const handleBoost = (id: number) => boostMutation.mutate(id);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -88,9 +96,21 @@ export default function MyListingsPage() {
       </div>
 
       {listingsLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 space-y-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary/60" />
-          <p className="text-muted-foreground animate-pulse">Fetching your listings...</p>
+        <div className="grid gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex flex-col md:flex-row gap-5 p-4 bg-card border rounded-2xl">
+              <Skeleton className="h-40 w-full md:w-56 rounded-xl" />
+              <div className="flex-1 space-y-3 py-2">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-1/3" />
+                <div className="flex gap-2 mt-4">
+                  <Skeleton className="h-10 w-28 rounded-xl" />
+                  <Skeleton className="h-10 w-28 rounded-xl" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : myListings?.length === 0 ? (
         <div className="text-center py-24 border-2 border-dashed rounded-2xl bg-muted/5 space-y-5">
@@ -160,12 +180,20 @@ export default function MyListingsPage() {
                       {listing.title}
                     </h4>
                     <div className="flex items-center gap-1">
+                      <TooltipProvider>
                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>More Actions</p>
+                              </TooltipContent>
+                            </Tooltip>
                             <DropdownMenuContent align="end" className="w-40 rounded-xl">
                               <DropdownMenuItem onClick={() => router.push(`/sell-bike?edit=${listing.id}`)} className="cursor-pointer">
                                 <Edit2 className="mr-2 h-4 w-4" /> Edit
@@ -183,6 +211,7 @@ export default function MyListingsPage() {
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
+                      </TooltipProvider>
                     </div>
                   </div>
                   

@@ -61,6 +61,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { adminAPI, UsedBikeListing } from "@/lib/admin-api";
 import { sanitizeImageUrl } from "@/lib/data-utils";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const BIKE_CATEGORIES = [
   { value: "sports", label: "Sports" },
@@ -74,8 +77,6 @@ const BIKE_CATEGORIES = [
 ];
 
 export default function UsedBikesModeration() {
-  const [listings, setListings] = useState<UsedBikeListing[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<
     "all" | "pending" | "active" | "rejected" | "sold"
@@ -109,89 +110,112 @@ export default function UsedBikesModeration() {
     category: "commuter",
   });
 
-  useEffect(() => {
-    loadListings("pending");
-  }, []);
+  const queryClient = useQueryClient();
 
-  const loadListings = async (status?: string) => {
-    try {
-      setLoading(true);
+  const { data: listings = [], isLoading: listingsLoading } = useQuery<UsedBikeListing[]>({
+    queryKey: ["admin", "used-bikes", filterStatus],
+    queryFn: async () => {
       const response = await adminAPI.getAllUsedBikes({
         limit: 100,
         offset: 0,
         sort: "newest",
-        status: (status === "all" ? undefined : status) as "pending" | "active" | "rejected" | "sold" | undefined,
+        status: (filterStatus === "all" ? undefined : filterStatus) as any,
       });
-      setListings(response.results || response);
-    } catch (error) {
-      console.error("Failed to load listings:", error);
-      toast.error("Failed to load listings");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.results || response || [];
+    },
+    staleTime: 1 * 60 * 1000,
+  });
 
-  const handleApproveSubmit = async () => {
-    if (!approveDialog.id) return;
-
-    try {
-      setApprovingId(approveDialog.id);
-      await adminAPI.approveListing(approveDialog.id, approveDialog.category);
-      toast.success("Listing approved successfully");
-      setListings(
-        listings.map((l) =>
-          l.id === approveDialog.id ? { ...l, status: "active" } : l,
-        ),
+  const approveMutation = useMutation({
+    mutationFn: ({ id, category }: { id: number; category: string }) => adminAPI.approveListing(id, category),
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: ["admin", "used-bikes", filterStatus] });
+      const previousListings = queryClient.getQueryData<UsedBikeListing[]>(["admin", "used-bikes", filterStatus]);
+      queryClient.setQueryData<UsedBikeListing[]>(["admin", "used-bikes", filterStatus], old => 
+        (old || []).map(l => l.id === id ? { ...l, status: "active" } : l)
       );
-      setApproveDialog({ open: false, id: null, category: "commuter" });
-    } catch (error) {
-      console.error("Failed to approve listing:", error);
+      setApprovingId(id);
+      return { previousListings };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(["admin", "used-bikes", filterStatus], context?.previousListings);
       toast.error("Failed to approve listing");
-    } finally {
+    },
+    onSuccess: () => {
+      toast.success("Listing approved successfully");
+      setApproveDialog({ open: false, id: null, category: "commuter" });
+    },
+    onSettled: () => {
       setApprovingId(null);
+      queryClient.invalidateQueries({ queryKey: ["admin", "used-bikes"] });
     }
+  });
+
+  const handleApproveSubmit = () => {
+    if (!approveDialog.id) return;
+    approveMutation.mutate({ id: approveDialog.id, category: approveDialog.category });
   };
 
-  const handleRejectSubmit = async () => {
-    if (!rejectDialog.id) return;
-
-    try {
-      setRejectingId(rejectDialog.id);
-      await adminAPI.rejectListing(
-        rejectDialog.id,
-        rejectDialog.reason || "Rejected by admin",
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: number; reason: string }) => adminAPI.rejectListing(id, reason || "Rejected by admin"),
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: ["admin", "used-bikes", filterStatus] });
+      const previousListings = queryClient.getQueryData<UsedBikeListing[]>(["admin", "used-bikes", filterStatus]);
+      queryClient.setQueryData<UsedBikeListing[]>(["admin", "used-bikes", filterStatus], old => 
+        (old || []).map(l => l.id === id ? { ...l, status: "rejected" } : l)
       );
-      toast.success("Listing rejected");
-      setListings(
-        listings.map((l) =>
-          l.id === rejectDialog.id ? { ...l, status: "rejected" } : l,
-        ),
-      );
-      setRejectDialog({ open: false, id: null, reason: "" });
-    } catch (error) {
-      console.error("Failed to reject listing:", error);
+      setRejectingId(id);
+      return { previousListings };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(["admin", "used-bikes", filterStatus], context?.previousListings);
       toast.error("Failed to reject listing");
-    } finally {
+    },
+    onSuccess: () => {
+      toast.success("Listing rejected");
+      setRejectDialog({ open: false, id: null, reason: "" });
+    },
+    onSettled: () => {
       setRejectingId(null);
+      queryClient.invalidateQueries({ queryKey: ["admin", "used-bikes"] });
     }
+  });
+
+  const handleRejectSubmit = () => {
+    if (!rejectDialog.id) return;
+    rejectMutation.mutate({ id: rejectDialog.id, reason: rejectDialog.reason });
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to permanently delete this listing?"))
-      return;
-
-    try {
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => adminAPI.deleteUsedBike(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["admin", "used-bikes", filterStatus] });
+      const previousListings = queryClient.getQueryData<UsedBikeListing[]>(["admin", "used-bikes", filterStatus]);
+      queryClient.setQueryData<UsedBikeListing[]>(["admin", "used-bikes", filterStatus], old => 
+        (old || []).filter(l => l.id !== id)
+      );
       setDeletingId(id);
-      await adminAPI.deleteUsedBike(id);
-      toast.success("Listing deleted successfully");
-      setListings(listings.filter((l) => l.id !== id));
-    } catch (error) {
-      console.error("Failed to delete listing:", error);
+      return { previousListings };
+    },
+    onError: (err, id, context) => {
+      queryClient.setQueryData(["admin", "used-bikes", filterStatus], context?.previousListings);
       toast.error("Failed to delete listing");
-    } finally {
+    },
+    onSuccess: () => {
+      toast.success("Listing deleted successfully");
+    },
+    onSettled: () => {
       setDeletingId(null);
+      queryClient.invalidateQueries({ queryKey: ["admin", "used-bikes"] });
     }
+  });
+
+  const handleDelete = (id: number) => {
+    if (!confirm("Are you sure you want to permanently delete this listing?")) return;
+    deleteMutation.mutate(id);
   };
+
+  const [showReportedOnly, setShowReportedOnly] = useState(false);
 
   const filteredListings = listings.filter((listing) => {
     const matchesSearch =
@@ -200,7 +224,8 @@ export default function UsedBikesModeration() {
       listing.brand.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus =
       filterStatus === "all" || listing.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const matchesReported = showReportedOnly ? (listing.reports_count || 0) > 0 : true;
+    return matchesSearch && matchesStatus && matchesReported;
   });
 
   return (
@@ -239,50 +264,49 @@ export default function UsedBikesModeration() {
                 size="sm"
                 onClick={() => {
                   setFilterStatus("all");
-                  loadListings("all");
+                  setShowReportedOnly(false);
                 }}
               >
                 All
               </Button>
               <Button
-                variant={filterStatus === "pending" ? "default" : "outline"}
+                variant={filterStatus === "pending" && !showReportedOnly ? "default" : "outline"}
                 size="sm"
                 onClick={() => {
                   setFilterStatus("pending");
-                  loadListings("pending");
+                  setShowReportedOnly(false);
                 }}
                 className={cn(
-                  filterStatus === "pending" &&
+                  filterStatus === "pending" && !showReportedOnly &&
                   "bg-yellow-600 hover:bg-yellow-700",
                 )}
               >
                 Pending
               </Button>
               <Button
-                variant={filterStatus === "active" ? "default" : "outline"}
+                variant={filterStatus === "active" && !showReportedOnly ? "default" : "outline"}
                 size="sm"
                 onClick={() => {
                   setFilterStatus("active");
-                  loadListings("active");
+                  setShowReportedOnly(false);
                 }}
                 className={cn(
-                  filterStatus === "active" &&
+                  filterStatus === "active" && !showReportedOnly &&
                   "bg-green-600 hover:bg-green-700",
                 )}
               >
                 Active
               </Button>
               <Button
-                variant="outline"
+                variant={showReportedOnly ? "default" : "outline"}
                 size="sm"
                 onClick={() => {
-                   // Filter locally for reported items if not supported by backend status
-                   const reported = listings.filter(l => (l.reports_count || 0) > 0);
-                   setListings(reported);
-                   setFilterStatus("all"); // Reset status badge but show filtered list
-                   toast.info(`Found ${reported.length} reported listings`);
+                   setShowReportedOnly(!showReportedOnly);
                 }}
-                className="border-red-200 text-red-600 hover:bg-red-50"
+                className={cn(
+                  "border-red-200 text-red-600 hover:bg-red-50",
+                  showReportedOnly && "bg-red-600 text-white hover:bg-red-700 hover:text-white border-red-600"
+                )}
               >
                 <AlertTriangle className="mr-2 h-4 w-4" /> Reported
               </Button>
@@ -290,9 +314,17 @@ export default function UsedBikesModeration() {
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
+          {listingsLoading ? (
+            <div className="space-y-4 pt-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <Skeleton className="h-12 w-16 rounded" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="rounded-md border overflow-x-auto">
@@ -403,74 +435,106 @@ export default function UsedBikesModeration() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/5"
-                              onClick={() =>
-                                setPreviewDialog({
-                                  open: true,
-                                  listing: listing,
-                                })
-                              }
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            {listing.status === "pending" && (
-                              <>
-                                <Button
-                                  size="icon"
-                                  variant="outline"
-                                  className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                  onClick={() =>
-                                    setApproveDialog({
-                                      open: true,
-                                      id: listing.id,
-                                      category: listing.category || "commuter",
-                                    })
-                                  }
-                                  disabled={approvingId === listing.id}
-                                >
-                                  {approvingId === listing.id ? (
-                                    <Loader className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <CheckCircle2 className="h-4 w-4" />
-                                  )}
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="outline"
-                                  className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                  onClick={() =>
-                                    setRejectDialog({
-                                      open: true,
-                                      id: listing.id,
-                                      reason: "",
-                                    })
-                                  }
-                                  disabled={rejectingId === listing.id}
-                                >
-                                  {rejectingId === listing.id ? (
-                                    <Loader className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <XCircle className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </>
-                            )}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8"
-                                  disabled={deletingId === listing.id}
-                                >
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
+                          <TooltipProvider>
+                            <div className="flex items-center justify-end gap-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="outline"
+                                    className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/5"
+                                    onClick={() =>
+                                      setPreviewDialog({
+                                        open: true,
+                                        listing: listing,
+                                      })
+                                    }
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Preview Ad</p>
+                                </TooltipContent>
+                              </Tooltip>
+
+                              {listing.status === "pending" && (
+                                <>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="outline"
+                                        className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                        onClick={() =>
+                                          setApproveDialog({
+                                            open: true,
+                                            id: listing.id,
+                                            category: listing.category || "commuter",
+                                          })
+                                        }
+                                        disabled={approvingId === listing.id}
+                                      >
+                                        {approvingId === listing.id ? (
+                                          <Loader className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <CheckCircle2 className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Approve</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="outline"
+                                        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                        onClick={() =>
+                                          setRejectDialog({
+                                            open: true,
+                                            id: listing.id,
+                                            reason: "",
+                                          })
+                                        }
+                                        disabled={rejectingId === listing.id}
+                                      >
+                                        {rejectingId === listing.id ? (
+                                          <Loader className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <XCircle className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Reject</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </>
+                              )}
+                              
+                              <DropdownMenu>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-8 w-8"
+                                        disabled={deletingId === listing.id}
+                                      >
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>More Actions</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                                <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => setPreviewDialog({ open: true, listing: listing })}>
@@ -497,7 +561,8 @@ export default function UsedBikesModeration() {
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
-                          </div>
+                            </div>
+                          </TooltipProvider>
                         </TableCell>
                       </TableRow>
                     ))

@@ -10,6 +10,9 @@ class LenientJWTAuthentication(JWTAuthentication):
     def authenticate(self, request):
         try:
             return super().authenticate(request)
-        except AuthenticationFailed:
-            # If token is present but invalid, just treat as anonymous
-            return None
+        except AuthenticationFailed as e:
+            # If token is present but invalid, and it's a safe read-only method,
+            # just treat as anonymous. For mutating methods, raise the 401 error.
+            if request.method in ('GET', 'HEAD', 'OPTIONS'):
+                return None
+            raise e

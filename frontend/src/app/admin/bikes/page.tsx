@@ -23,6 +23,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -99,8 +102,28 @@ const defaultVariant = () => ({
 export default function AdminBikesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [bikes, setBikes] = useState<BikeType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [brandFilter, setBrandFilter] = useState("all");
+  
+  const queryClient = useQueryClient();
+
+  const { data: brands = [], isLoading: brandsLoading } = useQuery<Brand[]>({
+    queryKey: ["admin", "brands"],
+    queryFn: async () => {
+      const data = await adminAPI.getAllBrands();
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: bikes = [], isLoading: bikesLoading } = useQuery<BikeType[]>({
+    queryKey: ["admin", "bikes"],
+    queryFn: async () => {
+      const response = await adminAPI.getAllBikes({ limit: 100, offset: 0 });
+      return response?.results || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isBrandDialogOpen, setIsBrandDialogOpen] = useState(false);
@@ -113,7 +136,6 @@ export default function AdminBikesPage() {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [brands, setBrands] = useState<Brand[]>([]);
   const [variants, setVariants] = useState<ReturnType<typeof defaultVariant>[]>([defaultVariant()]);
 
   const [newBike, setNewBike] = useState({
@@ -195,34 +217,7 @@ export default function AdminBikesPage() {
     } as any,
   });
 
-  useEffect(() => {
-    loadBikes();
-    loadBrands();
-  }, []);
 
-  const loadBrands = async () => {
-    try {
-      const data = await adminAPI.getAllBrands();
-      setBrands(data || []);
-    } catch {
-      console.error("Failed to load brands");
-    }
-  };
-
-  const loadBikes = async () => {
-    try {
-      setLoading(true);
-      const response = await adminAPI.getAllBikes({
-        limit: 100,
-        offset: 0,
-      });
-      setBikes(response?.results || []);
-    } catch {
-      toast.error("Failed to load bikes");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -283,14 +278,20 @@ export default function AdminBikesPage() {
       if (editingId) {
         await adminAPI.updateBike(editingId, formData as any);
         toast.success("Bike updated successfully");
+        setIsAddDialogOpen(false);
+        resetForm();
+        queryClient.invalidateQueries({ queryKey: ["admin", "bikes"] });
       } else {
-        await adminAPI.createBike(formData as any);
-        toast.success("New bike model added successfully");
+        const res = await adminAPI.createBike(formData as any);
+        if (res?.id) {
+          toast.success("Bike created successfully");
+          setIsAddDialogOpen(false);
+          resetForm();
+          queryClient.invalidateQueries({ queryKey: ["admin", "bikes"] });
+        } else {
+          throw new Error("Failed to create bike");
+        }
       }
-
-      setIsAddDialogOpen(false);
-      resetForm();
-      await loadBikes();
     } catch (error: any) {
       console.error("Failed to save bike:", error);
       toast.error(error?.message || (editingId ? "Failed to update bike" : "Failed to add bike"));
@@ -332,7 +333,7 @@ export default function AdminBikesPage() {
   const handleEdit = (bike: BikeType & { variants?: any[] }) => {
     setNewBike({
       name: bike.name,
-      brand: (typeof bike.brand === 'object' ? (bike.brand as { id: number }).id.toString() : bike.brand.toString()),
+      brand: bike.brand ? (typeof bike.brand === 'object' && bike.brand !== null ? (bike.brand as { id: number }).id.toString() : bike.brand.toString()) : "",
       category: bike.category,
       price: bike.price,
       description: bike.description || "",
@@ -387,27 +388,41 @@ export default function AdminBikesPage() {
     setIsAddDialogOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this bike model?")) return;
-
-    try {
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => adminAPI.deleteBike(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["admin", "bikes"] });
+      const prevBikes = queryClient.getQueryData<BikeType[]>(["admin", "bikes"]);
+      queryClient.setQueryData<BikeType[]>(["admin", "bikes"], (old) => 
+        (old || []).filter((b) => b.id !== id)
+      );
       setDeletingId(id);
-      await adminAPI.deleteBike(id);
-      toast.success("Bike model deleted successfully");
-      await loadBikes();
-    } catch (error) {
-      console.error("Failed to delete bike:", error);
+      return { prevBikes };
+    },
+    onError: (err, id, context) => {
+      queryClient.setQueryData(["admin", "bikes"], context?.prevBikes);
       toast.error("Failed to delete bike");
-    } finally {
+      console.error("Failed to delete bike:", err);
+    },
+    onSuccess: () => {
+      toast.success("Bike model deleted successfully");
+    },
+    onSettled: () => {
       setDeletingId(null);
+      queryClient.invalidateQueries({ queryKey: ["admin", "bikes"] });
     }
+  });
+
+  const handleDelete = (id: number) => {
+    if (!confirm("Are you sure you want to delete this bike model?")) return;
+    deleteMutation.mutate(id);
   };
 
   const handleDuplicate = async (bike: BikeType) => {
     try {
       await adminAPI.duplicateBike(bike.id);
       toast.success("Bike model duplicated as draft");
-      await loadBikes();
+      queryClient.invalidateQueries({ queryKey: ["admin", "bikes"] });
     } catch (error) {
       console.error("Failed to duplicate bike:", error);
       toast.error("Failed to duplicate bike");
@@ -415,13 +430,18 @@ export default function AdminBikesPage() {
   };
 
   const filteredBikes = bikes.filter((bike) => {
-    const bikeBrand = (typeof bike.brand === 'object' ? (bike.brand as { name: string }).name : (brands.find(b => b.id.toString() === bike.brand.toString())?.name || ""));
+    const brandIdStr = bike.brand ? (typeof bike.brand === 'object' && bike.brand !== null ? (bike.brand as any).id?.toString() : bike.brand.toString()) : "";
+    const bikeBrand = (typeof bike.brand === 'object' && bike.brand !== null)
+      ? ((bike.brand as { name?: string })?.name || "")
+      : (brands.find(b => b.id.toString() === brandIdStr)?.name || "");
     const matchesSearch =
-      bike.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bikeBrand.toLowerCase().includes(searchTerm.toLowerCase());
+      (bike.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (bikeBrand || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
       categoryFilter === "all" || bike.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const matchesBrand = 
+      brandFilter === "all" || brandIdStr === brandFilter;
+    return matchesSearch && matchesCategory && matchesBrand;
   });
 
   return (
@@ -485,7 +505,7 @@ export default function AdminBikesPage() {
                       setCreatingBrand(true);
                       await adminAPI.createBrand(newBrandData as any);
                       toast.success("Brand created successfully");
-                      await loadBrands();
+                      queryClient.invalidateQueries({ queryKey: ["admin", "brands"] });
                       setIsBrandDialogOpen(false);
                       setNewBrandData({ name: "", description: "" });
                     } catch (e: any) {
@@ -553,8 +573,8 @@ export default function AdminBikesPage() {
                       }
                       if (res.created > 0) {
                         toast.success(`Successfully imported ${res.created} bikes`);
-                        await loadBikes();
-                        await loadBrands();
+                        queryClient.invalidateQueries({ queryKey: ["admin", "bikes"] });
+                        queryClient.invalidateQueries({ queryKey: ["admin", "brands"] });
                         setIsImportDialogOpen(false);
                         setJsonInput("");
                       }
@@ -1380,6 +1400,19 @@ export default function AdminBikesPage() {
               />
             </div>
             <div className="flex items-center gap-2 w-full md:w-auto">
+              <Select value={brandFilter} onValueChange={setBrandFilter}>
+                <SelectTrigger className="w-full md:w-45">
+                  <SelectValue placeholder="All Brands" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Brands</SelectItem>
+                  {brands.map((brand) => (
+                    <SelectItem key={brand.id} value={brand.id.toString()}>
+                      {brand.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full md:w-45">
                   <SelectValue placeholder="All Categories" />
@@ -1400,9 +1433,17 @@ export default function AdminBikesPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
+          {bikesLoading ? (
+            <div className="space-y-4 pt-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <Skeleton className="h-12 w-16 rounded" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="rounded-md border overflow-x-auto">
@@ -1440,7 +1481,11 @@ export default function AdminBikesPage() {
                       <TableCell>
                         <div className="font-medium">{bike.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {bike.brand_name || (typeof bike.brand === 'object' ? (bike.brand as { name: string }).name : brands.find(b => b.id.toString() === bike.brand.toString())?.name) || 'Unknown Brand'}
+                          {bike.brand_name || 
+                            (typeof bike.brand === 'object' && bike.brand !== null
+                              ? (bike.brand as { name: string }).name 
+                              : (bike.brand ? brands.find(b => b.id.toString() === bike.brand.toString())?.name : "")) || 
+                            'Unknown Brand'}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -1453,46 +1498,47 @@ export default function AdminBikesPage() {
                         {bike.engine_capacity}cc {bike.engine_type}
                       </TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              disabled={deletingId === bike.id}
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleEdit(bike)}>
-                              <Edit2 className="mr-2 h-4 w-4" /> Edit Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDuplicate(bike)}
-                            >
-                              <Copy className="mr-2 h-4 w-4" /> Duplicate
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => handleDelete(bike.id)}
-                            >
-                              {deletingId === bike.id ? (
-                                <>
-                                  <Loader className="mr-2 h-4 w-4 animate-spin" />{" "}
-                                  Deleting...
-                                </>
-                              ) : (
-                                <>
-                                  <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                  Model
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <TooltipProvider>
+                          <DropdownMenu>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Manage Bike</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => handleEdit(bike)}
+                              >
+                                <Edit2 className="mr-2 h-4 w-4" /> Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDuplicate(bike)}
+                              >
+                                <Copy className="mr-2 h-4 w-4" /> Duplicate
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(bike.id)}
+                                className="text-destructive focus:text-destructive"
+                                disabled={deletingId === bike.id}
+                              >
+                                {deletingId === bike.id ? (
+                                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                )}
+                                Delete Model
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TooltipProvider>
                       </TableCell>
                     </TableRow>
                   ))}

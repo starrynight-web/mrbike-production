@@ -30,6 +30,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 import { adminAPI } from "@/lib/admin-api";
 import { useAuth } from "@/hooks/use-auth";
 import { usePathname } from "next/navigation";
@@ -37,32 +40,16 @@ import { usePathname } from "next/navigation";
 export default function AdminDashboard() {
     const pathname = usePathname();
     const { isSuperAdmin, isStaff, staffAdminSections, user, isLoading: authLoading } = useAuth();
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [stats, setStats] = useState<any[]>([]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [approvingId, setApprovingId] = useState<number | null>(null);
-    const [rejectingId, setRejectingId] = useState<number | null>(null);
+    const queryClient = useQueryClient();
 
     const isStaffUrl = pathname.startsWith('/staff_admin');
     const baseUrl = isStaffUrl ? '/staff_admin' : '/admin';
 
-    useEffect(() => {
-        if (!authLoading && isStaff) {
-             loadDashboardData();
-        }
-    }, [isSuperAdmin, isStaff, authLoading]);
-
-    const loadDashboardData = async () => {
-        try {
-            setLoading(true);
-            
-            // Fetch stats based on permissions
+    const { data: dashboardData, isLoading: loading } = useQuery({
+        queryKey: ["admin", "dashboard"],
+        queryFn: async () => {
             const [dashboardStats, pendingListings] = await Promise.all([
                 adminAPI.getDashboardStats(),
-                // Only fetch pending if user has permissions for used bikes moderation
                 (isSuperAdmin || (staffAdminSections || []).includes('staff_used_bikes')) 
                     ? adminAPI.getRecentPending(5) 
                     : Promise.resolve([]),
@@ -77,104 +64,69 @@ export default function AdminDashboard() {
                 }
             }
 
-            // Transform stats based on roles
             const formattedStats = [];
-            
-            // 1. User stats (SuperAdmin only)
             if (isSuperAdmin && totalUsersData) {
                 formattedStats.push({
-                    title: "Total Community",
-                    value: totalUsersData.total.toLocaleString(),
-                    change: `+${totalUsersData.new_week}`,
-                    trend: "up",
-                    icon: Users,
-                    color: "text-blue-500",
-                    bg: "bg-blue-500/10",
-                    role: 'superadmin'
+                    title: "Total Community", value: totalUsersData.total.toLocaleString(),
+                    change: `+${totalUsersData.new_week}`, trend: "up", icon: Users,
+                    color: "text-blue-500", bg: "bg-blue-500/10", role: 'superadmin'
                 });
             }
 
-            // 2. Official Bike stats (SuperAdmin or staff_bikes)
             if (isSuperAdmin || (staffAdminSections || []).includes('staff_bikes')) {
                 formattedStats.push({
-                    title: "Catalog Size",
-                    value: dashboardStats.total_bikes.toLocaleString(),
-                    change: "Verified",
-                    trend: "up",
-                    icon: Bike,
-                    color: "text-orange-500",
-                    bg: "bg-orange-500/10",
-                    role: 'staff_bikes'
+                    title: "Catalog Size", value: dashboardStats.total_bikes.toLocaleString(),
+                    change: "Verified", trend: "up", icon: Bike,
+                    color: "text-orange-500", bg: "bg-orange-500/10", role: 'staff_bikes'
                 });
             }
 
-            // 3. Used Bike stats (SuperAdmin or staff_used_bikes)
             if (isSuperAdmin || (staffAdminSections || []).includes('staff_used_bikes')) {
                 formattedStats.push({
-                    title: "Active Ads",
-                    value: dashboardStats.active_listings.toLocaleString(),
+                    title: "Active Ads", value: dashboardStats.active_listings.toLocaleString(),
                     change: `${dashboardStats.pending_approvals || 0} pending`,
-                    trend: (dashboardStats.pending_approvals ?? 0) > 0 ? "down" : "up",
-                    icon: Store,
-                    color: "text-emerald-500",
-                    bg: "bg-emerald-500/10",
-                    role: 'staff_used_bikes'
+                    trend: (dashboardStats.pending_approvals ?? 0) > 0 ? "down" : "up", icon: Store,
+                    color: "text-emerald-500", bg: "bg-emerald-500/10", role: 'staff_used_bikes'
                 });
             }
 
-            // 4. News stats (SuperAdmin or staff_news)
             if (isSuperAdmin || (staffAdminSections || []).includes('staff_news')) {
                 formattedStats.push({
-                    title: "Articles",
-                    value: (dashboardStats.published_news || 0).toLocaleString(),
-                    change: "Published",
-                    trend: "up",
-                    icon: FileText,
-                    color: "text-purple-500",
-                    bg: "bg-purple-500/10",
-                    role: 'staff_news'
+                    title: "Articles", value: (dashboardStats.published_news || 0).toLocaleString(),
+                    change: "Published", trend: "up", icon: FileText,
+                    color: "text-purple-500", bg: "bg-purple-500/10", role: 'staff_news'
                 });
             }
 
-            setStats(formattedStats);
-            setPendingApprovals(pendingListings || []);
-        } catch (error) {
-            console.error("Failed to load dashboard:", error);
-            toast.error("Failed to load dashboard data");
-        } finally {
-            setLoading(false);
-        }
-    };
+            return { stats: formattedStats, pendingListings: pendingListings || [] };
+        },
+        enabled: !authLoading && isStaff,
+        staleTime: 5 * 60 * 1000,
+    });
 
-    const handleApprove = async (listingId: number) => {
-        try {
-            setApprovingId(listingId);
-            await adminAPI.approveListing(listingId);
+    const stats = dashboardData?.stats || [];
+    const pendingApprovals = dashboardData?.pendingListings || [];
+
+    const approveMutation = useMutation({
+        mutationFn: (id: number) => adminAPI.approveListing(id),
+        onSuccess: () => {
             toast.success("Listing approved successfully!");
-            setPendingApprovals(pendingApprovals.filter(p => p.id !== listingId));
-            await loadDashboardData();
-        } catch (error) {
-            console.error("Failed to approve listing:", error);
-            toast.error("Failed to approve listing");
-        } finally {
-            setApprovingId(null);
-        }
-    };
+            queryClient.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+        },
+        onError: () => toast.error("Failed to approve listing")
+    });
 
-    const handleReject = async (listingId: number) => {
-        try {
-            setRejectingId(listingId);
-            await adminAPI.rejectListing(listingId, "Rejected from admin dashboard");
+    const rejectMutation = useMutation({
+        mutationFn: (id: number) => adminAPI.rejectListing(id, "Rejected from admin dashboard"),
+        onSuccess: () => {
             toast.success("Listing rejected");
-            setPendingApprovals(pendingApprovals.filter(p => p.id !== listingId));
-            await loadDashboardData();
-        } catch (error) {
-            console.error("Failed to reject listing:", error);
-            toast.error("Failed to reject listing");
-        } finally {
-            setRejectingId(null);
-        }
-    };
+            queryClient.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+        },
+        onError: () => toast.error("Failed to reject listing")
+    });
+
+    const handleApprove = (listingId: number) => approveMutation.mutate(listingId);
+    const handleReject = (listingId: number) => rejectMutation.mutate(listingId);
 
     if (!isStaff && !authLoading) {
         return (
@@ -220,7 +172,7 @@ export default function AdminDashboard() {
                      <Button variant="outline" className="rounded-xl border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm shadow-sm" size="sm">
                         <Calendar className="h-4 w-4 mr-2" /> {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                      </Button>
-                     <Button onClick={loadDashboardData} disabled={loading} size="sm" className="rounded-xl shadow-lg shadow-black/5 dark:shadow-white/5">
+                     <Button onClick={() => queryClient.invalidateQueries({ queryKey: ["admin", "dashboard"] })} disabled={loading} size="sm" className="rounded-xl shadow-lg shadow-black/5 dark:shadow-white/5">
                         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Activity className="h-4 w-4 mr-2" />}
                         Refresh
                      </Button>
@@ -288,7 +240,25 @@ export default function AdminDashboard() {
                             </Button>
                         </CardHeader>
                         <CardContent className="px-8 pb-8">
-                            {pendingApprovals.length === 0 ? (
+                            {loading ? (
+                                <div className="space-y-4 pt-4">
+                                    {Array.from({ length: 3 }).map((_, i) => (
+                                        <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800">
+                                            <div className="flex items-center gap-4">
+                                                <Skeleton className="h-14 w-14 rounded-2xl shrink-0" />
+                                                <div className="space-y-2">
+                                                    <Skeleton className="h-4 w-32" />
+                                                    <Skeleton className="h-3 w-20" />
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Skeleton className="h-10 w-10 rounded-xl" />
+                                                <Skeleton className="h-10 w-24 rounded-xl" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : pendingApprovals.length === 0 ? (
                                 <div className="text-center py-16 flex flex-col items-center gap-4">
                                     <div className="h-16 w-16 rounded-3xl bg-emerald-500/5 flex items-center justify-center">
                                         <CheckCircle2 className="h-8 w-8 text-emerald-500/30" />
@@ -327,35 +297,52 @@ export default function AdminDashboard() {
                                                         {item.bike_model} <span className="text-zinc-400 ml-1">#{item.id}</span>
                                                     </p>
                                                     <div className="flex items-center gap-2 mt-1">
-                                                       <Badge variant="outline" className="text-[9px] h-4 py-0 font-bold bg-zinc-50 dark:bg-zinc-800">{item.manufacturing_year}</Badge>
+                                                       <Badge variant="outline" className="text-[9px] h-4 py-0 font-bold bg-zinc-50 dark:bg-zinc-800">{item.year}</Badge>
                                                        <span className="text-xs text-muted-foreground font-medium uppercase tracking-tighter">৳{Number(item.price).toLocaleString()}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2 self-end sm:self-center">
-                                                <Button
-                                                    size="icon"
-                                                    variant="outline"
-                                                    className="h-10 w-10 min-w-10 rounded-xl text-rose-500 border-rose-100 hover:bg-rose-50 dark:hover:bg-rose-500/10"
-                                                    onClick={() => handleReject(item.id)}
-                                                    disabled={rejectingId === item.id}
-                                                >
-                                                    {rejectingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <AlertCircle className="h-4 w-4" />}
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    className="h-10 rounded-xl px-5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold"
-                                                    onClick={() => handleApprove(item.id)}
-                                                    disabled={approvingId === item.id}
-                                                >
-                                                    {approvingId === item.id ? (
-                                                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                                    ) : (
-                                                        <CheckCircle2 className="h-4 w-4 mr-2" />
-                                                    )}
-                                                    Approve
-                                                </Button>
-                                            </div>
+                                            <TooltipProvider>
+                                                <div className="flex items-center gap-2 self-end sm:self-center">
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="outline"
+                                                                className="h-10 w-10 min-w-10 rounded-xl text-rose-500 border-rose-100 hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                                                                onClick={() => handleReject(item.id)}
+                                                                disabled={rejectMutation.isPending && rejectMutation.variables === item.id}
+                                                            >
+                                                                {rejectMutation.isPending && rejectMutation.variables === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <AlertCircle className="h-4 w-4" />}
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Reject Listing</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                size="sm"
+                                                                className="h-10 rounded-xl px-5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold"
+                                                                onClick={() => handleApprove(item.id)}
+                                                                disabled={approveMutation.isPending && approveMutation.variables === item.id}
+                                                            >
+                                                                {approveMutation.isPending && approveMutation.variables === item.id ? (
+                                                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                                                ) : (
+                                                                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                                                                )}
+                                                                Approve
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Approve Listing</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </div>
+                                            </TooltipProvider>
                                         </motion.div>
                                     ))}
                                 </div>

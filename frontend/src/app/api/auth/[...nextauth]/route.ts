@@ -32,6 +32,7 @@ async function refreshAccessToken(token: any) {
     return {
       ...token,
       error: "RefreshAccessTokenError",
+      accessTokenExpires: Date.now() + 5 * 60 * 1000, // Debounce: prevent retrying for 5 minutes
     };
   }
 }

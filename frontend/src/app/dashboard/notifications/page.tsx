@@ -17,6 +17,8 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Notification {
   title: string;
@@ -46,8 +48,17 @@ export default function NotificationsPage() {
       </div>
 
       {notificationsLoading ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-10 w-10 animate-spin text-primary/60" />
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex gap-4 items-start p-4 bg-card border rounded-xl">
+              <Skeleton className="h-10 w-10 rounded-xl shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : !notifications || notifications.length === 0 ? (
         <div className="text-center py-24 border-2 border-dashed rounded-2xl bg-muted/5 space-y-4">
@@ -84,19 +95,28 @@ export default function NotificationsPage() {
                     {notification.message || "You have a new update."}
                   </p>
                 </div>
-                <DropdownMenu>
-                   <DropdownMenuTrigger asChild>
-                     <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreHorizontal className="h-4 w-4" />
-                     </Button>
-                   </DropdownMenuTrigger>
-                   <DropdownMenuContent align="end" className="rounded-xl">
-                      <DropdownMenuItem className="cursor-pointer">Mark as read</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer">
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete
-                      </DropdownMenuItem>
-                   </DropdownMenuContent>
-                </DropdownMenu>
+                <TooltipProvider>
+                  <DropdownMenu>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Options</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <DropdownMenuContent align="end" className="rounded-xl">
+                       <DropdownMenuItem className="cursor-pointer">Mark as read</DropdownMenuItem>
+                       <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer">
+                         <Trash2 className="mr-2 h-4 w-4" /> Delete
+                       </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TooltipProvider>
               </CardContent>
             </Card>
           ))}

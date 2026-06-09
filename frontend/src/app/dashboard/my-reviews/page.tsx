@@ -36,6 +36,8 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Review } from "@/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function MyReviewsPage() {
   const { data: myReviews, isLoading: reviewsLoading } = useMyReviews();
@@ -93,9 +95,21 @@ export default function MyReviewsPage() {
       </div>
 
       {reviewsLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 space-y-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary/60" />
-          <p className="text-muted-foreground animate-pulse">Fetching your reviews...</p>
+        <div className="grid gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex flex-col p-6 bg-card border rounded-2xl space-y-4">
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-5 w-1/2" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </div>
+              <Skeleton className="h-20 w-full rounded-xl" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+          ))}
         </div>
       ) : myReviews?.length === 0 ? (
         <div className="text-center py-24 border-2 border-dashed rounded-2xl bg-muted/5 space-y-5">
@@ -155,29 +169,38 @@ export default function MyReviewsPage() {
                       <CheckCircle2 className="h-3 w-3" /> Verified Owner
                     </Badge>
                   )}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40 rounded-xl">
-                      <DropdownMenuItem onClick={() => handleEditClick(review)} className="cursor-pointer">
-                        <Edit2 className="mr-2 h-4 w-4" /> Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer" asChild>
-                        <Link href={`/bike/${review.bike_slug}`}>
-                          <ExternalLink className="mr-2 h-4 w-4" /> View Bike
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDeleteClick(review)}
-                        className="text-destructive focus:text-destructive cursor-pointer"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <TooltipProvider>
+                    <DropdownMenu>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>More Actions</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <DropdownMenuContent align="end" className="w-40 rounded-xl">
+                        <DropdownMenuItem onClick={() => handleEditClick(review)} className="cursor-pointer">
+                          <Edit2 className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer" asChild>
+                          <Link href={`/bike/${review.bike_slug}`}>
+                            <ExternalLink className="mr-2 h-4 w-4" /> View Bike
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteClick(review)}
+                          className="text-destructive focus:text-destructive cursor-pointer"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TooltipProvider>
                 </div>
               </div>
 

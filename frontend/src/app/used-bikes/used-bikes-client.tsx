@@ -23,13 +23,13 @@ function UsedBikesContent() {
     page: Number(searchParams.get("page")) || 1,
   };
 
-  const { data, isLoading, error } = useUsedBikes(filters);
+  const { data, isFetching, error } = useUsedBikes(filters);
 
   const usedBikes = data?.usedBikes || [];
 
   const meta = data?.meta;
 
-  if (isLoading) {
+  if (isFetching) {
     return <UsedBikesListSkeleton />;
   }
 

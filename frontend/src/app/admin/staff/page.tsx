@@ -23,6 +23,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { adminAPI } from "@/lib/admin-api";
 import { Badge } from "@/components/ui/badge";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const STAFF_ROLES = [
   { value: "staff_news", label: "News Manager", description: "Can edit, add, and delete news articles" },
@@ -33,8 +36,6 @@ const STAFF_ROLES = [
 ];
 
 export default function StaffManagement() {
-  const [loading, setLoading] = useState(true);
-  const [staffList, setStaffList] = useState<any[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [newStaff, setNewStaff] = useState<{ email: string; sections: string[] }>({
@@ -42,56 +43,71 @@ export default function StaffManagement() {
     sections: [],
   });
 
-  useEffect(() => {
-    loadStaff();
-  }, []);
+  const queryClient = useQueryClient();
 
-  const loadStaff = async () => {
-    try {
-      setLoading(true);
+  const { data: staffList = [], isLoading: staffLoading } = useQuery<any[]>({
+    queryKey: ["admin", "staff"],
+    queryFn: async () => {
       const data = await adminAPI.getStaff();
-      setStaffList((data as any[]) || []);
-    } catch (error) {
-      console.error("Failed to load staff:", error);
-      toast.error("Failed to load staff members");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return (data as any[]) || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const handleCreateStaff = async () => {
+  const createMutation = useMutation({
+    mutationFn: (data: { email: string; sections: string[] }) => adminAPI.createStaff(data),
+    onSuccess: () => {
+      toast.success("Staff member added successfully");
+      setShowAddModal(false);
+      setNewStaff({ email: "", sections: [] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to create staff");
+    }
+  });
+
+  const handleCreateStaff = () => {
     if (!newStaff.email || newStaff.sections.length === 0) {
       toast.error("Please provide both email and at least one role");
       return;
     }
-
-    try {
-      await adminAPI.createStaff(newStaff);
-      toast.success("Staff member added successfully");
-      setShowAddModal(false);
-      setNewStaff({ email: "", sections: [] });
-      loadStaff();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to create staff");
-    }
+    createMutation.mutate(newStaff);
   };
 
-  const handleDeleteStaff = async (id: number) => {
-    if (!confirm("Are you sure you want to remove this staff member?")) return;
-
-    try {
-      await adminAPI.deleteStaff(id);
-      toast.success("Staff member removed");
-      loadStaff();
-    } catch (error) {
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => adminAPI.deleteStaff(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["admin", "staff"] });
+      const previousStaff = queryClient.getQueryData<any[]>(["admin", "staff"]);
+      queryClient.setQueryData<any[]>(["admin", "staff"], (old) => 
+        (old || []).filter(s => s.id !== id)
+      );
+      return { previousStaff };
+    },
+    onError: (err, id, context) => {
+      queryClient.setQueryData(["admin", "staff"], context?.previousStaff);
       toast.error("Failed to delete staff member");
+    },
+    onSuccess: () => {
+      toast.success("Staff member removed");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
     }
+  });
+
+  const handleDeleteStaff = (id: number) => {
+    if (!confirm("Are you sure you want to remove this staff member?")) return;
+    deleteMutation.mutate(id);
   };
 
   const filteredStaff = staffList.filter(
     (s) => {
       const emailMatch = s.email?.toLowerCase().includes(searchQuery.toLowerCase());
-      const sectionsMatch = s.sections?.some((section: string) => section.toLowerCase().includes(searchQuery.toLowerCase()));
+      const sectionsMatch = Array.isArray(s.sections)
+        ? s.sections.some((section: string) => section.toLowerCase().includes(searchQuery.toLowerCase()))
+        : false;
       const roleKeyMatch = s.role_key?.toLowerCase().includes(searchQuery.toLowerCase());
       return emailMatch || sectionsMatch || roleKeyMatch;
     }
@@ -124,16 +140,24 @@ export default function StaffManagement() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline" onClick={loadStaff} disabled={loading}>
-              <Loader className={loading ? "animate-spin" : ""} />
+            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ["admin", "staff"] })} disabled={staffLoading || createMutation.isPending || deleteMutation.isPending}>
+              <Loader className={staffLoading ? "animate-spin" : ""} />
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <Loader className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-muted-foreground animate-pulse">Fetching staff list...</p>
+          {staffLoading ? (
+            <div className="space-y-4 py-8">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="h-3 w-[150px]" />
+                  </div>
+                  <Skeleton className="h-8 w-[100px]" />
+                </div>
+              ))}
             </div>
           ) : filteredStaff.length === 0 ? (
             <div className="text-center py-20 px-4 border-2 border-dashed rounded-xl">
@@ -206,14 +230,23 @@ export default function StaffManagement() {
                         )}
                       </td>
                       <td className="py-4 px-2 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleDeleteStaff(staff.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => handleDeleteStaff(staff.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Remove Staff</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </td>
                     </motion.tr>
                   ))}
@@ -287,7 +320,7 @@ export default function StaffManagement() {
                               if (checked) {
                                 setNewStaff({ ...newStaff, sections: [...newStaff.sections, role.value] });
                               } else {
-                                setNewStaff({ ...newStaff, sections: newStaff.sections.filter(r => r !== role.value) });
+                                setNewStaff({ ...newStaff, sections: newStaff.sections.filter((r: string) => r !== role.value) });
                               }
                             }}
                             className="mt-0.5"

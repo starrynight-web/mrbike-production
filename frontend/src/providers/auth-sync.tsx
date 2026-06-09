@@ -39,6 +39,14 @@ export function AuthSync() {
     const lastSyncedRef = useRef<string | null>(null);
 
     useEffect(() => {
+        if ((session as any)?.error === "RefreshAccessTokenError") {
+            console.warn("[AuthSync] RefreshAccessTokenError detected, signing out...");
+            import("next-auth/react").then(({ signOut }) => {
+                signOut({ callbackUrl: "/login?error=SessionExpired" });
+            });
+            return;
+        }
+
         const syncProfile = async () => {
             if (status !== "authenticated" || !session?.user) {
                 if (status === "unauthenticated") {

@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardOverview() {
   const { data: stats, isLoading: statsLoading } = useUserStats();
@@ -71,9 +72,9 @@ export default function DashboardOverview() {
               <stat.icon className="h-5 w-5 text-zinc-400" />
             </div>
             <div className="space-y-1">
-              <p className="text-4xl font-bold tracking-tighter text-zinc-900 dark:text-zinc-100">
-                {statsLoading ? "..." : stat.value}
-              </p>
+              <div className="text-4xl font-bold tracking-tighter text-zinc-900 dark:text-zinc-100">
+                {statsLoading ? <Skeleton className="h-10 w-20" /> : stat.value}
+              </div>
               <p className="text-xs text-zinc-400 font-medium">{stat.description}</p>
             </div>
           </div>

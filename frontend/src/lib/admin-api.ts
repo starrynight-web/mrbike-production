@@ -762,6 +762,9 @@ class AdminAPI {
 
   async getStaff() {
     const response = await api.get("/users/admin/staff/");
+    if (!response.success) {
+      throw new Error(response.error?.message || "Failed to load staff list");
+    }
     return response.data;
   }
 

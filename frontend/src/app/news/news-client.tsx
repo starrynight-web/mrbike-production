@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { NewsArticle } from "@/types";
 import { getSafeImageUrl } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CATEGORIES = [
   { id: "all", label: "All News" },
@@ -22,7 +23,7 @@ const CATEGORIES = [
 
 export function NewsClient() {
   const [activeCategory, setActiveCategory] = useState("all");
-  const { data: newsData, isLoading } = useNews({
+  const { data: newsData, isFetching } = useNews({
     category: activeCategory === "all" ? undefined : activeCategory,
   });
 
@@ -30,10 +31,6 @@ export function NewsClient() {
 
   const featuredNews = news.length > 0 ? news[0] : null;
   const recentNews = news.length > 0 ? news.slice(1) : [];
-
-  if (isLoading) {
-    return <NewsLoadingSkeleton />;
-  }
 
   return (
     <div className="min-h-screen">
@@ -78,8 +75,12 @@ export function NewsClient() {
       </div>
 
       <div className="container py-8 md:py-12 space-y-12">
-        {/* Featured Post (Hero) */}
-        {activeCategory === "all" && featuredNews && (
+        {isFetching ? (
+          <NewsLoadingSkeleton />
+        ) : (
+          <>
+            {/* Featured Post (Hero) */}
+            {activeCategory === "all" && featuredNews && (
           <section className="relative group overflow-hidden rounded-2xl border bg-card">
             <div className="grid lg:grid-cols-2 gap-0">
               <div className="relative h-80 lg:h-auto overflow-hidden bg-muted">
@@ -239,7 +240,9 @@ export function NewsClient() {
               </Button>
             </div>
           )}
-        </section>
+          </section>
+          </>
+        )}
       </div>
     </div>
   );
@@ -247,17 +250,24 @@ export function NewsClient() {
 
 function NewsLoadingSkeleton() {
   return (
-    <div className="container py-16 space-y-12">
-      <div className="h-24 bg-muted rounded-xl w-3/4" />
-      <div className="h-125 bg-muted rounded-2xl" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="space-y-4">
-            <div className="aspect-video bg-muted rounded-xl" />
-            <div className="h-6 bg-muted rounded w-3/4" />
-            <div className="h-4 bg-muted rounded w-full" />
-          </div>
-        ))}
+    <div className="space-y-12 w-full">
+      <Skeleton className="h-[400px] w-full rounded-2xl" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-8">
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="space-y-4">
+              <Skeleton className="aspect-video w-full rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -15,6 +15,7 @@ from apps.marketplace.models import UsedBikeListing
 from .models import User, StaffAdmin
 from apps.interactions.models import Review
 from apps.core.permissions import IsSuperAdminOnly, IsAnyStaffOrSuperAdmin
+from apps.core.responses import StandardResponse
 
 
 class AdminStatsView(APIView):
@@ -255,8 +256,8 @@ class TotalUsersView(APIView):
         total_users = User.objects.count()
         new_today = User.objects.filter(date_joined__date=timezone.now().date()).count()
         new_week = User.objects.filter(date_joined__gte=timezone.now() - timedelta(days=7)).count()
-        return Response({
+        return StandardResponse.success(data={
             "total": total_users,
             "new_today": new_today,
             "new_week": new_week
-        })
+        }, message="Total users retrieved successfully")

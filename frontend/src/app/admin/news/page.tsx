@@ -57,6 +57,9 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useNews } from "@/hooks/use-news";
 import { adminAPI } from "@/lib/admin-api";
@@ -100,7 +103,9 @@ export default function AdminNewsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
-  const { data: articlesData, refetch } = useNews(
+  const queryClient = useQueryClient();
+
+  const { data: articlesData, isLoading } = useNews(
     categoryFilter !== "all" ? { category: categoryFilter } : undefined,
   );
 
@@ -163,40 +168,41 @@ export default function AdminNewsPage() {
     setIsCreateDialogOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const toastId = toast.loading(editingId ? "Updating article..." : "Creating article...");
-    try {
-      const formData = new FormData();
-      formData.append("title", newArticle.title);
-      formData.append("category", newArticle.category);
-      formData.append("excerpt", newArticle.excerpt);
-      formData.append("content", newArticle.content);
-      formData.append("tags", newArticle.tags);
-      formData.append("is_published", String(newArticle.is_published));
-      formData.append("meta_title", newArticle.meta_title);
-      formData.append("meta_description", newArticle.meta_description);
-
-      if (imageFile) {
-        formData.append("featured_image", imageFile);
-      }
-
-      if (editingId) {
-        await adminAPI.updateArticle(editingId, formData);
-        toast.success("Article updated successfully", { id: toastId });
-      } else {
-        await adminAPI.createArticle(formData);
-        toast.success("Article created successfully", { id: toastId });
-      }
-
+  const saveMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string | null; data: FormData }) => {
+      if (id) return adminAPI.updateArticle(id, data);
+      return adminAPI.createArticle(data);
+    },
+    onSuccess: () => {
+      toast.success(`Article ${editingId ? "updated" : "created"} successfully`);
       setIsCreateDialogOpen(false);
       resetForm();
-      refetch();
-    } catch (error: any) {
+      queryClient.invalidateQueries({ queryKey: ["news"] });
+    },
+    onError: (error: any) => {
       console.error("Failed to save article:", error);
-      toast.error(error.message || "Failed to save article", { id: toastId });
+      toast.error(error.message || "Failed to save article");
     }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("title", newArticle.title);
+    formData.append("category", newArticle.category);
+    formData.append("excerpt", newArticle.excerpt);
+    formData.append("content", newArticle.content);
+    formData.append("tags", newArticle.tags);
+    formData.append("is_published", String(newArticle.is_published));
+    formData.append("meta_title", newArticle.meta_title);
+    formData.append("meta_description", newArticle.meta_description);
+
+    if (imageFile) {
+      formData.append("featured_image", imageFile);
+    }
+
+    saveMutation.mutate({ id: editingId, data: formData });
   };
 
   const handlePreview = (article: Article) => {
@@ -221,16 +227,28 @@ export default function AdminNewsPage() {
     return matchesSearch; // Category check is largely redundant if API handles it, but harmless
   });
 
-  const handleDelete = async (id: string | number) => {
+  const deleteMutation = useMutation({
+    mutationFn: (id: string | number) => adminAPI.deleteArticle(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["news"] });
+      // Depending on API cache structure we can do optimistic deletion here, 
+      // but invalidating is safer given pagination logic
+    },
+    onSuccess: () => {
+      toast.success("Article deleted successfully");
+    },
+    onError: (error: any) => {
+      console.error("Failed to delete article:", error);
+      toast.error("Failed to delete article");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["news"] });
+    }
+  });
+
+  const handleDelete = (id: string | number) => {
     if (confirm("Are you sure you want to delete this article?")) {
-      try {
-        await adminAPI.deleteArticle(id);
-        toast.success("Article deleted successfully");
-        refetch();
-      } catch (error) {
-        console.error("Failed to delete article:", error);
-        toast.error("Failed to delete article");
-      }
+      deleteMutation.mutate(id);
     }
   };
 
@@ -522,6 +540,19 @@ export default function AdminNewsPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {isLoading ? (
+            <div className="space-y-4 pt-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <Skeleton className="h-12 w-16 rounded" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-[350px]" />
+                    <Skeleton className="h-4 w-[250px]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
           <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
@@ -587,13 +618,21 @@ export default function AdminNewsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
+                      <TooltipProvider>
+                        <DropdownMenu>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>More Actions</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handleEdit(article)}>
@@ -615,6 +654,7 @@ export default function AdminNewsPage() {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
+                      </TooltipProvider>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -631,6 +671,7 @@ export default function AdminNewsPage() {
               </TableBody>
             </Table>
           </div>
+          )}
         </CardContent>
       </Card>
     </div>
