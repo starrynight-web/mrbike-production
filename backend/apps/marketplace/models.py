@@ -27,8 +27,8 @@ class Shop(models.Model):
     map_location = models.TextField(blank=True, null=True, help_text="Google Maps Embed Iframe or URL")
     
     # Media
-    logo = CloudinaryField('image', folder='mrbikebd/shops/logos/', blank=True, null=True)
-    cover_image = CloudinaryField('image', folder='mrbikebd/shops/covers/', blank=True, null=True)
+    logo = models.CharField(max_length=500, blank=True, null=True)
+    cover_image = models.CharField(max_length=500, blank=True, null=True)
     
     contact_number = models.CharField(max_length=20)
     whatsapp_number = models.CharField(max_length=20, blank=True, null=True)
@@ -324,6 +324,11 @@ class ListingImage(models.Model):
             
             # Case 1: Field has a direct .url attribute (typical for CloudinaryField)
             try:
+                raw_val = str(field)
+                if raw_val.startswith('http://') or raw_val.startswith('https://'):
+                    url = raw_val.replace('http://', 'https://')
+                    return url
+                    
                 if hasattr(field, 'url') and field.url:
                     url = field.url
                     # Standardize to HTTPS

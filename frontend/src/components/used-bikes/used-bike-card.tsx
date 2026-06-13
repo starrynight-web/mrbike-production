@@ -1,9 +1,11 @@
+"use client";
+
+import { useState, MouseEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Calendar, Gauge, CheckCircle, Flame, Bike, Store } from "lucide-react";
+import { MapPin, Calendar, Gauge, CheckCircle, Flame, Bike, Store, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { formatPrice, cn, formatRelativeTime } from "@/lib/utils";
 import type { UsedBike } from "@/types";
 
@@ -13,6 +15,36 @@ interface UsedBikeCardProps {
 }
 
 export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Use images array if available, otherwise fallback to thumbnail
+  const images = (bike.images && bike.images.length > 0 
+    ? bike.images 
+    : [bike.thumbnailUrl])
+    .map((img: any) => {
+      if (typeof img === "string") return img;
+      if (img && typeof img === "object" && img.url) return img.url;
+      if (img && typeof img === "object" && img.original_image) return img.original_image;
+      return "";
+    })
+    .filter((img) => typeof img === "string" && img.trim() !== "");
+
+  const handleNextImage = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }
+  };
+
+  const handlePrevImage = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    }
+  };
+
   return (
     <Card
       className={cn(
@@ -21,16 +53,17 @@ export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
       )}
     >
       {/* Image Section */}
-      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
+      <div className="relative aspect-[4/3] bg-muted overflow-hidden group/gallery">
         <Link
           href={`/used-bike/${bike.slug}`}
           className="block h-full w-full relative"
         >
-          {bike.thumbnailUrl ? (
+          {images.length > 0 ? (
             <Image
-              src={bike.thumbnailUrl}
+              src={images[currentImageIndex] || images[0]}
               alt={bike.bikeName}
               fill
+              unoptimized
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
@@ -40,8 +73,39 @@ export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
           )}
         </Link>
 
+        {/* Gallery Controls */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={handlePrevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white rounded-full p-1 opacity-0 group-hover/gallery:opacity-100 transition-opacity z-20"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleNextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white rounded-full p-1 opacity-0 group-hover/gallery:opacity-100 transition-opacity z-20"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            
+            {/* Dots */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20">
+              {images.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={cn(
+                    "h-1.5 rounded-full transition-all duration-300 shadow-sm",
+                    idx === currentImageIndex ? "w-3 bg-white" : "w-1.5 bg-white/50"
+                  )}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
         {/* Badges */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+        <div className="absolute top-2 left-2 flex flex-col gap-1 z-10 pointer-events-none">
           {bike.isVerified && (
             <Badge
               variant="secondary"
@@ -64,7 +128,7 @@ export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
 
         <Badge
           variant="outline"
-          className="absolute bottom-2 right-2 bg-black/60 text-white border-none backdrop-blur-sm z-10"
+          className="absolute bottom-2 right-2 bg-black/60 text-white border-none backdrop-blur-sm z-10 pointer-events-none"
         >
           {formatRelativeTime(bike.createdAt)}
         </Badge>
@@ -88,7 +152,7 @@ export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
           </div>
           <div className="flex items-center gap-1">
             <Gauge className="h-3.5 w-3.5" />
-            {bike.kmDriven.toLocaleString()} km
+            {(bike.kmDriven ?? 0).toLocaleString()} km
           </div>
           <div className="flex items-center gap-1">
             <MapPin className="h-3.5 w-3.5" />
@@ -109,7 +173,7 @@ export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
             >
               <div className="relative w-6 h-6 rounded-full overflow-hidden border border-zinc-100 bg-zinc-50 shrink-0">
                 {bike.shop.logo ? (
-                  <Image src={bike.shop.logo} alt={bike.shop.name} fill className="object-cover" />
+                  <Image src={bike.shop.logo} alt={bike.shop.name} fill className="object-cover" unoptimized />
                 ) : (
                   <Store className="h-4 w-4 m-1 text-zinc-400" />
                 )}

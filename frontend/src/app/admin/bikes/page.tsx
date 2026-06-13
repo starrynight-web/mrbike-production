@@ -97,6 +97,7 @@ const defaultVariant = () => ({
   slipper_clutch: false,
   traction_control: false,
   quick_shifter: false,
+  image_url: "",
 });
 
 export default function AdminBikesPage() {
@@ -118,7 +119,7 @@ export default function AdminBikesPage() {
   const { data: bikes = [], isLoading: bikesLoading } = useQuery<BikeType[]>({
     queryKey: ["admin", "bikes"],
     queryFn: async () => {
-      const response = await adminAPI.getAllBikes({ limit: 100, offset: 0 });
+      const response = await adminAPI.getAllBikes({ limit: 2000, offset: 0 });
       return response?.results || [];
     },
     staleTime: 5 * 60 * 1000,
@@ -379,6 +380,7 @@ export default function AdminBikesPage() {
         slipper_clutch: !!v.slipper_clutch,
         traction_control: !!v.traction_control,
         quick_shifter: !!v.quick_shifter,
+        image_url: v.image_url || "",
       })));
     } else {
       setVariants([defaultVariant()]);
@@ -442,7 +444,7 @@ export default function AdminBikesPage() {
     const matchesBrand = 
       brandFilter === "all" || brandIdStr === brandFilter;
     return matchesSearch && matchesCategory && matchesBrand;
-  });
+  }).sort((a, b) => (b.id || 0) - (a.id || 0));
 
   return (
     <div className="space-y-6">
@@ -474,7 +476,7 @@ export default function AdminBikesPage() {
                 <Database className="mr-2 h-4 w-4" /> Add Brand
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add New Brand</DialogTitle>
                 <DialogDescription>Create a new manufacturer brand for the database.</DialogDescription>
@@ -491,6 +493,7 @@ export default function AdminBikesPage() {
                 <div className="space-y-2">
                   <Label>Description (Optional)</Label>
                   <Textarea 
+                    className="max-h-[50vh] overflow-y-auto"
                     placeholder="Brief history or details..." 
                     value={newBrandData.description}
                     onChange={e => setNewBrandData({...newBrandData, description: e.target.value})}
@@ -530,7 +533,7 @@ export default function AdminBikesPage() {
                 <FileJson className="mr-2 h-4 w-4" /> Import JSON
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Import Bike Data</DialogTitle>
                 <DialogDescription>Paste bike JSON data or upload a .json file to bulk import.</DialogDescription>
@@ -539,7 +542,7 @@ export default function AdminBikesPage() {
                 <div className="space-y-2">
                   <Label>JSON Content</Label>
                   <Textarea 
-                    className="font-mono text-xs min-h-[300px]"
+                    className="font-mono text-xs min-h-[300px] max-h-[50vh] overflow-y-auto"
                     placeholder='{ "Bike Name": "Yamaha R15 V4", ... }'
                     value={jsonInput}
                     onChange={e => setJsonInput(e.target.value)}
@@ -1145,7 +1148,7 @@ export default function AdminBikesPage() {
                         )}
                       </div>
                       {/* Identity */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                         <div className="space-y-1">
                           <Label className="text-xs">Variant Name *</Label>
                           <Input value={variant.variant_name}
@@ -1163,6 +1166,19 @@ export default function AdminBikesPage() {
                           <Input type="number" value={variant.price}
                             onChange={e => setVariants(prev => prev.map((v, i) => i === idx ? {...v, price: Number(e.target.value)} : v))}
                             placeholder="0" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Variant Image</Label>
+                          <ImageUploadSlot
+                            id={`variant_image_${idx}`}
+                            preview={variant.image_url}
+                            onUpload={async (file) => {
+                              const res = await adminAPI.uploadImage(file);
+                              if (res?.url) {
+                                setVariants(prev => prev.map((v, i) => i === idx ? {...v, image_url: res.url} : v));
+                              }
+                            }}
+                          />
                         </div>
                       </div>
                       {/* Performance */}

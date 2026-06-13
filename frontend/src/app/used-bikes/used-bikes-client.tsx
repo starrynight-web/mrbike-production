@@ -126,6 +126,54 @@ function UsedBikesListSkeleton() {
   );
 }
 
+export function UsedBikeFiltersSkeleton() {
+  return (
+    <div className="w-full lg:w-64 space-y-6">
+      <div className="flex justify-between items-center mb-4">
+        <Skeleton className="h-6 w-20" />
+      </div>
+      
+      <div className="space-y-3">
+        <Skeleton className="h-5 w-16" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      
+      <div className="space-y-3">
+        <Skeleton className="h-5 w-24" />
+        <Skeleton className="h-12 w-full" />
+        <div className="flex justify-between">
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-6 w-16" />
+        </div>
+      </div>
+      
+      <div className="space-y-3">
+        <Skeleton className="h-5 w-20" />
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-4 flex-1" />
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="space-y-3">
+        <Skeleton className="h-5 w-16" />
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-4 flex-1" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function UsedBikesClient() {
   return (
     <div className="min-h-screen">
@@ -150,7 +198,7 @@ export function UsedBikesClient() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters */}
           <Suspense
-            fallback={<Skeleton className="w-full lg:w-64 h-[500px]" />}
+            fallback={<UsedBikeFiltersSkeleton />}
           >
             <UsedBikeFilters />
           </Suspense>

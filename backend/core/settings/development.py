@@ -18,17 +18,18 @@ DATABASES = {
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
     import dj_database_url
-    DATABASES['default'] = dj_database_url.config(
+    DATABASES['default'] = dj_database_url.config(  # type: ignore
         default=DATABASE_URL,
-        conn_max_age=0,  # Disable connection persistence for development to avoid staleness
+        conn_max_age=0,  # Must be 0 for Supabase session mode with small pool
         conn_health_checks=True,
     )
-    DATABASES['default']['OPTIONS'] = {
-        'keepalives': 1,
-        'keepalives_idle': 60,
-        'keepalives_interval': 10,
-        'keepalives_count': 5,
-    }
+    # Commented out keepalives as they cause "server closed the connection unexpectedly" on Windows development environments
+    # DATABASES['default']['OPTIONS'] = {
+    #     'keepalives': 1,
+    #     'keepalives_idle': 60,
+    #     'keepalives_interval': 10,
+    #     'keepalives_count': 5,
+    # }
     print("[OK] Development: Using PostgreSQL/Supabase")
 else:
     print("[INFO] Development: Using local SQLite")
@@ -61,7 +62,7 @@ SIMPLE_JWT['SIGNING_KEY'] = SECRET_KEY
 # 4.7 — django-debug-toolbar (Dev Only)
 # ─────────────────────────────────────────────
 try:
-    import debug_toolbar  # noqa
+    import debug_toolbar  # type: ignore # noqa
     INSTALLED_APPS += ['debug_toolbar']
     MIDDLEWARE.insert(1, 'debug_toolbar.middleware.DebugToolbarMiddleware')
     INTERNAL_IPS = ['127.0.0.1', '::1']

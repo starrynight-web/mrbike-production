@@ -12,7 +12,7 @@ class UsedBikeListingFilter(django_filters.FilterSet):
 
     class Meta:
         model = UsedBikeListing
-        fields = ['brand', 'condition', 'minPrice', 'maxPrice', 'location', 'category', 'status', 'is_featured', 'is_urgent']
+        fields = ['brand', 'condition', 'minPrice', 'maxPrice', 'location', 'category', 'status', 'is_featured', 'is_urgent', 'shop']
 
     def filter_brand(self, queryset, name, value):
         brand_params = self.request.query_params.getlist('brand')

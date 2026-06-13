@@ -93,6 +93,7 @@ export interface BikeVariant {
   // API compatibility fields
   variant_key?: string;
   variant_name?: string;
+  image_url?: string;
   [key: string]: unknown;
 }
 

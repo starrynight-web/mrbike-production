@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { APP_CONFIG, SEO_DEFAULTS } from "@/config/constants";
 import { apiServer } from "@/lib/api-server";
 import { Skeleton } from "@/components/ui/skeleton";
+import { mapBike } from "@/lib/data-utils";
 
 // 4.5 — Code Splitting: 70KB detail-client is lazy-loaded, not in the critical path bundle
 const BikeDetailClient = dynamic(() => import("./detail-client").then((m) => m.BikeDetailClient), {
@@ -39,15 +40,16 @@ export async function generateMetadata({ params }: BikePageProps): Promise<Metad
         };
     }
 
-    const bikeName = bike.name;
-    const brandName = bike.brand?.name || bike.brand_name || "";
+    const mappedBike = mapBike(bike) as any;
+    const bikeName = mappedBike.name;
+    const brandName = mappedBike.brand?.name || mappedBike.brand_name || "";
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonthStr = currentDate.toLocaleString('default', { month: 'long' });
-    const formattedPrice = bike.price ? bike.price.toLocaleString('en-IN') : 'N/A';
+    const formattedPrice = mappedBike.price ? mappedBike.price.toLocaleString('en-IN') : 'N/A';
 
-    const title = bike.meta_title || `${currentYear} ${brandName} ${bikeName} Price in Bangladesh — MrBikeBD`;
-    const description = bike.meta_description || `${brandName} ${bikeName} price in Bangladesh is ৳${formattedPrice}. Check specs, reviews, EMI, and compare with similar bikes. Updated ${currentMonthStr} ${currentYear}.`;
+    const title = mappedBike.meta_title || `${currentYear} ${brandName} ${bikeName} Price in Bangladesh — MrBikeBD`;
+    const description = mappedBike.meta_description || `${brandName} ${bikeName} price in Bangladesh is ৳${formattedPrice}. Check specs, reviews, EMI, and compare with similar bikes. Updated ${currentMonthStr} ${currentYear}.`;
 
     return {
         title: title,
@@ -64,11 +66,11 @@ export async function generateMetadata({ params }: BikePageProps): Promise<Metad
             description: description,
             url: `${APP_CONFIG.url}/bike/${slug}`,
             type: "article",
-            publishedTime: bike.created_at || new Date().toISOString(),
-            modifiedTime: bike.updated_at || new Date().toISOString(),
+            publishedTime: mappedBike.created_at || new Date().toISOString(),
+            modifiedTime: mappedBike.updated_at || new Date().toISOString(),
             images: [
                 {
-                    url: bike.primary_image || bike.thumbnailUrl || SEO_DEFAULTS.defaultOgImage,
+                    url: mappedBike.primary_image || mappedBike.thumbnailUrl || SEO_DEFAULTS.defaultOgImage,
                     width: 1200,
                     height: 630,
                     alt: bikeName,
@@ -100,11 +102,13 @@ export default async function BikePage({ params }: BikePageProps) {
         notFound();
     }
 
-    const bikeData = await apiServer.getBike(slug);
+    const rawBikeData = await apiServer.getBike(slug);
     
-    if (!bikeData) {
+    if (!rawBikeData) {
         notFound();
     }
+
+    const bikeData = mapBike(rawBikeData);
 
     // Structured Data (JSON-LD)
     const jsonLd = {

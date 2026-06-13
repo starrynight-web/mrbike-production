@@ -2,6 +2,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from .models import Article
 from apps.core.webhooks import trigger_revalidation
+from apps.core.cache_utils import invalidate_model_cache
 
 @receiver([post_save, post_delete], sender=Article)
 def revalidate_news(sender, instance, **kwargs):
@@ -14,3 +15,6 @@ def revalidate_news(sender, instance, **kwargs):
         
         # Also revalidate homepage for news feed
         trigger_revalidation("/")
+        
+    # Backend Cache invalidation
+    invalidate_model_cache('articles')

@@ -8,11 +8,8 @@ class LenientJWTAuthentication(JWTAuthentication):
     Useful for public views that still want to track user if possible.
     """
     def authenticate(self, request):
-        try:
-            return super().authenticate(request)
-        except AuthenticationFailed as e:
-            # If token is present but invalid, and it's a safe read-only method,
-            # just treat as anonymous. For mutating methods, raise the 401 error.
-            if request.method in ('GET', 'HEAD', 'OPTIONS'):
-                return None
-            raise e
+        # We MUST NOT swallow AuthenticationFailed here. 
+        # If a token is provided but expired, we must raise 401 so the frontend's api-service interceptor 
+        # can catch it and trigger a token refresh via NextAuth.
+        # If no token is provided, super().authenticate returns None natively, which is perfectly safe for public views.
+        return super().authenticate(request)

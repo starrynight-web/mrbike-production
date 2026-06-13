@@ -6,6 +6,7 @@ import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Sheet,
   SheetContent,
@@ -36,7 +37,7 @@ import { cn, formatPrice } from "@/lib/utils";
 export function UsedBikeFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: brands = [] } = useBrands();
+  const { data: brands = [], isLoading: isBrandsLoading } = useBrands();
 
   // -- State from URL --
   const selectedBrands = searchParams.getAll("brand");
@@ -139,6 +140,7 @@ export function UsedBikeFilters() {
     selectedConditions,
     toggleCondition,
     brands,
+    isBrandsLoading,
     selectedBrands,
     toggleBrand,
   };
@@ -201,6 +203,7 @@ interface FilterContentProps {
   selectedConditions: string[];
   toggleCondition: (value: string) => void;
   brands: Brand[];
+  isBrandsLoading?: boolean;
   selectedBrands: string[];
   toggleBrand: (slug: string) => void;
 }
@@ -217,6 +220,7 @@ function FilterContent({
   selectedConditions,
   toggleCondition,
   brands,
+  isBrandsLoading = false,
   selectedBrands,
   toggleBrand,
 }: FilterContentProps) {
@@ -302,23 +306,32 @@ function FilterContent({
       <div>
         <h4 className="text-sm font-medium mb-3">Brand</h4>
         <div className="space-y-1">
-          {brands?.map((brand: Brand) => (
-            <label
-              key={brand.id}
-              className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 px-1.5 py-1 rounded transition-colors"
-            >
-              <Checkbox
-                id={`brand-${brand.id}`}
-                checked={selectedBrands.includes(brand.slug)}
-                onCheckedChange={() => toggleBrand(brand.slug)}
-                className="h-3.5 w-3.5 rounded-sm"
-              />
-              <span className="text-sm flex-1">{brand.name}</span>
-              <span className="text-[10px] text-muted-foreground">
-                ({brand.usedBikeCount || 0})
-              </span>
-            </label>
-          ))}
+          {isBrandsLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-2 px-1.5 py-1">
+                <Skeleton className="h-3.5 w-3.5 rounded-sm" />
+                <Skeleton className="h-4 flex-1" />
+              </div>
+            ))
+          ) : (
+            brands?.map((brand: Brand) => (
+              <label
+                key={brand.id}
+                className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 px-1.5 py-1 rounded transition-colors"
+              >
+                <Checkbox
+                  id={`brand-${brand.id}`}
+                  checked={selectedBrands.includes(brand.slug)}
+                  onCheckedChange={() => toggleBrand(brand.slug)}
+                  className="h-3.5 w-3.5 rounded-sm"
+                />
+                <span className="text-sm flex-1">{brand.name}</span>
+                <span className="text-[10px] text-muted-foreground">
+                  ({brand.usedBikeCount || 0})
+                </span>
+              </label>
+            ))
+          )}
         </div>
       </div>
     </div>

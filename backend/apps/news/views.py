@@ -6,7 +6,7 @@ from apps.core.authentication import LenientJWTAuthentication
 from django.core.cache import cache
 from apps.core.permissions import IsSuperAdminOnly, IsStaffWithRole
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 
 class ArticleListCreateView(generics.ListCreateAPIView):
     authentication_classes = [LenientJWTAuthentication]
@@ -14,12 +14,12 @@ class ArticleListCreateView(generics.ListCreateAPIView):
     parser_classes = (parsers.MultiPartParser, parsers.FormParser)
 
     def get_queryset(self):
-        if self.request.user and self.request.user.is_authenticated and self.request.user.is_staff:
+        if self.request.user and self.request.user.is_authenticated and getattr(self.request.user, 'is_staff', False):
             queryset = Article.objects.all().order_by('-created_at')
         else:
             queryset = Article.objects.filter(is_published=True).order_by('-published_at')
 
-        search_query = self.request.query_params.get('search', None)
+        search_query = self.request.GET.get('search', None)
         if search_query:
             from django.contrib.postgres.search import SearchQuery, SearchRank
             from django.db.models import F
@@ -38,25 +38,18 @@ class ArticleListCreateView(generics.ListCreateAPIView):
         # Skip cache for search queries
         if request.query_params.get('search'):
             return super().get(request, *args, **kwargs)
+            
+        from apps.core.cache_utils import generate_cache_key, cache_aside_get, cache_aside_set
         
-        # Generate cache key based on query parameters (excluding search)
-        # This ensures different pagination/filters get separate cache entries
-        cache_params = dict(request.query_params)
-        cache_params.pop('search', None)  # Remove search from cache key
-        cache_key = f"article_list_{hash(frozenset(cache_params.items()))}"
+        kwargs_for_key = {k: v for k, v in request.query_params.items() if k != 'search'}
+        cache_key = generate_cache_key('articles', 'list', **kwargs_for_key)
         
-        # Try to get from cache
-        cached_data = cache.get(cache_key)
-        if cached_data is not None:
-            from rest_framework.response import Response
-            return Response(cached_data)
-        
-        # Get the response from parent
+        cached_response = cache_aside_get(cache_key)
+        if cached_response:
+            return cached_response
+            
         response = super().get(request, *args, **kwargs)
-        
-        # Cache the response data for 15 minutes (900 seconds)
-        cache.set(cache_key, response.data, 900)
-        
+        cache_aside_set(cache_key, response.data, timeout=60 * 60)
         return response
 
     def get_permissions(self):
@@ -85,13 +78,23 @@ class ArticleDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        if self.request.user and self.request.user.is_authenticated and self.request.user.is_staff:
+        if self.request.user and self.request.user.is_authenticated and getattr(self.request.user, 'is_staff', False):
             return Article.objects.all()
         return Article.objects.filter(is_published=True)
 
-    @method_decorator(cache_page(60 * 15))
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        from apps.core.cache_utils import generate_cache_key, cache_aside_get, cache_aside_set
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs.get(lookup_url_kwarg)
+        cache_key = generate_cache_key('articles', 'retrieve', identifier=lookup_value)
+        
+        cached_response = cache_aside_get(cache_key)
+        if cached_response:
+            return cached_response
+            
+        response = super().get(request, *args, **kwargs)
+        cache_aside_set(cache_key, response.data, timeout=60 * 60)
+        return response
 
 class ArticleAdminUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Article.objects.all()

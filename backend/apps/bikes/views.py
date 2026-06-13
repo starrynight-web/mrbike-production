@@ -1,4 +1,5 @@
 from rest_framework import viewsets, filters, status, permissions
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
@@ -23,7 +24,7 @@ from apps.interactions.models import UserViewHistory
 logger = logging.getLogger(__name__)
 
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 
 class BrandViewSet(viewsets.ModelViewSet):
     authentication_classes = [LenientJWTAuthentication]
@@ -33,13 +34,29 @@ class BrandViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'origin']
     
-    @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        from apps.core.cache_utils import generate_cache_key, cache_aside_get, cache_aside_set
+        cache_key = generate_cache_key('brands', 'list', **request.query_params.dict())
+        cached_response = cache_aside_get(cache_key)
+        if cached_response:
+            return cached_response
+        
+        response = super().list(request, *args, **kwargs)
+        cache_aside_set(cache_key, response.data, timeout=60 * 60 * 24)
+        return response
 
-    @method_decorator(cache_page(60 * 15))
     def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+        from apps.core.cache_utils import generate_cache_key, cache_aside_get, cache_aside_set
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs.get(lookup_url_kwarg)
+        cache_key = generate_cache_key('brands', 'retrieve', identifier=lookup_value)
+        cached_response = cache_aside_get(cache_key)
+        if cached_response:
+            return cached_response
+        
+        response = super().retrieve(request, *args, **kwargs)
+        cache_aside_set(cache_key, response.data, timeout=60 * 60 * 24)
+        return response
 
     def get_object(self):
         """Allow getting brand by ID or slug"""
@@ -75,7 +92,12 @@ class BrandViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return [IsStaffWithRole(['staff_settings', 'staff_bikes'])()]
 
+class BikePagination(PageNumberPagination):
+    page_size_query_param = 'limit'
+    max_page_size = 2000
+
 class BikeModelViewSet(viewsets.ModelViewSet):
+    pagination_class = BikePagination
     authentication_classes = [LenientJWTAuthentication]
     serializer_class = BikeModelSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
@@ -88,7 +110,7 @@ class BikeModelViewSet(viewsets.ModelViewSet):
         # Optimized with select_related and prefetch_related (Audit Gap)
         queryset = BikeModel.objects.all().select_related('brand', 'detailed_specs').prefetch_related('variants').order_by('name')
         
-        search_query = self.request.query_params.get('search')
+        search_query = self.request.GET.get('search')
         if search_query:
             from django.contrib.postgres.search import SearchVector
             queryset = queryset.annotate(
@@ -97,12 +119,33 @@ class BikeModelViewSet(viewsets.ModelViewSet):
             
         return queryset
 
-    @method_decorator(cache_page(60))
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        from apps.core.cache_utils import generate_cache_key, cache_aside_get, cache_aside_set
+        cache_key = generate_cache_key('bikes', 'list', **request.query_params.dict())
+        cached_response = cache_aside_get(cache_key)
+        if cached_response:
+            return cached_response
+        
+        response = super().list(request, *args, **kwargs)
+        cache_aside_set(cache_key, response.data, timeout=60 * 60 * 24)
+        return response
 
-    @method_decorator(cache_page(60))
     def retrieve(self, request, *args, **kwargs):
+        from apps.core.cache_utils import generate_cache_key, cache_aside_get, cache_aside_set
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs.get(lookup_url_kwarg)
+        cache_key = generate_cache_key('bikes', 'retrieve', identifier=lookup_value)
+        cached_response = cache_aside_get(cache_key)
+        if cached_response:
+            # For cached views, we should still increment popularity async or bypass to save time
+            # Since caching is prioritized, we will skip DB hits if it's purely a read.
+            # But we must ensure the view count is somewhat accurate. Let's offload to background.
+            try:
+                from django_q.tasks import async_task
+                async_task('apps.bikes.tasks.log_bike_view', lookup_value, request.user.id if request.user.is_authenticated else None, request.session.session_key or request.META.get('HTTP_X_SESSION_ID', 'anonymous'))
+            except Exception:
+                pass
+            return cached_response
         instance = self.get_object()
         
         # 1. Atomic increment of popularity score
@@ -122,14 +165,19 @@ class BikeModelViewSet(viewsets.ModelViewSet):
         # 3. Legacy view history tracking (for backward compatibility)
         if request.user.is_authenticated:
             from apps.interactions.models import UserViewHistory
-            UserViewHistory.objects.update_or_create(
+            history, created = UserViewHistory.objects.get_or_create(
                 user=request.user,
                 bike_model=instance,
-                defaults={'view_count': F('view_count') + 1}
+                defaults={'view_count': 1}
             )
+            if not created:
+                UserViewHistory.objects.filter(pk=history.pk).update(view_count=F('view_count') + 1)
+        
         
         serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        response_data = serializer.data
+        cache_aside_set(cache_key, response_data, timeout=60 * 60 * 24)
+        return Response(response_data)
 
     @action(detail=True, methods=['get'])
     def emotional_recommendations(self, request, pk=None):
@@ -196,7 +244,7 @@ class BikeModelViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(bike)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], url_path='upload-image')
     def upload_image(self, request):
         image_file = request.FILES.get('image')
         if not image_file:
@@ -283,7 +331,7 @@ class BikeModelViewSet(viewsets.ModelViewSet):
                     "Cafe Racer": "cafe_racer",
                     "Off-Road": "offroad"
                 }
-                category = category_map.get(item.get("Category"), "commuter")
+                category = category_map.get(str(item.get("Category", "")), "commuter")
                 
                 # Clean Price
                 price_str = item.get("Base Price", "0")
@@ -352,14 +400,14 @@ class BikeModelViewSet(viewsets.ModelViewSet):
                 )
                 
                 # Create Variants
-                variants_list = item.get("Varriants", [])
+                variants_list = item.get("Variants") or item.get("Varriants") or []
                 from .models import BikeVariant
                 for v_item in variants_list:
                     BikeVariant.objects.update_or_create(
                         bike_model=bike_model,
                         variant_key=v_item.get("Variant Key", "std"),
                         defaults={
-                            'variant_name': v_item.get("Varriant Name"),
+                            'variant_name': v_item.get("Variant Name", v_item.get("Varriant Name")),
                             'price': float(re.sub(r'[^\d.]', '', str(v_item.get("Price BDT", "0"))) or 0),
                             'braking_system': v_item.get("Braking System"),
                             'rear_brake_type': v_item.get("Rear Braking System"),
@@ -369,7 +417,7 @@ class BikeModelViewSet(viewsets.ModelViewSet):
                             'instrument_console': v_item.get("Instrument Console"),
                             'mobile_connectivity': v_item.get("Mobile Phone Connectivity") == "Yes",
                             'riding_modes': v_item.get("Riding Modes") == "Yes",
-                            'traction_control': v_item.get("TRaction Control") == "Yes",
+                            'traction_control': v_item.get("Traction Control", v_item.get("TRaction Control")) == "Yes",
                             'slipper_clutch': v_item.get("Slipper/Assist Clutch") == "Yes",
                             'quick_shifter': v_item.get("Quick Shifter") == "Yes",
                             'seat_type': v_item.get("Seat Type"),

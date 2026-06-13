@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { api } from "@/lib/api-service";
@@ -110,6 +110,7 @@ interface VariantData {
   pros: Record<string, string>;
   cons: Record<string, string>;
   color?: string;
+  image_url?: string;
 }
 
 interface ApiVariant {
@@ -463,6 +464,15 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
   const [selectedVariantKey, setSelectedVariantKey] = useState<string>("std");
   const [emiMonths] = useState(EMI_CONFIG.defaultTenureMonths);
   const [specsTab, setSpecsTab] = useState("engine");
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+
+  const handleImageError = useCallback((src: string) => {
+    setBrokenImages(prev => {
+      const next = new Set(prev);
+      next.add(src);
+      return next;
+    });
+  }, []);
 
   // Track view behavior
   useEffect(() => {
@@ -564,6 +574,7 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
           avgFuelConsumption: !!bike.detailed_specs?.avg_fuel_consumption,
           pros: {},
           cons: {},
+          image_url: v.image_url,
         };
       });
     } else {
@@ -770,20 +781,36 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
                 className="w-full h-full relative"
               >
                 <Image
-                  src={bike.images && bike.images.length > 0 ? bike.images[activeImageIndex] : defaultImage}
+                  src={
+                    (() => {
+                      const baseImages = bike.images && bike.images.length > 0 ? bike.images : [defaultImage];
+                      const displayImages = [...baseImages];
+                      if (currentVariant?.image_url && !brokenImages.has(currentVariant.image_url)) {
+                        displayImages[0] = currentVariant.image_url;
+                      }
+                      const imgToRender = displayImages[activeImageIndex] || defaultImage;
+                      return brokenImages.has(imgToRender) ? defaultImage : imgToRender;
+                    })()
+                  }
                   alt={`${bikeName} - Image ${activeImageIndex + 1}`}
                   fill
                   className="object-cover"
                   priority
+                  unoptimized
+                  onError={(e) => {
+                    const src = (e.target as HTMLImageElement).src;
+                    if (src) handleImageError(src);
+                  }}
                 />
               </motion.div>
 
               {/* Navigation Arrows */}
               <button
                 onClick={() =>
-                  setActiveImageIndex((prev) =>
-                    prev === 0 ? (bike.images?.length || 1) - 1 : prev - 1,
-                  )
+                  setActiveImageIndex((prev) => {
+                    const length = bike.images?.length || 1;
+                    return prev === 0 ? length - 1 : prev - 1;
+                  })
                 }
                 className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
               >
@@ -791,9 +818,10 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
               </button>
               <button
                 onClick={() =>
-                  setActiveImageIndex((prev) =>
-                    prev === (bike.images?.length || 1) - 1 ? 0 : prev + 1,
-                  )
+                  setActiveImageIndex((prev) => {
+                    const length = bike.images?.length || 1;
+                    return prev === length - 1 ? 0 : prev + 1;
+                  })
                 }
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
               >
@@ -813,7 +841,14 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
 
             {/* Thumbnails */}
             <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-              {(bike.images || [defaultImage]).map((img, index) => (
+              {(() => {
+                const baseImages = bike.images && bike.images.length > 0 ? bike.images : [defaultImage];
+                const displayImages = [...baseImages];
+                if (currentVariant?.image_url && !brokenImages.has(currentVariant.image_url)) {
+                  displayImages[0] = currentVariant.image_url;
+                }
+                return displayImages;
+              })().map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveImageIndex(index)}
@@ -825,10 +860,15 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
                   )}
                 >
                   <Image
-                    src={img}
+                    src={brokenImages.has(img) ? defaultImage : img}
                     alt={`Thumbnail ${index + 1}`}
                     fill
                     className="object-cover"
+                    unoptimized
+                    onError={(e) => {
+                      const src = (e.target as HTMLImageElement).src;
+                      if (src) handleImageError(src);
+                    }}
                   />
                 </button>
               ))}

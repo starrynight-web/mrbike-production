@@ -27,6 +27,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'django_filters',
+    'cloudinary_storage',
+    'cloudinary',
     
     # Local apps
     'apps.core',
@@ -165,6 +167,7 @@ if CLOUDINARY_CLOUD_NAME:
         api_secret = CLOUDINARY_API_SECRET,
         secure = True
     )
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Email Configuration (Brevo / Sendinblue SMTP)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -211,3 +214,34 @@ SECURE_REFERRER_POLICY = 'same-origin'
 # but documented here for the auditor.
 # 1. marketplace.tasks.check_listing_expiry (Frequency: @daily)
 # 2. marketplace.tasks.notify_approaching_expiry (Frequency: @daily)
+
+import logging
+
+class IgnoreUnauthorizedFilter(logging.Filter):
+    def filter(self, record):
+        if record.levelname == 'WARNING' and 'Unauthorized:' in record.getMessage():
+            return False
+        return True
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'ignore_unauthorized': {
+            '()': 'core.settings.base.IgnoreUnauthorizedFilter',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'filters': ['ignore_unauthorized'],
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    },
+}

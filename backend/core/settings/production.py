@@ -30,13 +30,13 @@ DATABASES = {
     )
 }
 
-# Fix Supabase connection drops via TCP Keepalives
-DATABASES['default']['OPTIONS'] = {
-    'keepalives': 1,
-    'keepalives_idle': 60,
-    'keepalives_interval': 10,
-    'keepalives_count': 5,
-}
+# Fix Supabase connection drops: Do NOT use keepalives with Supavisor pooler as it causes "server closed the connection unexpectedly"
+# DATABASES['default']['OPTIONS'] = {
+#     'keepalives': 1,
+#     'keepalives_idle': 60,
+#     'keepalives_interval': 10,
+#     'keepalives_count': 5,
+# }
 
 # Redis / Cache Production settings (Enforce SSL)
 REDIS_URL = os.getenv("REDIS_URL")

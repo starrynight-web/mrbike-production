@@ -68,6 +68,11 @@ class BikeModelSerializer(serializers.ModelSerializer):
         if not image_field:
             return None
             
+        raw_val = str(image_field)
+        if raw_val.startswith('http://') or raw_val.startswith('https://'):
+            if raw_val.startswith('http://'): return raw_val.replace('http://', 'https://')
+            return raw_val
+            
         if hasattr(image_field, 'url') and image_field.url:
             url = image_field.url
             if url.startswith('http://'): return url.replace('http://', 'https://')
@@ -95,6 +100,18 @@ class BikeModelSerializer(serializers.ModelSerializer):
         except Exception:
             return None
 
+    def _parse_image_url(self, value):
+        if not value or not isinstance(value, str):
+            return value
+        if "image/upload/" in value:
+            public_id = value.split("image/upload/")[-1]
+            import re
+            public_id = re.sub(r'^v\d+/', '', public_id)
+            if '.' in public_id:
+                public_id = public_id.rsplit('.', 1)[0]
+            return public_id
+        return value
+
     def _parse_variants_data(self, request_data):
         """Parse variants from either nested dict or JSON string."""
         variants_json = request_data.get('variants_data', None)
@@ -117,6 +134,10 @@ class BikeModelSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         specs_data = validated_data.pop('detailed_specs', None)
+        
+        for attr in ['primary_image', 'image1', 'image2', 'image3', 'image4', 'image5']:
+            if attr in validated_data:
+                validated_data[attr] = self._parse_image_url(validated_data[attr])
         
         # Handle image files from multipart/form-data
         request = self.context.get('request')
@@ -146,6 +167,8 @@ class BikeModelSerializer(serializers.ModelSerializer):
         
         # Update BikeModel fields
         for attr, value in validated_data.items():
+            if attr in ['primary_image', 'image1', 'image2', 'image3', 'image4', 'image5']:
+                value = self._parse_image_url(value)
             setattr(instance, attr, value)
         instance.save()
         

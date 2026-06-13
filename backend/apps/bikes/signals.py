@@ -2,6 +2,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from .models import BikeModel, Brand
 from apps.core.webhooks import trigger_revalidation
+from apps.core.cache_utils import invalidate_model_cache
 
 @receiver([post_save, post_delete], sender=BikeModel)
 def revalidate_bike_detail(sender, instance, **kwargs):
@@ -17,6 +18,9 @@ def revalidate_bike_detail(sender, instance, **kwargs):
     # 3. Revalidate his brand page
     if instance.brand:
         trigger_revalidation(f"/brands/{instance.brand.slug}")
+        
+    # Backend Cache invalidation
+    invalidate_model_cache('bikes')
 
 @receiver([post_save, post_delete], sender=Brand)
 def revalidate_brands(sender, instance, **kwargs):
@@ -25,3 +29,6 @@ def revalidate_brands(sender, instance, **kwargs):
     """
     trigger_revalidation("/brands")
     trigger_revalidation(f"/brands/{instance.slug}")
+    
+    # Backend Cache invalidation
+    invalidate_model_cache('brands')

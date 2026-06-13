@@ -82,31 +82,29 @@ class ApiService {
         originalRequest._authRetryCount = originalRequest._authRetryCount || 0;
 
         // Handle 401 — attempt token refresh then retry
-        if (error.response?.status === 401 && originalRequest._authRetryCount < 1) {
-          originalRequest._authRetryCount++;
-          
-          try {
-            // Force NextAuth to re-evaluate the JWT (triggers refreshAccessToken)
-            const newSession = await getSession();
-            if (newSession?.accessToken) {
-              originalRequest.headers.Authorization = `Bearer ${newSession.accessToken}`;
-              return this.client(originalRequest);
-            }
-          } catch (refreshError) {
-            console.error("[API] Token refresh failed:", refreshError);
-          }
-
-          // Only sign out if we are on a page that requires authentication or if it's a persistent failure
+        if (error.response?.status === 401) {
           const isPublicPage = typeof window !== "undefined" && 
                               !(window.location.pathname.includes('/dashboard') || 
                                 window.location.pathname.includes('/sell-bike') ||
                                 window.location.pathname.includes('/admin'));
-          
-          const isPersistentAuthFailure = error.response?.status === 401;
+
+          if (originalRequest._authRetryCount < 1) {
+            originalRequest._authRetryCount++;
+            try {
+              // Force NextAuth to re-evaluate the JWT (triggers refreshAccessToken)
+              const newSession = await getSession();
+              if (newSession?.accessToken) {
+                originalRequest.headers.Authorization = `Bearer ${newSession.accessToken}`;
+                return this.client(originalRequest);
+              }
+            } catch (refreshError) {
+              console.error("[API] Token refresh failed:", refreshError);
+            }
+          }
 
           // Auth failed persistently — sign out as last resort
-          if (typeof window !== "undefined" && isPersistentAuthFailure) {
-            console.warn("[API] Authentication failed. Stale session detected.");
+          if (typeof window !== "undefined") {
+            console.warn("[API] Authentication failed persistently. Stale session detected.");
             
             // Remove stale tokens
             localStorage.removeItem("accessToken");
@@ -120,6 +118,16 @@ class ApiService {
             } else {
               // On public pages, just let the user be anonymous
               console.log("[API] Auth failed on public page. Continuing as guest.");
+              // Add loop protection for the guest retry!
+              originalRequest._guestRetryCount = originalRequest._guestRetryCount || 0;
+              if (originalRequest.method?.toLowerCase() === 'get' && originalRequest._guestRetryCount < 1) {
+                originalRequest._guestRetryCount++;
+                delete originalRequest.headers.Authorization;
+                if (originalRequest.headers.delete) {
+                  originalRequest.headers.delete('Authorization');
+                }
+                return this.client(originalRequest);
+              }
             }
           }
         }
@@ -326,9 +334,8 @@ class ApiService {
   }
 
   async updateMyShop(data: any) {
-    // If data is FormData (containing files), handle it
-    const headers = data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {};
-    return this.request<any>(this.client.patch(API_ENDPOINTS.SHOP_ME, data, { headers }));
+    const config = data instanceof FormData ? { headers: { "Content-Type": "multipart/form-data" } } : undefined;
+    return this.request<any>(this.client.patch(API_ENDPOINTS.SHOP_ME, data, config));
   }
 
   // Generic HTTP Methods for compatibility

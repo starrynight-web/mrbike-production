@@ -34,6 +34,9 @@ class ReportListingSerializer(serializers.ModelSerializer):
 class ShopSerializer(serializers.ModelSerializer):
     owner_name = serializers.ReadOnlyField(source='owner.username')
     
+    logo = serializers.SerializerMethodField()
+    cover_image = serializers.SerializerMethodField()
+
     class Meta:
         model = Shop
         fields = [
@@ -44,10 +47,39 @@ class ShopSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['is_verified', 'slug']
 
+    def get_full_cloudinary_url(self, path):
+        if not path:
+            return None
+        if path.startswith('http://') or path.startswith('https://'):
+            return path
+        # Assume it's a cloudinary public_id
+        import cloudinary
+        import cloudinary.utils
+        url, _ = cloudinary.utils.cloudinary_url(path, secure=True)
+        return url
+
+    def get_logo(self, obj):
+        return self.get_full_cloudinary_url(obj.logo)
+
+    def get_cover_image(self, obj):
+        return self.get_full_cloudinary_url(obj.cover_image)
+
 class ShopBasicSerializer(serializers.ModelSerializer):
+    logo = serializers.SerializerMethodField()
+
     class Meta:
         model = Shop
         fields = ['id', 'name', 'slug', 'logo', 'location_city', 'is_verified']
+
+    def get_logo(self, obj):
+        if not obj.logo:
+            return None
+        if obj.logo.startswith('http://') or obj.logo.startswith('https://'):
+            return obj.logo
+        import cloudinary
+        import cloudinary.utils
+        url, _ = cloudinary.utils.cloudinary_url(obj.logo, secure=True)
+        return url
 
 class UsedBikeListingSerializer(serializers.ModelSerializer):
     seller_name = serializers.ReadOnlyField(source='seller.username')
@@ -58,8 +90,6 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
     images = ListingImageSerializer(many=True, read_only=True)
     shop_info = ShopBasicSerializer(source='shop', read_only=True)
     
-    # ... rest remains same ...
-
     def get_location(self, obj):
         return {
             'city': obj.location_city or '',
@@ -127,7 +157,6 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
     def get_reports_count(self, obj):
         return obj.reports.count()
 
-
 class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(max_length=5000000, allow_empty_file=False, use_url=False),
@@ -171,9 +200,9 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
     def validate_contact_number(self, value):
         return DataValidator.validate_phone(value)
 
-    def validate(self, data):
+    def validate(self, attrs):
         # Sanitize all inputs
-        return DataValidator.sanitize_dict(data)
+        return DataValidator.sanitize_dict(attrs)
 
     def create(self, validated_data):
         images_data = validated_data.pop('uploaded_images', [])
@@ -220,6 +249,7 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
                 logger.error(f"Failed to manually upload/save ListingImage {i} for listing {listing.id}: {str(e)}")
         
         return listing
+
 class MembershipPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = MembershipPlan
@@ -244,6 +274,7 @@ class UserMembershipSerializer(serializers.ModelSerializer):
             'screenshot', 'amount_paid', 'status', 'starts_at', 'expires_at', 'created_at'
         ]
         read_only_fields = ['user', 'status', 'starts_at', 'expires_at', 'created_at']
+
 class ListingBoostAdminSerializer(serializers.ModelSerializer):
     user_email = serializers.ReadOnlyField(source='user.email')
     user_full_name = serializers.SerializerMethodField()

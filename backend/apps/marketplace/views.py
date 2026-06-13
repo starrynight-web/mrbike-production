@@ -10,7 +10,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 import os
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from .models import UsedBikeListing, ReportListing, Shop
 from .serializers import (
     UsedBikeListingSerializer, 
@@ -71,8 +70,34 @@ class ShopViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(shop)
             return Response(serializer.data)
         
-        serializer = self.get_serializer(shop, data=request.data, partial=True)
+        data = request.data.copy() if hasattr(request.data, 'copy') else request.data
+        files = request.FILES
+
+        # Remove files from data so CharField validation doesn't crash
+        if 'logo' in data and not isinstance(data['logo'], str):
+            data.pop('logo')
+        if 'cover_image' in data and not isinstance(data['cover_image'], str):
+            data.pop('cover_image')
+            
+        serializer = self.get_serializer(shop, data=data, partial=True)
         if serializer.is_valid():
+            import cloudinary.uploader
+            
+            # Manual Cloudinary upload
+            if 'logo' in files:
+                try:
+                    res = cloudinary.uploader.upload(files['logo'], folder='mrbikebd/shops/logos/')
+                    shop.logo = res['secure_url']
+                except Exception as e:
+                    print(f"Logo upload error: {e}")
+                    
+            if 'cover_image' in files:
+                try:
+                    res = cloudinary.uploader.upload(files['cover_image'], folder='mrbikebd/shops/covers/')
+                    shop.cover_image = res['secure_url']
+                except Exception as e:
+                    print(f"Cover upload error: {e}")
+                    
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -84,9 +109,16 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'description', 'location', 'location_city']
     ordering_fields = ['price', 'created_at', 'mileage']
     
-    @method_decorator(cache_page(60))
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        from apps.core.cache_utils import generate_cache_key, cache_aside_get, cache_aside_set
+        cache_key = generate_cache_key('used_bikes', 'list', **request.query_params.dict())
+        cached_response = cache_aside_get(cache_key)
+        if cached_response:
+            return cached_response
+        
+        response = super().list(request, *args, **kwargs)
+        cache_aside_set(cache_key, response.data, timeout=60 * 60)
+        return response
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -128,7 +160,7 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
             from apps.core.permissions import IsStaffWithRole
             # Check if super admin or has staff_used_bikes role
             if IsStaffWithRole('staff_used_bikes')().has_permission(self.request, self):
-                status_param = self.request.query_params.get('status')
+                status_param = self.request.GET.get('status')
                 if status_param in ['pending', 'rejected', 'active', 'sold', 'expired']:
                     return queryset.filter(status=status_param).order_by('-created_at')
                 elif status_param == 'all' or self.action in ['approve', 'reject']:
@@ -184,8 +216,14 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         images = self.request.FILES.getlist('uploaded_images')
+        
+        shop = None
+        if hasattr(self.request.user, 'shop'):
+            shop = self.request.user.shop
+
         serializer.save(
             seller=self.request.user, 
+            shop=shop,
             status='pending',
             uploaded_images=images
         )

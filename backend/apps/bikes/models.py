@@ -118,6 +118,7 @@ class BikeVariant(models.Model):
     variant_key = models.CharField(max_length=50) # e.g. 'std', 'abs'
     price = models.DecimalField(max_digits=12, decimal_places=2, db_index=True)
     is_default = models.BooleanField(default=False)
+    image_url = models.CharField(max_length=500, blank=True, null=True, help_text="Specific image for this variant")
     
     # Features as a list or specific fields
     color_options = models.JSONField(default=list)

@@ -108,10 +108,33 @@ export function sanitizeImageUrl(
     // Already a valid fallback? Return it
     if (trimmed === fallback) return fallback;
 
+    // Helper to validate Cloudinary URLs
+    const isBrokenCloudinary = (urlString: string) => {
+        try {
+            const url = new URL(urlString.startsWith('//') ? `https:${urlString}` : urlString);
+            if (url.hostname.includes('cloudinary')) {
+                // If it's just res.cloudinary or res.cloudinary.com without a proper path
+                if (url.pathname === '/' || url.pathname === '') return true;
+                // If it doesn't look like a valid Cloudinary upload path
+                if (!url.pathname.includes('/image/upload/')) {
+                    // some old cloudinary urls might not have /image/upload/, but mrbikebd always uses it
+                    // let's be safe: if path length is very short, it's probably broken
+                    if (url.pathname.length < 10) return true;
+                }
+            }
+            return false;
+        } catch {
+            return true;
+        }
+    };
+
+    if (isBrokenCloudinary(trimmed)) {
+        return fallback;
+    }
+
     // Validate absolute URLs (http/https)
     if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
         try {
-            new URL(trimmed);
             // Upgrade HTTP to HTTPS for Cloudinary
             return trimmed.startsWith("http://") ? trimmed.replace("http://", "https://") : trimmed;
         } catch {
@@ -122,7 +145,6 @@ export function sanitizeImageUrl(
     // Validate protocol-relative URLs (//example.com)
     if (trimmed.startsWith("//")) {
         try {
-            new URL(`https:${trimmed}`);
             return `https:${trimmed}`;
         } catch {
             return fallback;
@@ -248,7 +270,12 @@ export function mapBike(bike: any): Bike {
         brand: typeof bike.brand === 'object' ? bike.brand : { name: brandName, slug: brandName.toLowerCase(), id: "" },
         primary_image: sanitizeImageUrl(bike.primary_image),
         thumbnailUrl: sanitizeImageUrl(bike.thumbnailUrl || bike.primary_image),
-        images: bike.images?.map((img: any) => sanitizeImageUrl(typeof img === 'string' ? img : img.url)) || [],
+        images: [bike.primary_image, bike.image1, bike.image2, bike.image3, bike.image4, bike.image5]
+            .filter(Boolean)
+            .map((img: any) => sanitizeImageUrl(typeof img === 'string' ? img : img.url)),
+        variants: Array.isArray(bike.variants) 
+            ? bike.variants.map((v: any) => ({ ...v, image_url: v.image_url ? sanitizeImageUrl(v.image_url) : null }))
+            : bike.variants,
         specs: specs as any,
     };
 }
