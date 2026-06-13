@@ -15,6 +15,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Calculator, Fuel, Zap, TrendingUp, Wallet, ArrowRight } from "lucide-react";
 import { api } from "@/lib/api-service";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 type PublicConfig = Record<string, string>;
 
@@ -63,7 +64,7 @@ export default function ExpenseCalculatorPage() {
         {(config?.cms_expense_calculator_content && config.cms_expense_calculator_content !== "<p></p>") && (
           <Card className="mb-8 overflow-hidden bg-primary/5 border-primary/10">
             <CardContent className="p-8 prose prose-lg dark:prose-invert max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: config.cms_expense_calculator_content }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(config.cms_expense_calculator_content) }} />
             </CardContent>
           </Card>
         )}

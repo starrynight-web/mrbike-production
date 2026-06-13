@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CreditCard, FileText, Info, CheckCircle2, HelpCircle, Zap } from "lucide-react";
 import { api } from "@/lib/api-service";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 type PublicConfig = Record<string, string>;
 type LicenseFeeRow = { type: string; base: string | number; vat: string | number; total: string | number };
@@ -116,7 +117,7 @@ export default function BikeRegistrationPage() {
         {(config?.cms_bike_registration_content && config.cms_bike_registration_content !== "<p></p>") && (
           <Card className="mb-12 overflow-hidden">
             <CardContent className="p-8 md:p-12 prose prose-lg dark:prose-invert max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: config.cms_bike_registration_content }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(config.cms_bike_registration_content) }} />
             </CardContent>
           </Card>
         )}

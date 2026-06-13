@@ -22,6 +22,7 @@ from .serializers import (
     PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
     RegisterSerializer, EmailLoginSerializer
 )
+from .throttling import LoginRateThrottle, OTPRateThrottle, ResendVerificationThrottle, PasswordResetThrottle
 from apps.marketplace.models import UsedBikeListing
 from apps.interactions.models import Wishlist, Review
 from .models import Notification, EmailVerificationToken
@@ -180,6 +181,7 @@ class EmailLoginView(generics.GenericAPIView):
     """Login with email and password. Requires email verification."""
     permission_classes = [AllowAny]
     serializer_class = EmailLoginSerializer
+    throttle_classes = [LoginRateThrottle]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -264,6 +266,7 @@ class EmailLoginView(generics.GenericAPIView):
 class VerifyOTPView(generics.GenericAPIView):
     """Verify Email OTP for admin users"""
     permission_classes = [AllowAny]
+    throttle_classes = [OTPRateThrottle]
 
     def post(self, request):
         session_id = request.data.get('totp_session') # Keep field name to minimize frontend changes
@@ -275,7 +278,13 @@ class VerifyOTPView(generics.GenericAPIView):
         otp_data = cache.get(f"email_otp_{session_id}")
         if not otp_data:
             return Response({'error': 'OTP session expired. Please login again.'}, status=status.HTTP_401_UNAUTHORIZED)
-            
+        
+        # Track failed attempts — lock out after 3 failures to prevent 6-digit brute force
+        attempts = otp_data.get('attempts', 0)
+        if attempts >= 3:
+            cache.delete(f"email_otp_{session_id}")
+            return Response({'error': 'Too many failed attempts. Please login again.'}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+        
         if otp_data['code'] == code:
             try:
                 user = User.objects.get(id=otp_data['user_id'])
@@ -291,6 +300,9 @@ class VerifyOTPView(generics.GenericAPIView):
                 'user': UserSerializer(user).data,
             })
         else:
+            # Increment failed attempts counter
+            otp_data['attempts'] = attempts + 1
+            cache.set(f"email_otp_{session_id}", otp_data, timeout=300)
             return Response({'error': 'Invalid verification code'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -362,6 +374,7 @@ class EmailVerifyView(APIView):
 class ResendVerificationView(APIView):
     """Resend email verification link"""
     permission_classes = [AllowAny]
+    throttle_classes = [ResendVerificationThrottle]
 
     def post(self, request):
         email = request.data.get('email')
@@ -399,6 +412,7 @@ class ResendVerificationView(APIView):
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
     serializer_class = PasswordResetRequestSerializer
+    throttle_classes = [PasswordResetThrottle]
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)

@@ -89,12 +89,6 @@ export function AuthSync() {
                         staffAdminSections: dbUser.staff_profile_sections || []
                     } as any;
 
-                    // Persist JWT token so axios interceptor can attach it synchronously
-                    const accessToken = (session as any)?.accessToken;
-                    if (typeof window !== 'undefined' && accessToken) {
-                        localStorage.setItem("accessToken", accessToken);
-                    }
-
                     console.log(`[AUTH-SYNC] Successfully synced profile for ${sessionEmail}. Role: ${userData.role}`);
                     login(userData);
                     lastSyncedRef.current = syncKey;

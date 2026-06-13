@@ -89,14 +89,16 @@ class ShopViewSet(viewsets.ModelViewSet):
                     res = cloudinary.uploader.upload(files['logo'], folder='mrbikebd/shops/logos/')
                     shop.logo = res['secure_url']
                 except Exception as e:
-                    print(f"Logo upload error: {e}")
+                    import logging
+                    logging.getLogger(__name__).error(f"Shop logo upload error: {e}")
                     
             if 'cover_image' in files:
                 try:
                     res = cloudinary.uploader.upload(files['cover_image'], folder='mrbikebd/shops/covers/')
                     shop.cover_image = res['secure_url']
                 except Exception as e:
-                    print(f"Cover upload error: {e}")
+                    import logging
+                    logging.getLogger(__name__).error(f"Shop cover image upload error: {e}")
                     
             serializer.save()
             return Response(serializer.data)
@@ -111,6 +113,18 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         from apps.core.cache_utils import generate_cache_key, cache_aside_get, cache_aside_set
+        from apps.core.permissions import IsStaffWithRole
+
+        # H3 FIX: Only cache public (non-admin) requests.
+        # Admin requests must NEVER be cached under a public key — that would leak moderation data.
+        is_admin_request = request.user.is_authenticated and (
+            IsStaffWithRole('staff_used_bikes')().has_permission(request, self)
+        )
+
+        if is_admin_request:
+            # Skip caching entirely for admin requests — always fresh data
+            return super().list(request, *args, **kwargs)
+
         cache_key = generate_cache_key('used_bikes', 'list', **request.query_params.dict())
         cached_response = cache_aside_get(cache_key)
         if cached_response:
@@ -126,16 +140,14 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
         # 1. Atomic increment of view count
         UsedBikeListing.objects.filter(pk=instance.pk).update(views_count=F('views_count') + 1)
         
-        # 2. Log behavior for recommendation engine
-        from apps.recommendations.models import UserBehaviorLog
+        # 2. Log behavior asynchronously via Django-Q (M4 fix: avoids blocking the HTTP response)
+        from django_q.tasks import async_task
         session_id = request.session.session_key or request.META.get('HTTP_X_SESSION_ID', 'anonymous')
-        
-        UserBehaviorLog.objects.create(
-            user=request.user if request.user.is_authenticated else None,
-            session_id=session_id,
-            behavior_type='listing_view',
-            used_listing=instance,
-            bike_model=instance.bike_model
+        async_task(
+            'apps.marketplace.tasks.log_listing_view',
+            instance.pk,
+            request.user.id if request.user.is_authenticated else None,
+            session_id,
         )
         
         return super().retrieve(request, *args, **kwargs)
@@ -173,7 +185,10 @@ class UsedBikeListingViewSet(viewsets.ModelViewSet):
                 return queryset.order_by('-created_at')
 
         # Priority 2: Public feed (For everyone else, including normal authenticated users)
-        queryset = queryset.filter(status='active').select_related('shop', 'bike_model', 'seller')
+        queryset = queryset.filter(status='active')\
+            .select_related('shop', 'bike_model', 'seller')\
+            .prefetch_related('images')\
+            .annotate(reports_count_annotated=Count('reports'))
         return queryset.order_by('-is_featured', '-created_at')
 
     def get_serializer_class(self):

@@ -21,6 +21,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api-service";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { toast } from "sonner";
 
 type PublicConfig = Record<string, string>;
@@ -99,7 +100,7 @@ export default function ContactPage() {
         {(config?.cms_contact_content && config.cms_contact_content !== "<p></p>") && (
           <Card className="mb-12 overflow-hidden">
             <CardContent className="p-8 prose prose-lg dark:prose-invert max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: config.cms_contact_content }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(config.cms_contact_content) }} />
             </CardContent>
           </Card>
         )}

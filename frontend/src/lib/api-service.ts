@@ -59,13 +59,19 @@ class ApiService {
 
   private setupInterceptors() {
     this.client.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        // Read token synchronously from localStorage — no async network call on every request.
-        // This prevents getSession() from blocking unauthenticated public GETs (bikes, news, etc.)
+      async (config: InternalAxiosRequestConfig) => {
+        // C1 SECURITY FIX: Read JWT from NextAuth session, NOT from localStorage.
+        // NextAuth manages tokens via secure, httpOnly cookies — safe from XSS.
+        // getSession() reads the session from NextAuth's internal cookie and is fast (cached).
         if (typeof window !== 'undefined') {
-          const localToken = localStorage.getItem("accessToken");
-          if (localToken) {
-            config.headers.Authorization = `Bearer ${localToken}`;
+          try {
+            const session = await getSession();
+            const token = (session as any)?.accessToken;
+            if (token) {
+              config.headers.Authorization = `Bearer ${token}`;
+            }
+          } catch {
+            // Session unavailable — proceed without auth header (public request)
           }
         }
         return config;

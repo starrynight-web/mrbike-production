@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { SEO_DEFAULTS } from "@/config/constants";
 import { Metadata } from "next";
 import { api } from "@/lib/api-service";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 type AboutStat = { value: string; label: string };
 type AboutValue = { title: string; text: string };
@@ -79,7 +80,7 @@ export default async function AboutPage() {
       <div className="w-full px-4 md:px-8 py-20 max-w-4xl mx-auto">
          <div 
             className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-p:text-muted-foreground"
-            dangerouslySetInnerHTML={{ __html: content }} 
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} 
           />
       </div>
 

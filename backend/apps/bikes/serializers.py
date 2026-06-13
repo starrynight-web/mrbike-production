@@ -4,22 +4,22 @@ from django.db.models import Q
 import json
 
 class BrandSerializer(serializers.ModelSerializer):
-    bikeCount = serializers.SerializerMethodField()
-    usedBikeCount = serializers.SerializerMethodField()
+    bike_count = serializers.SerializerMethodField()
+    used_bike_count = serializers.SerializerMethodField()
     country = serializers.CharField(source='origin_country', read_only=True)
     
     class Meta:
         model = Brand
         fields = [
             'id', 'name', 'slug', 'logo', 'description', 
-            'origin_country', 'country', 'bikeCount', 'usedBikeCount',
+            'origin_country', 'country', 'bike_count', 'used_bike_count',
             'is_popular', 'created_at', 'updated_at'
         ]
 
-    def get_bikeCount(self, obj):
+    def get_bike_count(self, obj):
         return obj.bikes.count()
 
-    def get_usedBikeCount(self, obj):
+    def get_used_bike_count(self, obj):
         from apps.marketplace.models import UsedBikeListing
         return UsedBikeListing.objects.filter(
             Q(bike_model__brand=obj) | Q(custom_brand__iexact=obj.name),

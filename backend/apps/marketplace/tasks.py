@@ -25,8 +25,38 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Uncomment when Celery is installed:
-# from celery import shared_task
+
+def log_listing_view(listing_id: int, user_id, session_id: str):
+    """
+    M4 FIX: Async task (via Django-Q) for logging listing view behavior.
+    Called from UsedBikeListingViewSet.retrieve() to avoid blocking the HTTP response.
+    Offloads the DB write that was previously blocking ~5-20ms per page view.
+    """
+    try:
+        from apps.recommendations.models import UserBehaviorLog
+        from apps.marketplace.models import UsedBikeListing
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        listing = UsedBikeListing.objects.select_related('bike_model').filter(pk=listing_id).first()
+        if not listing:
+            return
+
+        user = None
+        if user_id:
+            user = User.objects.filter(pk=user_id).first()
+
+        UserBehaviorLog.objects.create(
+            user=user,
+            session_id=session_id or 'anonymous',
+            behavior_type='listing_view',
+            used_listing=listing,
+            bike_model=listing.bike_model
+        )
+    except Exception as e:
+        logger.error(f"[log_listing_view] Failed to log behavior for listing {listing_id}: {e}")
+
+
 
 
 # @shared_task(bind=True, max_retries=3)

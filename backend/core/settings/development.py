@@ -72,3 +72,11 @@ try:
     print("[OK] Development: django-debug-toolbar enabled")
 except ImportError:
     print("[INFO] Development: django-debug-toolbar not installed — run 'pip install django-debug-toolbar' to enable")
+
+# M5 FIX: Add localhost CORS origins only in development — keeps them out of production
+CORS_ALLOWED_ORIGINS += [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+]

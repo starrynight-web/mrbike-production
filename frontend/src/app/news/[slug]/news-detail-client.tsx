@@ -15,6 +15,7 @@ import {
   ImageOff,
 } from "lucide-react";
 import { useNewsArticle } from "@/hooks/use-news";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -162,7 +163,7 @@ export function NewsDetailClient({ slug, initialData }: NewsDetailClientProps) {
                     [&>p]:text-lg [&>p]:leading-relaxed [&>p]:text-muted-foreground/90 [&>p]:mb-6
                     [&>h3]:text-2xl [&>h3]:font-bold [&>h3]:mt-10 [&>h3]:mb-4 [&>h3]:text-foreground
                     [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6 [&>li]:mb-2"
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
         />
 
         <Separator className="my-8" />

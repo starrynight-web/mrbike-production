@@ -166,7 +166,8 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
         return None
 
     def get_reports_count(self, obj):
-        return obj.reports.count()
+        # Use annotated value if available (avoids N+1), fallback to count
+        return getattr(obj, 'reports_count_annotated', None) or obj.reports.count()
 
 class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
     uploaded_images = serializers.ListField(
@@ -190,8 +191,8 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
             'custom_brand': {'required': False},
             'custom_model': {'required': False},
             'registration_year': {'required': False},
-            'is_featured': {'required': False},
-            'is_urgent': {'required': False},
+            'is_featured': {'required': False, 'read_only': True},  # Security: only admin can feature listings
+            'is_urgent': {'required': False, 'read_only': True},    # Security: only admin can mark urgent
             'contact_number': {'required': True},
             'whatsapp_number': {'required': False},
             'location_city': {'required': False},
@@ -210,6 +211,27 @@ class UsedBikeListingCreateSerializer(serializers.ModelSerializer):
 
     def validate_contact_number(self, value):
         return DataValidator.validate_phone(value)
+
+    def validate_uploaded_images(self, images):
+        """H2 FIX: Validate file types and sizes to prevent malicious uploads."""
+        allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg']
+        max_size_bytes = 8 * 1024 * 1024  # 8MB per image
+        max_images = 10
+
+        if len(images) > max_images:
+            raise serializers.ValidationError(f"Maximum {max_images} images allowed per listing.")
+
+        for img in images:
+            content_type = getattr(img, 'content_type', None)
+            if content_type and content_type not in allowed_types:
+                raise serializers.ValidationError(
+                    f"Unsupported file type: {content_type}. Allowed: JPEG, PNG, WebP, GIF."
+                )
+            if hasattr(img, 'size') and img.size > max_size_bytes:
+                raise serializers.ValidationError(
+                    f"Image '{img.name}' exceeds 8MB limit. Please compress before uploading."
+                )
+        return images
 
     def validate(self, attrs):
         # Sanitize all inputs

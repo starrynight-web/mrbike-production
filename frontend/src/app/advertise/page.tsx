@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api-service";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 type PublicConfig = Record<string, string>;
 type AdvertiseStat = { value: string; label: string };
@@ -124,7 +125,7 @@ export default function AdvertisePage() {
         <div className="w-full px-4 md:px-8 py-16 max-w-4xl mx-auto">
           <Card className="overflow-hidden">
             <CardContent className="p-8 prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-p:text-muted-foreground">
-              <div dangerouslySetInnerHTML={{ __html: config.cms_advertise_content }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(config.cms_advertise_content) }} />
             </CardContent>
           </Card>
         </div>

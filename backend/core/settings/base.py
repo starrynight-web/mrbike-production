@@ -107,6 +107,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# File upload size limits (H2 FIX)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024   # 50MB max request body
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024   # 50MB max in-memory file size
+
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
 
@@ -127,13 +131,17 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_RATES': {
         'anon': '2000/day',
-        'user': '10000/day'
+        'user': '10000/day',
+        'login': '5/minute',              # Max 5 login attempts/minute per IP
+        'otp': '3/minute',                # Max 3 OTP attempts/minute (prevents brute force of 6-digit codes)
+        'resend_verification': '3/hour',  # Max 3 resend verification emails/hour
+        'password_reset': '3/hour',       # Max 3 password reset requests/hour
     },
 }
 
 # Simple JWT Settings
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # Reduced from 60 — shorter window limits token theft impact
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -156,8 +164,8 @@ if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
-        traces_sample_rate=0.1 if os.getenv('DJANGO_ENV') == 'production' else 1.0,
-        send_default_pii=True
+        traces_sample_rate=0.1 if os.getenv('DJANGO_ENV') == 'production' else 0.0,
+        send_default_pii=False,  # Security: do not send emails, IPs, or cookies to Sentry
     )
 
 if CLOUDINARY_CLOUD_NAME:
@@ -182,12 +190,9 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@mrbikebd.com')
 # Frontend URL
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
-# CORS Settings
+# CORS Settings — Production origins only.
+# Localhost origins are added in development.py to keep them out of production.
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
     "https://mrbikebd.vercel.app",
     "https://mrbikebd.com",
     "https://www.mrbikebd.com",

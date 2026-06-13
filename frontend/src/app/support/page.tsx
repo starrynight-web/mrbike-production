@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Link from "next/link";
 import { api } from "@/lib/api-service";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 type PublicConfig = Record<string, string>;
 
@@ -97,7 +98,7 @@ export default function SupportPage() {
         {(config?.cms_support_content && config.cms_support_content !== "<p></p>") && (
           <Card className="mb-12 overflow-hidden bg-primary/5 border-primary/10">
             <CardContent className="p-8 md:p-12 prose prose-lg dark:prose-invert max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: config.cms_support_content }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(config.cms_support_content) }} />
             </CardContent>
           </Card>
         )}
