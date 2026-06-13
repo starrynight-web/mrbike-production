@@ -88,7 +88,18 @@ class UsedBikeListingSerializer(serializers.ModelSerializer):
     location = serializers.SerializerMethodField()
     bike_details = serializers.SerializerMethodField()
     images = ListingImageSerializer(many=True, read_only=True)
-    shop_info = ShopBasicSerializer(source='shop', read_only=True)
+    shop_info = serializers.SerializerMethodField()
+    
+    def get_shop_info(self, obj):
+        shop = obj.shop
+        if not shop and obj.seller_id:
+            try:
+                shop = obj.seller.shop
+            except Exception:
+                pass
+        if shop:
+            return ShopBasicSerializer(shop).data
+        return None
     
     def get_location(self, obj):
         return {

@@ -229,6 +229,8 @@ export function mapUsedBike(item: any): UsedBike {
         expiresAt: item.expires_at ? new Date(item.expires_at) : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
         createdAt: item.created_at ? new Date(item.created_at) : new Date(),
         updatedAt: item.updated_at ? new Date(item.updated_at) : new Date(),
+        shop: item.shop || undefined,
+        shop_info: item.shop_info || undefined,
     };
 }
 

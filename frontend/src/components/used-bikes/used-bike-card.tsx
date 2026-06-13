@@ -61,7 +61,7 @@ export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
           {images.length > 0 ? (
             <Image
               src={images[currentImageIndex] || images[0]}
-              alt={bike.bikeName}
+              alt={(bike as any).title || bike.bikeName || "Used Bike"}
               fill
               unoptimized
               className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -141,7 +141,7 @@ export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
         </div>
         <Link href={`/used-bike/${bike.slug}`} className="block">
           <h3 className="font-semibold line-clamp-1 mb-2 group-hover:text-primary transition-colors">
-            {bike.bikeName}
+            {(bike as any).title || bike.bikeName || "Used Bike"}
           </h3>
         </Link>
 
@@ -165,15 +165,15 @@ export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
         </div>
 
         {/* Shop Info Integration */}
-        {bike.shop && (
+        {bike.shop_info && (
           <div className="pt-3 border-t flex items-center justify-between">
             <Link 
-              href={`/shop/${bike.shop.slug}`} 
+              href={`/shop/${bike.shop_info.slug}`} 
               className="flex items-center gap-2 group/shop cursor-pointer"
             >
               <div className="relative w-6 h-6 rounded-full overflow-hidden border border-zinc-100 bg-zinc-50 shrink-0">
-                {bike.shop.logo ? (
-                  <Image src={bike.shop.logo} alt={bike.shop.name} fill className="object-cover" unoptimized />
+                {bike.shop_info.logo ? (
+                  <Image src={bike.shop_info.logo} alt={bike.shop_info.name} fill className="object-cover" unoptimized />
                 ) : (
                   <Store className="h-4 w-4 m-1 text-zinc-400" />
                 )}
@@ -181,9 +181,9 @@ export function UsedBikeCard({ bike, className }: UsedBikeCardProps) {
               <div className="flex flex-col">
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] font-bold text-zinc-900 line-clamp-1 group-hover/shop:text-primary transition-colors uppercase tracking-tight">
-                    {bike.shop.name}
+                    {bike.shop_info.name}
                   </span>
-                  {bike.shop.is_verified && (
+                  {bike.shop_info.is_verified && (
                     <CheckCircle className="h-2.5 w-2.5 text-blue-500 fill-blue-50" />
                   )}
                 </div>

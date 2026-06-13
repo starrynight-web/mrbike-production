@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuthStore } from "@/store";
+import { useAuthStore, useWishlistStore } from "@/store";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { 
@@ -28,18 +28,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
-const navItems = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/my-listings", label: "My Listings", icon: Bike },
-  { href: "/dashboard/wishlist", label: "Wishlist (0)", icon: Heart },
-  { href: "/dashboard/favorites", label: "Favorites (1)", icon: Star },
-  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
-  { href: "/dashboard/my-reviews", label: "My Reviews", icon: Star },
-  { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard },
-  { href: "/dashboard/shop", label: "My Shop", icon: LayoutDashboard },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-];
-
 export default function DashboardLayout({
   children,
 }: {
@@ -48,7 +36,20 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout, isLoading: authLoading } = useAuthStore();
+  const { bikeIds, favoriteIds } = useWishlistStore();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const navItems = [
+    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+    { href: "/dashboard/my-listings", label: "My Listings", icon: Bike },
+    { href: "/dashboard/wishlist", label: `Wishlist (${bikeIds.size})`, icon: Heart },
+    { href: "/dashboard/favorites", label: `Favorites (${favoriteIds.size})`, icon: Star },
+    { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
+    { href: "/dashboard/my-reviews", label: "My Reviews", icon: Star },
+    { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard },
+    { href: "/dashboard/shop", label: "My Shop", icon: LayoutDashboard },
+    { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  ];
 
   useEffect(() => {
     if (!authLoading && !user) {

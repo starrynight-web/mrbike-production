@@ -142,42 +142,44 @@ export const useWishlistStore = create<WishlistState>()(
         // Wishlist Implementation
         addToWishlist: (bikeId) => {
           const newSet = new Set(get().bikeIds);
-          newSet.add(bikeId);
+          newSet.add(String(bikeId));
           set({ bikeIds: newSet });
         },
         removeFromWishlist: (bikeId) => {
           const newSet = new Set(get().bikeIds);
-          newSet.delete(bikeId);
+          newSet.delete(String(bikeId));
           set({ bikeIds: newSet });
         },
-        isInWishlist: (bikeId) => get().bikeIds.has(bikeId),
+        isInWishlist: (bikeId) => get().bikeIds.has(String(bikeId)),
         toggleWishlist: (bikeId) => {
+          const strId = String(bikeId);
           const { bikeIds, addToWishlist, removeFromWishlist } = get();
-          if (bikeIds.has(bikeId)) {
-            removeFromWishlist(bikeId);
+          if (bikeIds.has(strId)) {
+            removeFromWishlist(strId);
           } else {
-            addToWishlist(bikeId);
+            addToWishlist(strId);
           }
         },
 
         // Favorites Implementation
         addToFavorites: (bikeId) => {
           const newSet = new Set(get().favoriteIds);
-          newSet.add(bikeId);
+          newSet.add(String(bikeId));
           set({ favoriteIds: newSet });
         },
         removeFromFavorites: (bikeId) => {
           const newSet = new Set(get().favoriteIds);
-          newSet.delete(bikeId);
+          newSet.delete(String(bikeId));
           set({ favoriteIds: newSet });
         },
-        isInFavorites: (bikeId) => get().favoriteIds.has(bikeId),
+        isInFavorites: (bikeId) => get().favoriteIds.has(String(bikeId)),
         toggleFavorite: (bikeId) => {
+          const strId = String(bikeId);
           const { favoriteIds, addToFavorites, removeFromFavorites } = get();
-          if (favoriteIds.has(bikeId)) {
-            removeFromFavorites(bikeId);
+          if (favoriteIds.has(strId)) {
+            removeFromFavorites(strId);
           } else {
-            addToFavorites(bikeId);
+            addToFavorites(strId);
           }
         },
 
@@ -196,8 +198,9 @@ export const useWishlistStore = create<WishlistState>()(
               ...parsed,
               state: {
                 ...parsed.state,
-                bikeIds: new Set(parsed.state.bikeIds || []),
-                favoriteIds: new Set(parsed.state.favoriteIds || []),
+                // Automatically fix any previously stored numeric IDs to strings
+                bikeIds: new Set((parsed.state.bikeIds || []).map(String)),
+                favoriteIds: new Set((parsed.state.favoriteIds || []).map(String)),
               },
             };
           },
