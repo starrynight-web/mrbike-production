@@ -6,6 +6,7 @@ import { useBrands } from "@/hooks/use-brands";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, Bike, Award } from "lucide-react";
+import { sanitizeImageUrl } from "@/lib/data-utils";
 
 export function BrandsClient() {
   const { data: brands = [], isLoading: brandsLoading } = useBrands();
@@ -18,7 +19,7 @@ export function BrandsClient() {
   const displayBrands = brands.map((apiBrand, idx) => {
     return {
       ...apiBrand,
-      bikeCount: apiBrand?.bikeCount || 0,
+      bikeCount: (apiBrand as any)?.bike_count || apiBrand?.bikeCount || 0,
       slug: apiBrand.slug,
       name: apiBrand.name,
       logo: apiBrand.logo,
@@ -56,7 +57,7 @@ export function BrandsClient() {
                   <div className="relative w-32 h-20 md:w-40 md:h-24 grayscale group-hover:grayscale-0 transition-all duration-300 flex items-center justify-center">
                     {brand.logo ? (
                       <Image
-                        src={brand.logo}
+                        src={sanitizeImageUrl(brand.logo)}
                         alt={`${brand.name || "Brand"} logo`}
                         fill
                         className="object-contain" // Logos need contain

@@ -29,6 +29,7 @@ export function mapBrand(apiBrand: ApiBrand | any): Brand {
         bikeCount: apiBrand.bike_count || 0,
         usedBikeCount: apiBrand.used_bike_count,
         country: apiBrand.country,
+        official_website: apiBrand.official_website,
     };
 }
 

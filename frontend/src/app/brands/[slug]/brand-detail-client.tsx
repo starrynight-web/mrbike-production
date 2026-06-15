@@ -13,6 +13,7 @@ import {
   MapPin,
   Bike,
   BadgeCheck,
+  Globe,
 } from "lucide-react";
 import { Bike as BikeType } from "@/types";
 
@@ -117,11 +118,15 @@ export function BrandDetailClient({ slug }: BrandDetailClientProps) {
                 {brand.description ||
                   `Explore the complete lineup of ${brand.name} motorcycles available in Bangladesh. Find the latest prices, specifications, and features of all ${brand.name} bikes.`}
               </p>
-              <div className="flex items-center justify-center md:justify-start gap-3 pt-2">
-                <Button variant="outline" size="sm">
-                  <Info className="mr-2 h-4 w-4" /> Official Website
-                </Button>
-              </div>
+              {(brand as any).official_website && (
+                <div className="flex items-center justify-center md:justify-start gap-3 pt-2">
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={(brand as any).official_website} target="_blank" rel="noopener noreferrer">
+                      <Globe className="mr-2 h-4 w-4" /> Official Website
+                    </a>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

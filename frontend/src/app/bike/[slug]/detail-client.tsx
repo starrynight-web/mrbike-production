@@ -459,6 +459,31 @@ function SimilarNewBikes({ slug }: { slug: string }) {
   );
 }
 
+// Helper to build a clean full name without duplicating brand or bike names
+function buildFullName(brand: string, bikeName: string, variantName?: string): string {
+  const brandStr = (brand || "").trim();
+  const nameStr = (bikeName || "").trim();
+  const variantStr = (variantName || "").trim();
+
+  let res = nameStr;
+
+  if (brandStr && !res.toLowerCase().startsWith(brandStr.toLowerCase())) {
+    res = `${brandStr} ${res}`;
+  }
+
+  if (variantStr) {
+    if (variantStr.toLowerCase().includes(nameStr.toLowerCase())) {
+      res = brandStr && !variantStr.toLowerCase().startsWith(brandStr.toLowerCase())
+        ? `${brandStr} ${variantStr}`
+        : variantStr;
+    } else {
+      res = `${res} ${variantStr}`;
+    }
+  }
+
+  return res.replace(/\s+/g, " ").trim();
+}
+
 export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedVariantKey, setSelectedVariantKey] = useState<string>("std");
@@ -514,8 +539,7 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
         const key = v.variant_key || String(v.id) || "std";
 
         variantsMap[key] = {
-          fullName:
-            `${bike.brand?.name || bike.brand_name || ""} ${bike.name} ${v.variant_name || ""}`.trim(),
+          fullName: buildFullName(bike.brand?.name || bike.brand_name || "", bike.name, v.variant_name),
           label: v.variant_name || "Standard",
           price: Number(v.price) || 0,
           images: bike.images || [
@@ -580,8 +604,7 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
     } else {
       // Create a default variant from the bike model itself if no variants exist
       variantsMap["std"] = {
-        fullName:
-          `${bike.brand?.name || bike.brand_name || ""} ${bike.name}`.trim(),
+        fullName: buildFullName(bike.brand?.name || bike.brand_name || "", bike.name),
         label: "Standard",
         price: Number(bike.price) || Number(bike.priceRange?.min) || 0,
         images: bike.images || [bike.primary_image || "/placeholder-bike.png"],

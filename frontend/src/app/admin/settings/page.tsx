@@ -169,6 +169,7 @@ export default function AdminSettings() {
     const [editingBrandId, setEditingBrandId] = useState<number | string | null>(null);
     const [newBrandName, setNewBrandName] = useState("");
     const [newBrandDesc, setNewBrandDesc] = useState("");
+    const [newBrandOfficialWebsite, setNewBrandOfficialWebsite] = useState("");
     const [newBrandLogo, setNewBrandLogo] = useState<File | null>(null);
     const [isCreatingBrand, setIsCreatingBrand] = useState(false);
 
@@ -176,6 +177,7 @@ export default function AdminSettings() {
         setEditingBrandId(null);
         setNewBrandName("");
         setNewBrandDesc("");
+        setNewBrandOfficialWebsite("");
         setNewBrandLogo(null);
     };
 
@@ -183,6 +185,7 @@ export default function AdminSettings() {
         setEditingBrandId(brand.id);
         setNewBrandName(brand.name);
         setNewBrandDesc(brand.description || "");
+        setNewBrandOfficialWebsite(brand.official_website || "");
         setNewBrandLogo(null);
         document.getElementById('brand-form-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
@@ -194,6 +197,7 @@ export default function AdminSettings() {
             const formData = new FormData();
             formData.append("name", newBrandName);
             if (newBrandDesc) formData.append("description", newBrandDesc);
+            if (newBrandOfficialWebsite) formData.append("official_website", newBrandOfficialWebsite);
             if (newBrandLogo) {
                 formData.append("logo", newBrandLogo);
             }
@@ -476,6 +480,10 @@ export default function AdminSettings() {
                                         disabled={isCreatingBrand} 
                                         rows={3} 
                                     />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="b_website">Official Website</Label>
+                                    <Input id="b_website" type="url" placeholder="https://..." value={newBrandOfficialWebsite} onChange={e => setNewBrandOfficialWebsite(e.target.value)} disabled={isCreatingBrand} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>{editingBrandId ? "Update Brand Logo" : "Brand Logo"}</Label>

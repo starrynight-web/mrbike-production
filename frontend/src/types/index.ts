@@ -174,6 +174,7 @@ export interface Brand {
   bikeCount: number;
   usedBikeCount?: number;
   country?: string;
+  official_website?: string | null;
 }
 
 export interface PriceRange {

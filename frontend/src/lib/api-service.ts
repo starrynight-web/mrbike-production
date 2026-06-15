@@ -63,7 +63,7 @@ class ApiService {
         // C1 SECURITY FIX: Read JWT from NextAuth session, NOT from localStorage.
         // NextAuth manages tokens via secure, httpOnly cookies — safe from XSS.
         // getSession() reads the session from NextAuth's internal cookie and is fast (cached).
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && !(config as any)._skipAuth) {
           try {
             const session = await getSession();
             const token = (session as any)?.accessToken;
@@ -124,10 +124,14 @@ class ApiService {
             } else {
               // On public pages, just let the user be anonymous
               console.log("[API] Auth failed on public page. Continuing as guest.");
+              // Clear NextAuth session silently so future requests don't pick up the stale token
+              signOut({ redirect: false });
+
               // Add loop protection for the guest retry!
               originalRequest._guestRetryCount = originalRequest._guestRetryCount || 0;
               if (originalRequest.method?.toLowerCase() === 'get' && originalRequest._guestRetryCount < 1) {
                 originalRequest._guestRetryCount++;
+                originalRequest._skipAuth = true;
                 delete originalRequest.headers.Authorization;
                 if (originalRequest.headers.delete) {
                   originalRequest.headers.delete('Authorization');
