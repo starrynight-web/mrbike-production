@@ -11,12 +11,15 @@ class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
         fields = [
-            'id', 'name', 'slug', 'logo', 'description', 
+            'id', 'name', 'slug', 'logo', 'description', 'official_website',
             'origin_country', 'country', 'bike_count', 'used_bike_count',
             'is_popular', 'created_at', 'updated_at'
         ]
 
     def get_bike_count(self, obj):
+        # Use annotated value from queryset if available (avoids N+1 per brand)
+        if hasattr(obj, '_bike_count'):
+            return obj._bike_count
         return obj.bikes.count()
 
     def get_used_bike_count(self, obj):
@@ -25,6 +28,56 @@ class BrandSerializer(serializers.ModelSerializer):
             Q(bike_model__brand=obj) | Q(custom_brand__iexact=obj.name),
             status='active'
         ).count()
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # Resolve Cloudinary logo URL using BikeModelSerializer's shared helper.
+        # Pass self.context so request-aware URL building works correctly.
+        resolver = BikeModelSerializer(context=self.context)
+        ret['logo'] = resolver.get_image_url(instance.logo)
+        return ret
+
+    def _upload_to_cloudinary(self, file_obj):
+        try:
+            import cloudinary.uploader
+            result = cloudinary.uploader.upload(
+                file_obj,
+                folder='mrbikebd/brands/',
+                resource_type='image'
+            )
+            return result.get('secure_url')
+        except Exception as e:
+            return None
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        logo_url = None
+        if request and request.FILES and 'logo' in request.FILES:
+            logo_url = self._upload_to_cloudinary(request.FILES['logo'])
+            
+        brand = super().create(validated_data)
+        if logo_url:
+            brand.logo = logo_url
+            brand.save()
+        elif request and request.FILES and 'logo' in request.FILES:
+            brand.logo = request.FILES['logo']
+            brand.save()
+        return brand
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        logo_url = None
+        if request and request.FILES and 'logo' in request.FILES:
+            logo_url = self._upload_to_cloudinary(request.FILES['logo'])
+            
+        brand = super().update(instance, validated_data)
+        if logo_url:
+            brand.logo = logo_url
+            brand.save()
+        elif request and request.FILES and 'logo' in request.FILES:
+            brand.logo = request.FILES['logo']
+            brand.save()
+        return brand
 
 class BikeVariantSerializer(serializers.ModelSerializer):
     class Meta:

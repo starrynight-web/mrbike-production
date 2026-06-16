@@ -57,11 +57,7 @@ export default function AdminDashboard() {
 
             let totalUsersData = null;
             if (isSuperAdmin) {
-                try {
-                    totalUsersData = await adminAPI.getTotalUsers();
-                } catch (e) {
-                    console.error("Failed to load total users data", e);
-                }
+                totalUsersData = await adminAPI.getTotalUsers(); // returns null on failure
             }
 
             const formattedStats = [];

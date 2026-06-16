@@ -14,6 +14,7 @@ class Brand(models.Model):
     trust_score = models.IntegerField(default=50, help_text="0-100 score for recommendation weight")
     is_electric_focused = models.BooleanField(default=False)
     is_popular = models.BooleanField(default=False)
+    official_website = models.URLField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

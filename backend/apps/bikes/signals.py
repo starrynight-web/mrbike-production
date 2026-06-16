@@ -21,6 +21,9 @@ def revalidate_bike_detail(sender, instance, **kwargs):
         
     # Backend Cache invalidation
     invalidate_model_cache('bikes')
+    # Invalidate brands cache too — brand bike_count is embedded in the brands list response.
+    # Without this, adding/removing a bike would not update the brand's bike_count in cache.
+    invalidate_model_cache('brands')
 
 @receiver([post_save, post_delete], sender=Brand)
 def revalidate_brands(sender, instance, **kwargs):

@@ -11,7 +11,7 @@ export function useBrands() {
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch brands");
       return (response.data || []).map(mapBrand);
     },
-    staleTime: 60 * 60 * 1000,
+    staleTime: 2 * 60 * 1000, // 2 minutes — brand bike_count can change when bikes are added
   });
 }
 

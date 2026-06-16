@@ -253,11 +253,16 @@ class TotalUsersView(APIView):
     permission_classes = [IsSuperAdminOnly]
     
     def get(self, request):
-        total_users = User.objects.count()
-        new_today = User.objects.filter(date_joined__date=timezone.now().date()).count()
-        new_week = User.objects.filter(date_joined__gte=timezone.now() - timedelta(days=7)).count()
-        return StandardResponse.success(data={
-            "total": total_users,
-            "new_today": new_today,
-            "new_week": new_week
-        }, message="Total users retrieved successfully")
+        try:
+            total_users = User.objects.count()
+            new_today = User.objects.filter(date_joined__date=timezone.now().date()).count()
+            new_week = User.objects.filter(date_joined__gte=timezone.now() - timedelta(days=7)).count()
+            return StandardResponse.success(data={
+                "total": total_users,
+                "new_today": new_today,
+                "new_week": new_week
+            }, message="Total users retrieved successfully")
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).exception("TotalUsersView error: %s", e)
+            return Response({"error": "Failed to retrieve user stats"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

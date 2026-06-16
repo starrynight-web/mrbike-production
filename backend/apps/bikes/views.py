@@ -7,6 +7,7 @@ from apps.core.permissions import IsSuperAdminOnly, IsStaffWithRole
 from apps.core.authentication import LenientJWTAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
+from django.db.models import Count
 from .models import Brand, BikeModel
 from .serializers import BrandSerializer, BikeModelSerializer
 from django.db.models import F, Q
@@ -33,7 +34,12 @@ class BrandViewSet(viewsets.ModelViewSet):
     pagination_class = None
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'origin']
-    
+
+    def get_queryset(self):
+        # Annotate bike_count in a single SQL query to eliminate N+1 per brand.
+        # The serializer reads obj._bike_count if present, falling back to obj.bikes.count().
+        return Brand.objects.annotate(_bike_count=Count('bikes', distinct=True)).order_by('name')
+
     def list(self, request, *args, **kwargs):
         from apps.core.cache_utils import generate_cache_key, cache_aside_get, cache_aside_set
         cache_key = generate_cache_key('brands', 'list', **request.query_params.dict())
@@ -42,7 +48,10 @@ class BrandViewSet(viewsets.ModelViewSet):
             return cached_response
         
         response = super().list(request, *args, **kwargs)
-        cache_aside_set(cache_key, response.data, timeout=60 * 60 * 24)
+        # 5-minute TTL: brand bike_count changes whenever bikes are added/removed.
+        # Signals invalidate the version key on write, but a short TTL ensures
+        # freshness even if Redis is unavailable or the signal is missed.
+        cache_aside_set(cache_key, response.data, timeout=60 * 5)
         return response
 
     def retrieve(self, request, *args, **kwargs):
@@ -55,7 +64,7 @@ class BrandViewSet(viewsets.ModelViewSet):
             return cached_response
         
         response = super().retrieve(request, *args, **kwargs)
-        cache_aside_set(cache_key, response.data, timeout=60 * 60 * 24)
+        cache_aside_set(cache_key, response.data, timeout=60 * 5)
         return response
 
     def get_object(self):

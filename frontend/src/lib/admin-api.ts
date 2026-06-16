@@ -204,7 +204,9 @@ class AdminAPI {
   async getTotalUsers() {
     const response = await api.get<any>("/users/admin/users/total/");
     if (!response.success) {
-      throw new Error(response.error?.message || "Failed to get total users");
+      // Non-super-admins get 403; backend may return 500 in edge cases.
+      // Return null so the dashboard can gracefully skip the stat widget.
+      return null;
     }
     return response.data;
   }
