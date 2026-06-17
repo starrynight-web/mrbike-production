@@ -317,13 +317,13 @@ class BikeModelViewSet(viewsets.ModelViewSet):
         
         for item in items:
             try:
-                bike_name = item.get("Bike Name")
+                bike_name = item.get("Bike Name") or item.get("name")
                 if not bike_name:
-                    results["errors"].append("Missing 'Bike Name'")
+                    results["errors"].append("Missing 'Bike Name' or 'name'")
                     continue
                 
                 # Auto-detect Brand
-                brand_name = bike_name.split(' ')[0]
+                brand_name = item.get("brand") or bike_name.split(' ')[0]
                 brand, _ = Brand.objects.get_or_create(
                     name__iexact=brand_name,
                     defaults={'name': brand_name}
@@ -331,19 +331,22 @@ class BikeModelViewSet(viewsets.ModelViewSet):
                 
                 # Category mapping
                 category_map = {
-                    "Sports": "sports",
-                    "Naked": "naked",
-                    "Cruiser": "cruiser",
-                    "Commuter": "commuter",
-                    "Scooter": "scooter",
-                    "Adventure": "adventure",
-                    "Cafe Racer": "cafe_racer",
-                    "Off-Road": "offroad"
+                    "sports": "sports",
+                    "naked": "naked",
+                    "cruiser": "cruiser",
+                    "commuter": "commuter",
+                    "scooter": "scooter",
+                    "adventure": "adventure",
+                    "cafe racer": "cafe_racer",
+                    "cafe_racer": "cafe_racer",
+                    "off-road": "offroad",
+                    "offroad": "offroad"
                 }
-                category = category_map.get(str(item.get("Category", "")), "commuter")
+                raw_category = str(item.get("Category", item.get("category", ""))).lower()
+                category = category_map.get(raw_category, "commuter")
                 
                 # Clean Price
-                price_str = item.get("Base Price", "0")
+                price_str = str(item.get("Base Price", item.get("price", "0")))
                 import re
                 price_val = re.sub(r'[^\d.]', '', price_str)
                 price = float(price_val) if price_val else 0
@@ -355,88 +358,89 @@ class BikeModelViewSet(viewsets.ModelViewSet):
                     defaults={
                         'category': category,
                         'price': price,
-                        'engine_capacity': int(re.sub(r'[^\d]', '', str(item.get("Displacement(CC)", "0"))) or 0),
-                        'engine_type': item.get("Engine Type"),
-                        'max_power': item.get("Max Power"),
-                        'max_torque': item.get("Max Torque"),
-                        'fuel_system': item.get("Fuel System"),
-                        'cooling_system': item.get("Cooling System"),
-                        'gears': int(re.sub(r'[^\d]', '', str(item.get("Gears", "5"))) or 5),
-                        'clutch_type': item.get("Clutch"),
-                        'curb_weight': float(re.sub(r'[^\d.]', '', str(item.get("Kerb Weight", "0"))) or 0),
-                        'fuel_capacity': float(re.sub(r'[^\d.]', '', str(item.get("Fuel Capacity", "0"))) or 0),
-                        'seat_height': float(re.sub(r'[^\d.]', '', str(item.get("Seat Height", "0"))) or 0),
-                        'tyre_type': item.get("Front Tyre", "Tubeless"),
+                        'engine_capacity': int(re.sub(r'[^\d]', '', str(item.get("Displacement(CC)", item.get("engine_capacity", "0")))) or 0),
+                        'engine_type': item.get("Engine Type", item.get("engine_type")),
+                        'max_power': item.get("Max Power", item.get("max_power")),
+                        'max_torque': item.get("Max Torque", item.get("max_torque")),
+                        'fuel_system': item.get("Fuel System", item.get("fuel_system")),
+                        'cooling_system': item.get("Cooling System", item.get("cooling_system")),
+                        'gears': int(re.sub(r'[^\d]', '', str(item.get("Gears", item.get("gears", "5")))) or 5),
+                        'clutch_type': item.get("Clutch", item.get("clutch_type")),
+                        'curb_weight': float(re.sub(r'[^\d.]', '', str(item.get("Kerb Weight", item.get("curb_weight", "0")))) or 0),
+                        'fuel_capacity': float(re.sub(r'[^\d.]', '', str(item.get("Fuel Capacity", item.get("fuel_capacity", "0")))) or 0),
+                        'seat_height': float(re.sub(r'[^\d.]', '', str(item.get("Seat Height", item.get("seat_height", "0")))) or 0),
+                        'tyre_type': item.get("Front Tyre", item.get("tyre_type", "Tubeless")),
                     }
                 )
                 
                 # Create Specifications
                 from .models import BikeSpecification
+                detailed = item.get("detailed_specs", {})
                 BikeSpecification.objects.update_or_create(
                     bike_model=bike_model,
                     defaults={
-                        'engine_type': item.get("Engine Type"),
-                        'displacement': str(item.get("Displacement(CC)")),
-                        'max_power': item.get("Max Power"),
-                        'max_torque': item.get("Max Torque"),
-                        'fuel_system': item.get("Fuel System"),
-                        'cooling_system': item.get("Cooling System"),
-                        'gearbox': str(item.get("Gears")),
-                        'clutch': item.get("Clutch"),
-                        'gear_shift_pattern': item.get("Gear Shift Pattern"),
-                        'spark_plugs': int(re.sub(r'[^\d]', '', str(item.get("Spark Plugs", "1"))) or 1),
-                        'brakes_front': item.get("Front Brake"),
-                        'brakes_rear': item.get("Rear Brake"),
-                        'braking_system': item.get("Braking System"),
-                        'tyres_front': item.get("Front Tyre"),
-                        'tyres_rear': item.get("Rear Tyre"),
-                        'kerb_weight': str(item.get("Kerb Weight")),
-                        'fuel_tank_capacity': str(item.get("Fuel Capacity")),
-                        'seat_height': str(item.get("Seat Height")),
-                        'ground_clearance': str(item.get("Ground Clearance")),
-                        'wheelbase': str(item.get("Wheelbase")),
-                        'top_speed': item.get("Top Speed"),
-                        'mileage_city': item.get("Mileage(City)"),
-                        'mileage_highway': item.get("Mileage(Highway)"),
-                        'usb_charging': item.get("USB Charging") == "Yes",
-                        'side_stand_cut_off': item.get("Side Stand Cut-off") == "Yes",
-                        'projector_headlight': item.get("Projector Headlight") == "Yes",
-                        'drls': item.get("DRLs") == "Yes",
-                        'gear_indicator': item.get("Gear Indicator") == "Yes",
-                        'distance_to_empty': item.get("Distance to Empty") == "Yes",
-                        'avg_fuel_consumption': item.get("Avg Fuel Consumption") == "Yes",
+                        'engine_type': detailed.get("engine_type", item.get("Engine Type")),
+                        'displacement': str(detailed.get("displacement", item.get("Displacement(CC)"))),
+                        'max_power': detailed.get("max_power", item.get("Max Power")),
+                        'max_torque': detailed.get("max_torque", item.get("Max Torque")),
+                        'fuel_system': detailed.get("fuel_system", item.get("Fuel System")),
+                        'cooling_system': detailed.get("cooling_system", item.get("Cooling System")),
+                        'gearbox': str(detailed.get("gearbox", item.get("Gears"))),
+                        'clutch': detailed.get("clutch", item.get("Clutch")),
+                        'gear_shift_pattern': detailed.get("gear_shift_pattern", item.get("Gear Shift Pattern")),
+                        'spark_plugs': int(re.sub(r'[^\d]', '', str(detailed.get("spark_plugs", item.get("Spark Plugs", "1")))) or 1),
+                        'brakes_front': detailed.get("brakes_front", item.get("Front Brake")),
+                        'brakes_rear': detailed.get("brakes_rear", item.get("Rear Brake")),
+                        'braking_system': detailed.get("braking_system", item.get("Braking System")),
+                        'tyres_front': detailed.get("tyres_front", item.get("Front Tyre")),
+                        'tyres_rear': detailed.get("tyres_rear", item.get("Rear Tyre")),
+                        'kerb_weight': str(detailed.get("kerb_weight", item.get("Kerb Weight"))),
+                        'fuel_tank_capacity': str(detailed.get("fuel_tank_capacity", item.get("Fuel Capacity"))),
+                        'seat_height': str(detailed.get("seat_height", item.get("Seat Height"))),
+                        'ground_clearance': str(detailed.get("ground_clearance", item.get("Ground Clearance"))),
+                        'wheelbase': str(detailed.get("wheelbase", item.get("Wheelbase"))),
+                        'top_speed': detailed.get("top_speed", item.get("Top Speed")),
+                        'mileage_city': detailed.get("mileage_city", item.get("Mileage(City)")),
+                        'mileage_highway': detailed.get("mileage_highway", item.get("Mileage(Highway)")),
+                        'usb_charging': detailed.get("usb_charging", item.get("USB Charging") == "Yes"),
+                        'side_stand_cut_off': detailed.get("side_stand_cut_off", item.get("Side Stand Cut-off") == "Yes"),
+                        'projector_headlight': detailed.get("projector_headlight", item.get("Projector Headlight") == "Yes"),
+                        'drls': detailed.get("drls", item.get("DRLs") == "Yes"),
+                        'gear_indicator': detailed.get("gear_indicator", item.get("Gear Indicator") == "Yes"),
+                        'distance_to_empty': detailed.get("distance_to_empty", item.get("Distance to Empty") == "Yes"),
+                        'avg_fuel_consumption': detailed.get("avg_fuel_consumption", item.get("Avg Fuel Consumption") == "Yes"),
                     }
                 )
                 
                 # Create Variants
-                variants_list = item.get("Variants") or item.get("Varriants") or []
+                variants_list = item.get("variants") or item.get("Variants") or item.get("Varriants") or []
                 from .models import BikeVariant
                 for v_item in variants_list:
                     BikeVariant.objects.update_or_create(
                         bike_model=bike_model,
-                        variant_key=v_item.get("Variant Key", "std"),
+                        variant_key=v_item.get("variant_key", v_item.get("Variant Key", "std")),
                         defaults={
-                            'variant_name': v_item.get("Variant Name", v_item.get("Varriant Name")),
-                            'price': float(re.sub(r'[^\d.]', '', str(v_item.get("Price BDT", "0"))) or 0),
-                            'braking_system': v_item.get("Braking System"),
-                            'rear_brake_type': v_item.get("Rear Braking System"),
-                            'tire_type': v_item.get("Tyre Type"),
-                            'headlight_type': v_item.get("Headlight Type"),
-                            'kerb_weight': v_item.get("Kerb Weight"),
-                            'instrument_console': v_item.get("Instrument Console"),
-                            'mobile_connectivity': v_item.get("Mobile Phone Connectivity") == "Yes",
-                            'riding_modes': v_item.get("Riding Modes") == "Yes",
-                            'traction_control': v_item.get("Traction Control", v_item.get("TRaction Control")) == "Yes",
-                            'slipper_clutch': v_item.get("Slipper/Assist Clutch") == "Yes",
-                            'quick_shifter': v_item.get("Quick Shifter") == "Yes",
-                            'seat_type': v_item.get("Seat Type"),
+                            'variant_name': v_item.get("variant_name", v_item.get("Variant Name", v_item.get("Varriant Name"))),
+                            'price': float(re.sub(r'[^\d.]', '', str(v_item.get("price", v_item.get("Price BDT", "0")))) or 0),
+                            'braking_system': v_item.get("braking_system", v_item.get("Braking System")),
+                            'rear_brake_type': v_item.get("rear_brake_type", v_item.get("Rear Braking System")),
+                            'tire_type': v_item.get("tire_type", v_item.get("Tyre Type")),
+                            'headlight_type': v_item.get("headlight_type", v_item.get("Headlight Type")),
+                            'kerb_weight': v_item.get("kerb_weight", v_item.get("Kerb Weight")),
+                            'instrument_console': v_item.get("instrument_console", v_item.get("Instrument Console")),
+                            'mobile_connectivity': v_item.get("mobile_connectivity", v_item.get("Mobile Phone Connectivity") == "Yes"),
+                            'riding_modes': v_item.get("riding_modes", v_item.get("Riding Modes") == "Yes"),
+                            'traction_control': v_item.get("traction_control", v_item.get("Traction Control", v_item.get("TRaction Control")) == "Yes"),
+                            'slipper_clutch': v_item.get("slipper_clutch", v_item.get("Slipper/Assist Clutch") == "Yes"),
+                            'quick_shifter': v_item.get("quick_shifter", v_item.get("Quick Shifter") == "Yes"),
+                            'seat_type': v_item.get("seat_type", v_item.get("Seat Type")),
                         }
                     )
                 
                 results["created"] += 1
                 
             except Exception as e:
-                results["errors"].append(f"Error importing {item.get('Bike Name', 'Unknown')}: {str(e)}")
+                results["errors"].append(f"Error importing {item.get('name', item.get('Bike Name', 'Unknown'))}: {str(e)}")
                 
         return Response(results)
 
