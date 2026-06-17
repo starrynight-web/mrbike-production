@@ -70,9 +70,10 @@ def process_listing_images_async(listing_id: int):
         from apps.marketplace.models import ListingImage
         images = ListingImage.objects.filter(listing_id=listing_id, webp_image__isnull=True)
         for img in images:
-            from apps.marketplace.image_processor import ImageProcessingService
-            ImageProcessingService.process_and_upload(img)
-            logger.info(f"[Task] Processed image {img.id} for listing {listing_id}")
+            # from apps.marketplace.image_processor import ImageProcessingService
+            # ImageProcessingService.process_and_upload(img)
+            # Backend processing is skipped; Cloudinary handles dynamic optimization
+            logger.info(f"[Task] Processed image {img.id} for listing {listing_id} (Skipped, using Cloudinary)")
     except Exception as exc:
         logger.error(f"[Task] Image processing failed for listing {listing_id}: {exc}")
         # self.retry(exc=exc)  # Uncomment with Celery
