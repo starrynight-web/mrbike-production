@@ -23,7 +23,7 @@ async function refreshAccessToken(token: any) {
     return {
       ...token,
       accessToken: refreshedTokens.access,
-      accessTokenExpires: Date.now() + 60 * 60 * 1000, // 60 minutes
+      accessTokenExpires: Date.now() + 14 * 60 * 1000, // 14 minutes (backend is 15 min)
       refreshToken: refreshedTokens.refresh ?? token.refreshToken, // Fall back to old refresh token
     };
   } catch (error) {
@@ -229,7 +229,7 @@ export const authOptions: AuthOptions = {
             token.role = data.user.role;
             token.isEmailVerified = data.user.is_email_verified;
             token.staffAdminSections = data.user.staff_profile_sections || [];
-            token.accessTokenExpires = Date.now() + 60 * 60 * 1000; // 60 minutes
+            token.accessTokenExpires = Date.now() + 14 * 60 * 1000; // 14 minutes (backend is 15 min)
             return token;
           }
         } catch (error) {
@@ -244,7 +244,7 @@ export const authOptions: AuthOptions = {
         token.refreshToken = (user as any).refreshToken;
         token.isEmailVerified = (user as any).isEmailVerified;
         token.staffAdminSections = (user as any).staffAdminSections || [];
-        token.accessTokenExpires = Date.now() + 60 * 60 * 1000; // 60 minutes
+        token.accessTokenExpires = Date.now() + 14 * 60 * 1000; // 14 minutes (backend is 15 min)
         return token;
       }
 

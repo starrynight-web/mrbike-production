@@ -90,6 +90,11 @@ class BikeModel(models.Model):
     meta_title = models.CharField(max_length=255, blank=True, null=True)
     meta_description = models.TextField(blank=True, null=True)
     
+    # Pros, Cons & FAQs
+    advantages = models.JSONField(default=list, blank=True, help_text="List of strings representing pros")
+    disadvantages = models.JSONField(default=list, blank=True, help_text="List of strings representing cons")
+    faqs = models.JSONField(default=list, blank=True, help_text="List of dicts: [{'question': '...', 'answer': '...'}]")
+    
     popularity_score = models.IntegerField(default=0)
     average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
     search_vector = SearchVectorField(null=True)
@@ -177,6 +182,7 @@ class BikeSpecification(models.Model):
     range_per_tank = models.CharField(max_length=100, blank=True, null=True)
     mileage_city = models.CharField(max_length=100, blank=True, null=True)
     mileage_highway = models.CharField(max_length=100, blank=True, null=True)
+    mileage_arai = models.CharField(max_length=100, blank=True, null=True)
     top_speed = models.CharField(max_length=100, blank=True, null=True)
     
     # Transmission
@@ -189,6 +195,7 @@ class BikeSpecification(models.Model):
     brakes_front = models.CharField(max_length=255, blank=True, null=True)
     brakes_rear = models.CharField(max_length=255, blank=True, null=True)
     braking_system = models.CharField(max_length=255, blank=True, null=True)
+    abs = models.CharField(max_length=100, blank=True, null=True)
     
     # Dimensions
     length = models.CharField(max_length=100, blank=True, null=True)
@@ -228,6 +235,7 @@ class BikeSpecification(models.Model):
     tyres_type = models.CharField(max_length=100, blank=True, null=True)
     wheels_front = models.CharField(max_length=100, blank=True, null=True)
     wheels_rear = models.CharField(max_length=100, blank=True, null=True)
+    wheel_type = models.CharField(max_length=100, blank=True, null=True)
     
     # Electrical
     lighting = models.JSONField(default=dict)
