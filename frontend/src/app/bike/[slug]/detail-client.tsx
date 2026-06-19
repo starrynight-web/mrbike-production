@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatPrice, calculateEMI } from "@/lib/utils";
@@ -1318,7 +1319,7 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
       </section>
 
       {/* Pros and Cons Section */}
-      {currentVariant?.pros && currentVariant?.cons && (
+      {((bike?.advantages && bike.advantages.length > 0) || (bike?.disadvantages && bike.disadvantages.length > 0)) && (
         <section className="w-full px-4 md:px-8 py-8">
           <div className="bg-card rounded-xl border p-6">
             <h2 className="text-2xl font-bold mb-6">
@@ -1326,54 +1327,52 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
             </h2>
             <div className="grid md:grid-cols-2 gap-8">
               {/* Advantages */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Check className="h-5 w-5 text-green-500" />
-                  <h3 className="text-lg font-semibold text-green-600">
-                    Advantages
-                  </h3>
+              {bike?.advantages && bike.advantages.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <h3 className="text-lg font-semibold text-green-600">
+                      Advantages
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    {bike.advantages.map((advantage, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <Check className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                        <p className="text-sm">
+                          <span className="text-muted-foreground">
+                            {advantage}
+                          </span>
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  {Object.entries(currentVariant.pros).map(([key, value]) => (
-                    <div key={key} className="flex items-start gap-3">
-                      <Check className="h-4 w-4 text-green-500 mt-1 shrink-0" />
-                      <p className="text-sm">
-                        <span className="font-semibold capitalize">
-                          {key.replace(/([A-Z])/g, " $1").trim()}:{" "}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {value as string}
-                        </span>
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              )}
 
               {/* Disadvantages */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <X className="h-5 w-5 text-red-500" />
-                  <h3 className="text-lg font-semibold text-red-600">
-                    Disadvantages
-                  </h3>
+              {bike?.disadvantages && bike.disadvantages.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <X className="h-5 w-5 text-red-500" />
+                    <h3 className="text-lg font-semibold text-red-600">
+                      Disadvantages
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    {bike.disadvantages.map((disadvantage, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <X className="h-4 w-4 text-red-500 mt-1 shrink-0" />
+                        <p className="text-sm">
+                          <span className="text-muted-foreground">
+                            {disadvantage}
+                          </span>
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  {Object.entries(currentVariant.cons).map(([key, value]) => (
-                    <div key={key} className="flex items-start gap-3">
-                      <X className="h-4 w-4 text-red-500 mt-1 shrink-0" />
-                      <p className="text-sm">
-                        <span className="font-semibold capitalize">
-                          {key.replace(/([A-Z])/g, " $1").trim()}:{" "}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {value as string}
-                        </span>
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </section>
@@ -1483,6 +1482,29 @@ export function BikeDetailClient({ slug, initialData }: BikeDetailClientProps) {
           </div>
         </div>
       </section>
+
+      {/* FAQs Section */}
+      {bike?.faqs && bike.faqs.length > 0 && (
+        <section className="w-full px-4 md:px-8 py-8">
+          <div className="container mx-auto max-w-4xl bg-card rounded-xl border p-6">
+            <h2 className="text-2xl font-bold mb-6">
+              Frequently Asked Questions about {bikeName}
+            </h2>
+            <Accordion type="multiple" className="w-full">
+              {bike.faqs.map((faq, index) => (
+                <AccordionItem key={index} value={`faq-${index}`}>
+                  <AccordionTrigger className="text-left font-medium">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground whitespace-pre-line leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+      )}
 
       {/* Recommendation Section */}
       <section className="w-full px-4 md:px-8 py-12 bg-muted/20 border-y">

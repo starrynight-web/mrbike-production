@@ -82,6 +82,9 @@ export interface Bike {
   fuel_capacity?: number | string;
   curb_weight?: number | string;
   tyre_type?: string;
+  advantages?: string[];
+  disadvantages?: string[];
+  faqs?: { question: string; answer: string }[];
 }
 
 export interface BikeVariant {
