@@ -370,6 +370,9 @@ class BikeModelViewSet(viewsets.ModelViewSet):
                         'fuel_capacity': float(re.sub(r'[^\d.]', '', str(item.get("Fuel Capacity", item.get("fuel_capacity", "0")))) or 0),
                         'seat_height': float(re.sub(r'[^\d.]', '', str(item.get("Seat Height", item.get("seat_height", "0")))) or 0),
                         'tyre_type': item.get("Front Tyre", item.get("tyre_type", "Tubeless")),
+                        'advantages': item.get("advantages", item.get("Advantages", [])),
+                        'disadvantages': item.get("disadvantages", item.get("Disadvantages", [])),
+                        'faqs': item.get("faqs", item.get("FAQs", [])),
                     }
                 )
                 

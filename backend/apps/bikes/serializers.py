@@ -177,6 +177,17 @@ class BikeModelSerializer(serializers.ModelSerializer):
                 pass
         return None
 
+    def _parse_json_field(self, request_data, field_name):
+        field_json = request_data.get(field_name, None)
+        if field_json:
+            try:
+                if isinstance(field_json, str):
+                    return json.loads(field_json)
+                return field_json
+            except (json.JSONDecodeError, TypeError):
+                pass
+        return None
+
     def _handle_image_fields(self, request, instance):
         """Handle multipart image uploads from request.FILES."""
         image_fields = ['primary_image', 'image1', 'image2', 'image3', 'image4', 'image5']
@@ -194,6 +205,14 @@ class BikeModelSerializer(serializers.ModelSerializer):
         
         # Handle image files from multipart/form-data
         request = self.context.get('request')
+        
+        if request:
+            adv = self._parse_json_field(request.data, 'advantages')
+            if adv is not None: validated_data['advantages'] = adv
+            disadv = self._parse_json_field(request.data, 'disadvantages')
+            if disadv is not None: validated_data['disadvantages'] = disadv
+            faqs = self._parse_json_field(request.data, 'faqs')
+            if faqs is not None: validated_data['faqs'] = faqs
         
         bike_model = BikeModel.objects.create(**validated_data)
         
@@ -218,6 +237,14 @@ class BikeModelSerializer(serializers.ModelSerializer):
         specs_data = validated_data.pop('detailed_specs', None)
         request = self.context.get('request')
         
+        if request:
+            adv = self._parse_json_field(request.data, 'advantages')
+            if adv is not None: validated_data['advantages'] = adv
+            disadv = self._parse_json_field(request.data, 'disadvantages')
+            if disadv is not None: validated_data['disadvantages'] = disadv
+            faqs = self._parse_json_field(request.data, 'faqs')
+            if faqs is not None: validated_data['faqs'] = faqs
+            
         # Update BikeModel fields
         for attr, value in validated_data.items():
             if attr in ['primary_image', 'image1', 'image2', 'image3', 'image4', 'image5']:

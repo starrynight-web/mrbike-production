@@ -160,6 +160,9 @@ export default function AdminBikesPage() {
     image3: "",
     image4: "",
     image5: "",
+    advantages: [] as string[],
+    disadvantages: [] as string[],
+    faqs: [] as { question: string; answer: string }[],
     detailed_specs: {
       engine_type: "",
       displacement: "",
@@ -269,6 +272,11 @@ export default function AdminBikesPage() {
       // JSON-encode detailed_specs
       formData.append("detailed_specs", JSON.stringify(newBike.detailed_specs));
 
+      // JSON-encode advantages, disadvantages, faqs
+      formData.append("advantages", JSON.stringify(newBike.advantages));
+      formData.append("disadvantages", JSON.stringify(newBike.disadvantages));
+      formData.append("faqs", JSON.stringify(newBike.faqs));
+
       // JSON-encode variants
       formData.append("variants_data", JSON.stringify(variants.map((v, i) => ({
         ...v,
@@ -323,6 +331,9 @@ export default function AdminBikesPage() {
       image3: "",
       image4: "",
       image5: "",
+      advantages: [],
+      disadvantages: [],
+      faqs: [],
       detailed_specs: {} as any,
     });
     setVariants([defaultVariant()]);
@@ -353,6 +364,9 @@ export default function AdminBikesPage() {
       image3: bike.image3 || "",
       image4: bike.image4 || "",
       image5: bike.image5 || "",
+      advantages: (bike as any).advantages || [],
+      disadvantages: (bike as any).disadvantages || [],
+      faqs: (bike as any).faqs || [],
       detailed_specs: bike.detailed_specs || {} as any,
     });
     // Load existing variants
@@ -610,7 +624,7 @@ export default function AdminBikesPage() {
               </DialogHeader>
 
               <Tabs defaultValue="basic" className="mt-6">
-                <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 h-auto">
+                <TabsList className="grid w-full grid-cols-3 md:grid-cols-8 h-auto">
                   <TabsTrigger value="basic">Basic</TabsTrigger>
                   <TabsTrigger value="engine">Engine</TabsTrigger>
                   <TabsTrigger value="chassis">Chassis</TabsTrigger>
@@ -618,6 +632,7 @@ export default function AdminBikesPage() {
                   <TabsTrigger value="features">Features</TabsTrigger>
                   <TabsTrigger value="variants">Variants</TabsTrigger>
                   <TabsTrigger value="image">Images</TabsTrigger>
+                  <TabsTrigger value="content">Content</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="basic" className="space-y-4 pt-4">
@@ -1368,6 +1383,138 @@ export default function AdminBikesPage() {
                           }
                         }}
                       />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="content" className="space-y-4 pt-4">
+                  <div className="space-y-6">
+                    {/* Advantages */}
+                    <div className="space-y-2">
+                      <Label>Advantages (Pros)</Label>
+                      {newBike.advantages.map((adv, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            placeholder={`Advantage ${index + 1}`}
+                            value={adv}
+                            onChange={(e) => {
+                              const newAdv = [...newBike.advantages];
+                              newAdv[index] = e.target.value;
+                              setNewBike({ ...newBike, advantages: newAdv });
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              const newAdv = newBike.advantages.filter((_, i) => i !== index);
+                              setNewBike({ ...newBike, advantages: newAdv });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewBike({ ...newBike, advantages: [...newBike.advantages, ""] })}
+                      >
+                        <Plus className="mr-2 h-4 w-4" /> Add Advantage
+                      </Button>
+                    </div>
+
+                    {/* Disadvantages */}
+                    <div className="space-y-2">
+                      <Label>Disadvantages (Cons)</Label>
+                      {newBike.disadvantages.map((dis, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            placeholder={`Disadvantage ${index + 1}`}
+                            value={dis}
+                            onChange={(e) => {
+                              const newDis = [...newBike.disadvantages];
+                              newDis[index] = e.target.value;
+                              setNewBike({ ...newBike, disadvantages: newDis });
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              const newDis = newBike.disadvantages.filter((_, i) => i !== index);
+                              setNewBike({ ...newBike, disadvantages: newDis });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewBike({ ...newBike, disadvantages: [...newBike.disadvantages, ""] })}
+                      >
+                        <Plus className="mr-2 h-4 w-4" /> Add Disadvantage
+                      </Button>
+                    </div>
+
+                    {/* FAQs */}
+                    <div className="space-y-4">
+                      <Label>Frequently Asked Questions (FAQs)</Label>
+                      {newBike.faqs.map((faq, index) => (
+                        <div key={index} className="space-y-2 p-4 border rounded-md relative">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2"
+                            onClick={() => {
+                              const newFaqs = newBike.faqs.filter((_, i) => i !== index);
+                              setNewBike({ ...newBike, faqs: newFaqs });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                          <div>
+                            <Label>Question</Label>
+                            <Input
+                              placeholder="e.g. Is it good for beginners?"
+                              value={faq.question}
+                              onChange={(e) => {
+                                const newFaqs = [...newBike.faqs];
+                                newFaqs[index].question = e.target.value;
+                                setNewBike({ ...newBike, faqs: newFaqs });
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>Answer</Label>
+                            <Textarea
+                              placeholder="Provide a detailed answer..."
+                              rows={3}
+                              value={faq.answer}
+                              onChange={(e) => {
+                                const newFaqs = [...newBike.faqs];
+                                newFaqs[index].answer = e.target.value;
+                                setNewBike({ ...newBike, faqs: newFaqs });
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewBike({ ...newBike, faqs: [...newBike.faqs, { question: "", answer: "" }] })}
+                      >
+                        <Plus className="mr-2 h-4 w-4" /> Add FAQ
+                      </Button>
                     </div>
                   </div>
                 </TabsContent>
