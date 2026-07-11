@@ -34,4 +34,13 @@ class LenientJWTAuthentication(JWTAuthentication):
             # as anonymous. AllowAny views will serve public data normally.
             # IsAuthenticated views will still reject via permission checks.
             return None
+        except Exception as e:
+            # If the database connection drops (e.g. Supabase connection limit)
+            # or any other unexpected error occurs during user retrieval,
+            # we should gracefully fall back to anonymous instead of throwing a 500.
+            # This allows cached public views (like /bikes) to keep working!
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"LenientJWTAuthentication unexpected error: {str(e)}")
+            return None
 
