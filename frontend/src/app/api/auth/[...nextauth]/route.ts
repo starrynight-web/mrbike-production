@@ -3,23 +3,49 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthOptions } from "next-auth";
 
-async function refreshAccessToken(token: any) {
-  try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/refresh/`;
+// Store active refresh promises to prevent token refresh race conditions
+const refreshPromises = new Map<string, Promise<any>>();
 
+async function refreshAccessToken(token: any) {
+  const refreshToken = token.refreshToken;
+
+  // If this specific token is already being refreshed, await the existing promise
+  if (refreshPromises.has(refreshToken)) {
+    try {
+      const refreshedTokens = await refreshPromises.get(refreshToken);
+      return {
+        ...token,
+        accessToken: refreshedTokens.access,
+        accessTokenExpires: Date.now() + 14 * 60 * 1000,
+        refreshToken: refreshedTokens.refresh ?? token.refreshToken,
+      };
+    } catch (error) {
+      return {
+        ...token,
+        error: "RefreshAccessTokenError",
+        accessTokenExpires: Date.now() + 5 * 60 * 1000,
+      };
+    }
+  }
+
+  // Create a new refresh promise
+  const promise = (async () => {
+    const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/refresh/`;
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh: token.refreshToken }),
+      body: JSON.stringify({ refresh: refreshToken }),
     });
 
-    const refreshedTokens = await response.json();
+    const data = await response.json();
+    if (!response.ok) throw data;
+    return data;
+  })();
 
-    if (!response.ok) {
-      throw refreshedTokens;
-    }
+  refreshPromises.set(refreshToken, promise);
 
-    // Since our backend returns access/refresh, we update them
+  try {
+    const refreshedTokens = await promise;
     return {
       ...token,
       accessToken: refreshedTokens.access,
@@ -28,12 +54,13 @@ async function refreshAccessToken(token: any) {
     };
   } catch (error) {
     console.error("RefreshTokenError", error);
-
     return {
       ...token,
       error: "RefreshAccessTokenError",
       accessTokenExpires: Date.now() + 5 * 60 * 1000, // Debounce: prevent retrying for 5 minutes
     };
+  } finally {
+    refreshPromises.delete(refreshToken);
   }
 }
 

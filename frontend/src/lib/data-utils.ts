@@ -265,6 +265,8 @@ export function mapBike(bike: any): Bike {
         frontBrake: detailed.brakes_front || bike.specs?.frontBrake,
         rearBrake: detailed.brakes_rear || bike.specs?.rearBrake,
         abs: detailed.abs_channel || bike.specs?.abs,
+        mileage: parseFloat(detailed.mileage_city || detailed.mileage_highway || detailed.mileage_arai || bike.specs?.mileage || "0") || 0,
+        topSpeed: parseFloat(detailed.top_speed || bike.specs?.topSpeed || "0") || 0,
     };
 
     return {

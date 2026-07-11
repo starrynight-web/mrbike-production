@@ -437,6 +437,13 @@ class BikeModelViewSet(viewsets.ModelViewSet):
                             'slipper_clutch': v_item.get("slipper_clutch", v_item.get("Slipper/Assist Clutch") == "Yes"),
                             'quick_shifter': v_item.get("quick_shifter", v_item.get("Quick Shifter") == "Yes"),
                             'seat_type': v_item.get("seat_type", v_item.get("Seat Type")),
+                            'mileage_company': v_item.get("mileage_company", v_item.get("Mileage (Company Claimed)")),
+                            'mileage_user': v_item.get("mileage_user", v_item.get("Mileage (User Review)")),
+                            'topspeed_company': v_item.get("topspeed_company", v_item.get("Top Speed (Company Claimed)")),
+                            'topspeed_user': v_item.get("topspeed_user", v_item.get("Top Speed (User Review)")),
+                            'gps_navigation': v_item.get("gps_navigation", v_item.get("GPS Navigation") == "Yes"),
+                            'color_options': v_item.get("color_options", v_item.get("Colors", [])),
+                            'features': v_item.get("features", v_item.get("Features", [])),
                         }
                     )
                 

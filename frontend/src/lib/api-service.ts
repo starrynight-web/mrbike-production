@@ -132,9 +132,16 @@ class ApiService {
               if (originalRequest.method?.toLowerCase() === 'get' && originalRequest._guestRetryCount < 1) {
                 originalRequest._guestRetryCount++;
                 originalRequest._skipAuth = true;
-                delete originalRequest.headers.Authorization;
-                if (originalRequest.headers.delete) {
-                  originalRequest.headers.delete('Authorization');
+                // Modern Axios requires setting to undefined to reliably strip the header on retry
+                if (originalRequest.headers) {
+                  delete originalRequest.headers.Authorization;
+                  delete originalRequest.headers['authorization'];
+                  if (typeof originalRequest.headers.delete === 'function') {
+                    originalRequest.headers.delete('Authorization');
+                    originalRequest.headers.delete('authorization');
+                  }
+                  // Fallback for some Axios versions
+                  originalRequest.headers.Authorization = undefined;
                 }
                 return this.client(originalRequest);
               }
