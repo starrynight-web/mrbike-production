@@ -6,6 +6,23 @@ import { AuthOptions } from "next-auth";
 // Store active refresh promises to prevent token refresh race conditions
 const refreshPromises = new Map<string, Promise<any>>();
 
+/**
+ * Build the API base URL for server-side calls (route handlers, jwt callbacks).
+ * Normalizes NEXT_PUBLIC_API_URL to always end with /api/v1, regardless of
+ * whether the env var includes the path suffix or not.
+ * This prevents a critical production bug where Vercel env vars may differ
+ * from .env.local (e.g. https://api.mrbikebd.com vs http://localhost:8000/api/v1).
+ */
+function getApiBase(): string {
+  const raw = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  // Strip trailing slash
+  const trimmed = raw.replace(/\/$/, "");
+  // If it already ends with /api/v1, use it as-is
+  if (trimmed.endsWith("/api/v1")) return trimmed;
+  // Otherwise append /api/v1
+  return `${trimmed}/api/v1`;
+}
+
 async function refreshAccessToken(token: any) {
   const refreshToken = token.refreshToken;
 
@@ -30,7 +47,7 @@ async function refreshAccessToken(token: any) {
 
   // Create a new refresh promise
   const promise = (async () => {
-    const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/refresh/`;
+    const url = `${getApiBase()}/users/auth/refresh/`;
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -84,7 +101,7 @@ export const authOptions: AuthOptions = {
 
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/login/`,
+            `${getApiBase()}/users/auth/login/`,
             {
               method: "POST",
               body: JSON.stringify({
@@ -133,7 +150,7 @@ export const authOptions: AuthOptions = {
 
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/verify-email/`,
+            `${getApiBase()}/users/auth/verify-email/`,
             {
               method: "POST",
               body: JSON.stringify({
@@ -179,7 +196,7 @@ export const authOptions: AuthOptions = {
 
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/verify-2fa/`,
+            `${getApiBase()}/users/auth/verify-2fa/`,
             {
               method: "POST",
               body: JSON.stringify({
@@ -240,7 +257,7 @@ export const authOptions: AuthOptions = {
       if (account?.provider === "google" && account.id_token) {
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/auth/google/`,
+            `${getApiBase()}/users/auth/google/`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
