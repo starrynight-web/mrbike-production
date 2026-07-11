@@ -25,7 +25,7 @@ import dj_database_url
 DATABASES = {
     'default': dj_database_url.config(
         default=DATABASE_URL,
-        conn_max_age=600,
+        conn_max_age=0,  # MUST BE 0 for Supavisor/PgBouncer transaction mode to prevent dropped connections
         conn_health_checks=True,
     )
 }
