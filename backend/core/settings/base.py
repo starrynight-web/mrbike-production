@@ -130,8 +130,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '2000/day',
-        'user': '10000/day',
+        'anon': '30000/day',
+        'user': '15000/day',
         'login': '5/minute',              # Max 5 login attempts/minute per IP
         'otp': '3/minute',                # Max 3 OTP attempts/minute (prevents brute force of 6-digit codes)
         'resend_verification': '3/hour',  # Max 3 resend verification emails/hour
