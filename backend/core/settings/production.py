@@ -29,6 +29,7 @@ DATABASES = {
         conn_health_checks=True,
     )
 }
+DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
 
 # Fix Supabase connection drops: Do NOT use keepalives with Supavisor pooler as it causes "server closed the connection unexpectedly"
 # DATABASES['default']['OPTIONS'] = {

@@ -10,7 +10,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Review
-        fields = ['id', 'user', 'bike', 'bike_name', 'bike_slug', 'rating', 'comment', 'mileage_claimed', 'top_speed_claimed', 'is_verified_purchase', 'created_at']
+        fields = ['id', 'user', 'bike', 'bike_name', 'bike_slug', 'rating', 'performance_rating', 'looks_rating', 'reliability_rating', 'comment', 'mileage_claimed', 'top_speed_claimed', 'is_verified_purchase', 'created_at']
         read_only_fields = ['bike', 'bike_name', 'bike_slug', 'created_at']
 
 class WishlistSerializer(serializers.ModelSerializer):

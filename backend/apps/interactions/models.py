@@ -15,6 +15,11 @@ class Review(models.Model):
     mileage_claimed = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     top_speed_claimed = models.IntegerField(null=True, blank=True)
     
+    # Category ratings for Bike Review
+    performance_rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)], default=0)
+    looks_rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)], default=0)
+    reliability_rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)], default=0)
+    
     is_verified_purchase = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

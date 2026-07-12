@@ -16,7 +16,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = [
             'id', 'bike', 'bike_name', 'user', 'user_name', 'user_email',
-            'rating', 'title', 'comment', 'is_approved', 
+            'rating', 'performance_rating', 'looks_rating', 'reliability_rating',
+            'title', 'comment', 'is_approved', 
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'user', 'is_approved', 'created_at', 'updated_at']

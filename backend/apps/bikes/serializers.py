@@ -102,6 +102,14 @@ class BikeModelSerializer(serializers.ModelSerializer):
     image4 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     image5 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     
+    review_count = serializers.SerializerMethodField()
+
+    def get_review_count(self, obj):
+        # We can use the related_name 'reviews' from interactions Review model
+        if hasattr(obj, 'reviews'):
+            return obj.reviews.count()
+        return 0
+    
     class Meta:
         model = BikeModel
         fields = '__all__'

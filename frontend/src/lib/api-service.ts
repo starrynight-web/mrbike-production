@@ -290,8 +290,8 @@ class ApiService {
     return this.request<{ id: number; rating: number; comment: string; user: BackendUser; created_at: string }[]>(this.client.get(API_ENDPOINTS.BIKE_REVIEWS(bikeId)));
   }
 
-  async submitReview(bikeId: string | number, rating: number, comment: string) {
-    return this.request<{ id: number; rating: number; comment: string }>(this.client.post(API_ENDPOINTS.REVIEW_CREATE(bikeId), { rating, comment }));
+  async submitReview(bikeId: string | number, rating: number, performanceRating: number, looksRating: number, reliabilityRating: number, comment: string) {
+    return this.request<{ id: number; rating: number; comment: string }>(this.client.post(API_ENDPOINTS.REVIEW_CREATE(bikeId), { rating, performance_rating: performanceRating, looks_rating: looksRating, reliability_rating: reliabilityRating, comment }));
   }
 
   async getUserReviews() {

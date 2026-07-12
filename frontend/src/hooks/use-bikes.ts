@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-service";
 import { API_ENDPOINTS } from "@/config/constants";
-import { mapBike, mapBrand } from "@/lib/data-utils";
+import { mapBike, mapBrand, mapReview } from "@/lib/data-utils";
 import type { BikeFilters, Bike, Brand, Review } from "@/types";
 
 // ============================================
@@ -144,23 +144,7 @@ export function useBikeReviews(bikeId: string) {
       const response = await api.getBikeReviews(bikeId);
       if (!response.success) throw new Error(response.error?.message || "Failed to fetch reviews");
       const rawReviews = (response.data as any[]) || [];
-      return rawReviews.map((r: any) => {
-        const user = r.user;
-        const userName = user 
-          ? (`${user.first_name || ""} ${user.last_name || ""}`.trim() || user.username || "Anonymous")
-          : (r.user_name || "Anonymous");
-          
-        return {
-          id: r.id?.toString(),
-          bikeId: r.bike?.toString() || r.bike_model?.toString(),
-          userId: user?.id?.toString() || r.user?.toString(),
-          userName: userName,
-          rating: Number(r.rating) || 0,
-          comment: r.comment || "",
-          createdAt: r.created_at,
-          isVerifiedOwner: !!r.is_verified_purchase
-        };
-      }) as Review[];
+      return rawReviews.map((r: any) => mapReview(r)) as Review[];
     },
     enabled: !!bikeId,
   });
@@ -176,13 +160,19 @@ export function useSubmitReview() {
     mutationFn: async ({
       bikeId,
       rating,
+      performanceRating,
+      looksRating,
+      reliabilityRating,
       comment,
     }: {
       bikeId: string;
       rating: number;
+      performanceRating: number;
+      looksRating: number;
+      reliabilityRating: number;
       comment: string;
     }) => {
-      const response = await api.submitReview(bikeId, rating, comment);
+      const response = await api.submitReview(bikeId, rating, performanceRating, looksRating, reliabilityRating, comment);
       if (!response.success) throw new Error(response.error?.message || "Failed to submit review");
       return response.data;
     },
@@ -208,16 +198,24 @@ export function useUpdateReview() {
     mutationFn: async ({
       reviewId,
       rating,
+      performanceRating,
+      looksRating,
+      reliabilityRating,
       comment,
     }: {
       reviewId: string;
       rating: number;
+      performanceRating?: number;
+      looksRating?: number;
+      reliabilityRating?: number;
       comment: string;
     }) => {
-      const response = await api.patch(API_ENDPOINTS.REVIEW_DELETE(reviewId), {
-        rating,
-        comment,
-      });
+      const payload: any = { rating, comment };
+      if (performanceRating !== undefined) payload.performance_rating = performanceRating;
+      if (looksRating !== undefined) payload.looks_rating = looksRating;
+      if (reliabilityRating !== undefined) payload.reliability_rating = reliabilityRating;
+
+      const response = await api.patch(API_ENDPOINTS.REVIEW_DELETE(reviewId), payload);
       if (!response.success)
         throw new Error(response.error?.message || "Failed to update review");
       return response.data;

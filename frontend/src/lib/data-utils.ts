@@ -282,6 +282,11 @@ export function mapBike(bike: any): Bike {
             ? bike.variants.map((v: any) => ({ ...v, image_url: v.image_url ? sanitizeImageUrl(v.image_url) : null }))
             : bike.variants,
         specs: specs as any,
+        rating: {
+            average: Number(bike.average_rating) || 0,
+            count: Number(bike.review_count) || 0,
+            breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } // Breakdown will be handled by reviews API
+        },
     };
 }
 
@@ -296,6 +301,9 @@ export function mapReview(item: any): Review {
         userName: item.user_name || item.user?.name || "Anonymous",
         userImage: sanitizeImageUrl(item.user?.image || item.user_image),
         rating: Number(item.rating) || 0,
+        performanceRating: Number(item.performance_rating) || 0,
+        looksRating: Number(item.looks_rating) || 0,
+        reliabilityRating: Number(item.reliability_rating) || 0,
         comment: item.comment || "",
         createdAt: item.created_at || item.createdAt || new Date(),
         created_at: item.created_at || item.createdAt || new Date(),

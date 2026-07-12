@@ -33,6 +33,7 @@ import {
   useBike,
   useBikeReviews,
   useSubmitReview,
+  useUpdateReview,
   useSimilarBikes,
 } from "@/hooks/use-bikes";
 import { useUsedBikes } from "@/hooks/use-used-bikes";
@@ -1574,28 +1575,47 @@ function RatingSection({
   bikeId: string;
   reviews: Review[];
 }) {
-  const { isAuthenticated } = useAuthStore();
-  const { mutate: submitReview, isPending } = useSubmitReview();
+  const { isAuthenticated, user } = useAuthStore();
+  const { mutate: submitReview, isPending: isSubmitting } = useSubmitReview();
+  const { mutate: updateReview, isPending: isUpdating } = useUpdateReview();
+
+  const existingReview = useMemo(() => {
+    return reviews.find((r) => r.userId === user?.id?.toString());
+  }, [reviews, user]);
+
   const [performanceRating, setPerformanceRating] = useState(0);
   const [looksRating, setLooksRating] = useState(0);
   const [reliabilityRating, setReliabilityRating] = useState(0);
   const [opinion, setOpinion] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (existingReview) {
+      setPerformanceRating(existingReview.performanceRating || existingReview.rating || 0);
+      setLooksRating(existingReview.looksRating || existingReview.rating || 0);
+      setReliabilityRating(existingReview.reliabilityRating || existingReview.rating || 0);
+      setOpinion(existingReview.comment || "");
+      setIsEditing(false);
+    }
+  }, [existingReview]);
+
+  const isPending = isSubmitting || isUpdating;
 
   const overallRating =
     reviews.length > 0
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-      : 4.5;
+      : 0;
 
   // Calculate review breakdown
   const reviewBreakdown = {
-    5: reviews.filter((r) => r.rating === 5).length,
-    4: reviews.filter((r) => r.rating === 4).length,
-    3: reviews.filter((r) => r.rating === 3).length,
-    2: reviews.filter((r) => r.rating === 2).length,
-    1: reviews.filter((r) => r.rating === 1).length,
+    5: reviews.filter((r) => Math.round(r.rating) === 5).length,
+    4: reviews.filter((r) => Math.round(r.rating) === 4).length,
+    3: reviews.filter((r) => Math.round(r.rating) === 3).length,
+    2: reviews.filter((r) => Math.round(r.rating) === 2).length,
+    1: reviews.filter((r) => Math.round(r.rating) === 1).length,
   };
 
-  const totalReviews = reviews.length || 128;
+  const totalReviews = reviews.length;
   const getPercentage = (count: number) =>
     totalReviews > 0 ? ((count / totalReviews) * 100).toFixed(1) : "0.0";
 
@@ -1614,21 +1634,33 @@ function RatingSection({
     }
 
     const avgRating = (performanceRating + looksRating + reliabilityRating) / 3;
-    submitReview(
-      { bikeId, rating: avgRating, comment: opinion },
-      {
-        onSuccess: () => {
-          toast.success("Review submitted successfully!");
-          setPerformanceRating(0);
-          setLooksRating(0);
-          setReliabilityRating(0);
-          setOpinion("");
+    
+    if (existingReview) {
+      updateReview(
+        { reviewId: existingReview.id, rating: avgRating, performanceRating, looksRating, reliabilityRating, comment: opinion },
+        {
+          onSuccess: () => {
+            toast.success("Review updated successfully!");
+            setIsEditing(false);
+          },
+          onError: (error) => {
+            toast.error(error.message || "Failed to update review");
+          },
         },
-        onError: (error) => {
-          toast.error(error.message || "Failed to submit review");
+      );
+    } else {
+      submitReview(
+        { bikeId, rating: avgRating, performanceRating, looksRating, reliabilityRating, comment: opinion },
+        {
+          onSuccess: () => {
+            toast.success("Review submitted successfully!");
+          },
+          onError: (error) => {
+            toast.error(error.message || "Failed to submit review");
+          },
         },
-      },
-    );
+      );
+    }
   };
 
   return (
@@ -1638,66 +1670,124 @@ function RatingSection({
       <div className="grid md:grid-cols-2 gap-8">
         {/* Left: Rating Form */}
         <div>
-          <p className="font-medium mb-4">How would you rate this bike?</p>
-
-          {/* Performance Rating */}
-          <div className="mb-6">
-            <p className="font-semibold text-sm mb-1">Performance</p>
-            <StarRatingInput
-              value={performanceRating}
-              onChange={setPerformanceRating}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Engine power, acceleration, handling, braking
+          <div className="flex items-center justify-between mb-4">
+            <p className="font-medium">
+              {existingReview && !isEditing ? "Your Review" : "How would you rate this bike?"}
             </p>
+            {existingReview && !isEditing && (
+              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                Edit Review
+              </Button>
+            )}
+            {existingReview && isEditing && (
+              <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+                Cancel
+              </Button>
+            )}
           </div>
 
-          {/* Looks & Design Rating */}
-          <div className="mb-6">
-            <p className="font-semibold text-sm mb-1">Looks & Design</p>
-            <StarRatingInput value={looksRating} onChange={setLooksRating} />
-            <p className="text-xs text-muted-foreground mt-1">
-              Styling, color options, build quality
-            </p>
-          </div>
+          {existingReview && !isEditing ? (
+            <div className="bg-muted/20 p-4 rounded-lg border">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={cn(
+                        "h-4 w-4",
+                        star <= Math.round(existingReview.rating || 0)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-muted-foreground/30",
+                      )}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-semibold">{existingReview.rating?.toFixed(1)}/5</span>
+              </div>
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Performance</span>
+                  <span className="font-medium">{existingReview.performanceRating}/5</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Looks & Design</span>
+                  <span className="font-medium">{existingReview.looksRating}/5</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Reliability</span>
+                  <span className="font-medium">{existingReview.reliabilityRating}/5</span>
+                </div>
+              </div>
+              {existingReview.comment && (
+                <p className="text-sm italic text-muted-foreground border-t pt-3 mt-3">
+                  "{existingReview.comment}"
+                </p>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* Performance Rating */}
+              <div className="mb-6">
+                <p className="font-semibold text-sm mb-1">Performance</p>
+                <StarRatingInput
+                  value={performanceRating}
+                  onChange={setPerformanceRating}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Engine power, acceleration, handling, braking
+                </p>
+              </div>
 
-          {/* Reliability Rating */}
-          <div className="mb-6">
-            <p className="font-semibold text-sm mb-1">Reliability</p>
-            <StarRatingInput
-              value={reliabilityRating}
-              onChange={setReliabilityRating}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Durability, maintenance costs, brand reputation
-            </p>
-          </div>
+              {/* Looks & Design Rating */}
+              <div className="mb-6">
+                <p className="font-semibold text-sm mb-1">Looks & Design</p>
+                <StarRatingInput value={looksRating} onChange={setLooksRating} />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Styling, color options, build quality
+                </p>
+              </div>
 
-          {/* Opinion */}
-          <div className="mb-6">
-            <p className="font-semibold text-sm mb-2">
-              Your Opinion (Optional)
-            </p>
-            <Textarea
-              placeholder="Share your experience with this bike..."
-              value={opinion}
-              onChange={(e) => setOpinion(e.target.value)}
-              rows={4}
-            />
-          </div>
+              {/* Reliability Rating */}
+              <div className="mb-6">
+                <p className="font-semibold text-sm mb-1">Reliability</p>
+                <StarRatingInput
+                  value={reliabilityRating}
+                  onChange={setReliabilityRating}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Durability, maintenance costs, brand reputation
+                </p>
+              </div>
 
-          <Button
-            className="w-full"
-            onClick={handleSubmit}
-            disabled={
-              isPending ||
-              (performanceRating === 0 &&
-                looksRating === 0 &&
-                reliabilityRating === 0)
-            }
-          >
-            {isPending ? "Submitting..." : "Rate all categories to submit"}
-          </Button>
+              {/* Opinion */}
+              <div className="mb-6">
+                <p className="font-semibold text-sm mb-2">
+                  Your Opinion (Optional)
+                </p>
+                <Textarea
+                  placeholder="Share your experience with this bike..."
+                  value={opinion}
+                  onChange={(e) => setOpinion(e.target.value)}
+                  rows={4}
+                />
+              </div>
+
+              <Button
+                className="w-full"
+                onClick={handleSubmit}
+                disabled={
+                  isPending ||
+                  (performanceRating === 0 &&
+                    looksRating === 0 &&
+                    reliabilityRating === 0)
+                }
+              >
+                {isPending 
+                  ? (existingReview ? "Updating..." : "Submitting...") 
+                  : (existingReview ? "Update Review" : "Rate all categories to submit")}
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Right: Current Ratings Summary */}
@@ -1764,10 +1854,10 @@ function RatingSection({
                 <p className="text-lg font-bold">
                   {totalReviews > 0
                     ? (
-                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                        reviews.reduce((sum, r) => sum + (r.performanceRating || 0), 0) /
                         totalReviews
                       ).toFixed(1)
-                    : "4.6"}
+                    : "0.0"}
                   /5
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -1779,10 +1869,10 @@ function RatingSection({
                 <p className="text-lg font-bold">
                   {totalReviews > 0
                     ? (
-                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                        reviews.reduce((sum, r) => sum + (r.looksRating || 0), 0) /
                         totalReviews
                       ).toFixed(1)
-                    : "4.8"}
+                    : "0.0"}
                   /5
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -1794,10 +1884,10 @@ function RatingSection({
                 <p className="text-lg font-bold">
                   {totalReviews > 0
                     ? (
-                        reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                        reviews.reduce((sum, r) => sum + (r.reliabilityRating || 0), 0) /
                         totalReviews
                       ).toFixed(1)
-                    : "4.9"}
+                    : "0.0"}
                   /5
                 </p>
                 <p className="text-xs text-muted-foreground">

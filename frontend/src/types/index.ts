@@ -9,6 +9,9 @@ export interface Review {
   userName: string;
   userImage?: string;
   rating: number;
+  performanceRating?: number;
+  looksRating?: number;
+  reliabilityRating?: number;
   comment: string;
   createdAt: string | Date;
   created_at?: string | Date;
