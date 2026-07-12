@@ -60,14 +60,15 @@ class BrevoEmailService:
         )
 
         try:
-            api_response = api_instance.send_transac_email(send_smtp_email)
-            logger.info(f"Email sent successfully to {to_email}. Message ID: {api_response.message_id}")
+            api_response = api_instance.send_transac_email(send_smtp_email, async_req=False)
+            message_id = getattr(api_response, 'message_id', 'N/A')
+            logger.info(f"Email sent successfully to {to_email}. Message ID: {message_id}")
             return True
         except ApiException as e:
-            logger.error(f"Brevo API Error: {e.status} {e.reason} - Body: {e.body}")
+            logger.error(f"Brevo API Error sending to {to_email}: status={e.status} reason={e.reason} body={e.body}")
             return False
         except Exception as e:
-            logger.error(f"Universal Email Error for {to_email}: {str(e)}", exc_info=True)
+            logger.error(f"Email send failed for {to_email}: {type(e).__name__}: {str(e)}", exc_info=True)
             return False
 
     def send_verification_email(self, to_email: str, token: str, to_name: Optional[str] = None) -> bool:
