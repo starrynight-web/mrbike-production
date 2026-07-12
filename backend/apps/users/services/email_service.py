@@ -24,7 +24,7 @@ class BrevoEmailService:
         self.configuration = sib_api_v3_sdk.Configuration()
         self.configuration.api_key['api-key'] = self.api_key
         
-        self.from_email = os.getenv("DEFAULT_FROM_EMAIL", "noreply@mrbikebd.com")
+        self.from_email = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@mrbikebd.com")
         self.from_name = os.getenv("BREVO_FROM_NAME", "MrBikeBD")
         logger.info(f"Emails will be sent from: {self.from_name} <{self.from_email}>")
 

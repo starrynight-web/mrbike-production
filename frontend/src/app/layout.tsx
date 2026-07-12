@@ -92,9 +92,6 @@ export default function RootLayout({
   return (
     <html lang="en-BD" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preload" as="image" href="/images/hero.webp" fetchPriority="high" /> 
         <link rel="preconnect" href="https://res.cloudinary.com" />
         
         <meta name="geo.region" content="BD" />

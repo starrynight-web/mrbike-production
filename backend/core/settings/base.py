@@ -185,7 +185,7 @@ EMAIL_USE_TLS = True
 EMAIL_TIMEOUT = 10  # Prevents hanging when SMTP connection silently drops
 EMAIL_HOST_USER = os.getenv('BREVO_SMTP_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('BREVO_API_KEY', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@mrbikebd.com')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@mrbikebd.com')
 
 # Frontend URL
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
