@@ -35,7 +35,6 @@ class ApiService {
       headers: {
         "Content-Type": "application/json",
       },
-      withCredentials: true,
       paramsSerializer: (params) => {
         const searchParams = new URLSearchParams();
         for (const key in params) {
